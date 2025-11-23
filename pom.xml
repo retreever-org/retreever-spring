@@ -1,59 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.8</version>
-		<relativePath/> <!-- lookup parent from repository -->
-	</parent>
-	<groupId>project.retreever</groupId>
-	<artifactId>retreever</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>retreever</name>
-	<description>Demo project for Spring Boot</description>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
-	<properties>
-		<java.version>17</java.version>
-	</properties>
-	<dependencies>
+<project
+        xmlns="http://maven.apache.org/POM/4.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>dev.retreever</groupId>
+    <artifactId>retreever</artifactId>
+    <version>1.0.0</version>
+    <name>Retreever</name>
+    <description>Lightweight developer-first toolkit for generating and testing API documentation in Spring Boot apps</description>
+    <url>https://github.com/Retreever-org/retreever-java</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>rajumb0232</id>
+            <name>Raju Gowda</name>
+            <email>rajugowda.towork@gmail.com</email>
+            <url>https://rajugowda.in</url>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/Retreever-org/retreever-java.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/Retreever-org/retreever-java.git</developerConnection>
+        <url>https://github.com/Retreever-org/retreever-java</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <properties>
+        <java.version>17</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <!-- Needed for compilation but not bundled into consumer's dependency tree -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <optional>true</optional>
+            <scope>provided</scope>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
-            <optional>true</optional>
+            <scope>provided</scope>
         </dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 </project>
