@@ -7,11 +7,11 @@ assignees: ''
 
 ---
 
-## Summary
+### Summary
 
 A clear and concise description of the problem.
 
-## Steps to Reproduce
+### Steps to Reproduce
 
 Explain how to reproduce the issue:
 
@@ -19,28 +19,28 @@ Explain how to reproduce the issue:
 2. …
 3. …
 
-## Expected Behavior
+### Expected Behavior
 
 What you **expected** to happen.
 
-## Actual Behavior
+### Actual Behavior
 
 What **actually** happened.
 
-## Relevant Code / Controllers / DTOs
+### Relevant Code / Controllers / DTOs
 
 If helpful, include snippets:
 
 java
 // example snippet
 
-## Environment
+### Environment
 
 * Retreever version:
 * Spring Boot version:
 * Java version:
 * OS / IDE:
 
-## Additional Notes
+### Additional Notes
 
 Anything else that might help us understand the issue.
