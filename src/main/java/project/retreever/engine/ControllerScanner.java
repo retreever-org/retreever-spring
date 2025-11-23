@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2025 Retreever Contributors
+ *
+ * Licensed under the MIT License.
+ * You may obtain a copy of the License at:
+ *     https://opensource.org/licenses/MIT
+ */
+
 package project.retreever.engine;
 
 import org.springframework.context.ApplicationContext;
