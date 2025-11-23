@@ -1,0 +1,34 @@
+package project.retreever.api;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import project.retreever.boot.RetreeverBootstrap;
+import project.retreever.view.dto.ApiDocument;
+
+import java.util.Map;
+
+@RestController
+@RequestMapping("/retreever-tool")
+public class RetreeverController {
+
+    private final RetreeverBootstrap bootstrap;
+
+    public RetreeverController(RetreeverBootstrap bootstrap) {
+        this.bootstrap = bootstrap;
+    }
+
+    @GetMapping("/ping")
+    public Map<String, Object> ping() {
+        return Map.of(
+                "status", "ok",
+                "uptime", bootstrap.getUptime()
+        );
+    }
+
+    @GetMapping
+    public ApiDocument getDoc() {
+        return bootstrap.getDocument();
+    }
+}
+

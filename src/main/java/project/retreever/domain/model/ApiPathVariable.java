@@ -1,0 +1,55 @@
+package project.retreever.domain.model;
+
+import java.util.HashSet;
+import java.util.Set;
+
+/**
+ * Represents a path variable in an endpoint URL: /users/{id}
+ */
+public class ApiPathVariable {
+
+    private String name;                    // e.g., "id"
+    private JsonPropertyType type;          // STRING, NUMBER, etc.
+    private String description;             // optional dev doc
+
+    private final Set<String> constraints = new HashSet<>();
+
+    // ───────── getters ─────────
+
+    public String getName() {
+        return name;
+    }
+
+    public JsonPropertyType getType() {
+        return type;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public Set<String> getConstraints() {
+        return constraints;
+    }
+
+    // ───────── fluent setters ─────────
+
+    public ApiPathVariable setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public ApiPathVariable setType(JsonPropertyType type) {
+        this.type = type;
+        return this;
+    }
+
+    public ApiPathVariable setDescription(String description) {
+        this.description = description;
+        return this;
+    }
+
+    public void addConstraint(String constraint) {
+        this.constraints.add(constraint);
+    }
+}
