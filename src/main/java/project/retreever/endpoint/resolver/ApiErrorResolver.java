@@ -23,8 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Resolves ApiError objects from a list of methods.
- * Only @ExceptionHandler methods are processed.
+ * Resolves {@link ApiError} models from controller advice methods.
+ * Processes only methods annotated with {@link ExceptionHandler},
+ * extracts declared exception types, determines HTTP status and
+ * description (via @ApiError), and resolves the error body schema
+ * from the handler's return type.
  */
 public class ApiErrorResolver {
 
@@ -35,8 +38,11 @@ public class ApiErrorResolver {
     }
 
     /**
-     * Accepts a list of methods and returns ApiError objects
-     * for all methods annotated with @ExceptionHandler.
+     * Scans the provided methods and produces ApiError objects for each
+     * declared exception in @ExceptionHandler annotations.
+     *
+     * @param methods a list of potential exception handler methods
+     * @return resolved error models
      */
     public List<ApiError> resolve(List<Method> methods) {
 
@@ -59,7 +65,7 @@ public class ApiErrorResolver {
             Class<?> returnType = extractReturnType(method);
             List<JsonProperty> resolvedSchema = resolveErrorSchema(returnType);
 
-            // Read optional @ApiError annotation
+            // Optional @ApiError annotation (status + description)
             project.retreever.domain.annotation.ApiError apiAnn =
                     method.getAnnotation(project.retreever.domain.annotation.ApiError.class);
 

@@ -13,17 +13,22 @@ import project.retreever.domain.model.ApiHeader;
 import java.util.List;
 
 /**
- * Central registry holding reusable ApiHeader definitions.
- * Developers can add static/shared headers here and reference them by name.
+ * Registry for storing reusable {@link ApiHeader} definitions.
+ * Allows shared headers to be declared once and referenced by name
+ * across multiple endpoints.
  */
-public class ApiHeaderRegistry extends DocRegistry<ApiHeader>{
+public class ApiHeaderRegistry extends DocRegistry<ApiHeader> {
 
+    @SuppressWarnings("unchecked")
     public List<ApiHeader> getHeaders() {
         return (List<ApiHeader>) getAll().values();
     }
 
     /**
-     * Retrieves a header by name (case-insensitive).
+     * Retrieves a stored header by name (case-sensitive).
+     *
+     * @param name the header name
+     * @return the matching ApiHeader or null
      */
     public ApiHeader getHeader(String name) {
         if (name == null) return null;
@@ -31,7 +36,9 @@ public class ApiHeaderRegistry extends DocRegistry<ApiHeader>{
     }
 
     /**
-     * Adds a header only if its name is non-null and not already added.
+     * Adds a header if it has a valid name and is not already present.
+     *
+     * @param header the header to add
      */
     public void addHeader(ApiHeader header) {
         if (header == null || header.getName() == null) return;
@@ -42,7 +49,9 @@ public class ApiHeaderRegistry extends DocRegistry<ApiHeader>{
     }
 
     /**
-     * Adds multiple headers.
+     * Adds multiple headers to the registry.
+     *
+     * @param newHeaders list of headers to add
      */
     public void addHeaders(List<ApiHeader> newHeaders) {
         if (newHeaders == null) return;

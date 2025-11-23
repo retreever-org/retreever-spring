@@ -15,6 +15,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Marks a method as an explicit error mapping for documentation.
+ * Retreever uses this to record the status code and description
+ * associated with an exception handler.
+ */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ApiError {

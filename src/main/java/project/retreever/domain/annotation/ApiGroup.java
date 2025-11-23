@@ -14,12 +14,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotated over controllers for creating collection of API endpoints.
+ * Marks a controller as an API group.
+ * Retreever uses this to organize endpoints under a named section
+ * in the generated documentation.
  */
-
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ApiGroup {
+
     String name();
+
     String description() default "";
 }

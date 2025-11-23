@@ -14,6 +14,10 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Top-level DTO representing the fully assembled Retreever API document.
+ * This structure is serialized and returned from `/retreever-tool`.
+ */
 public record ApiDocument(
         @JsonProperty("name") String name,
         @JsonProperty("description") String description,
@@ -23,6 +27,9 @@ public record ApiDocument(
         @JsonProperty("groups") List<ApiGroup> groups
 ) {
 
+    /**
+     * Represents a controller-level API group and its endpoints.
+     */
     public record ApiGroup(
             @JsonProperty("name") String name,
             @JsonProperty("description") String description,
@@ -30,6 +37,9 @@ public record ApiDocument(
             @JsonProperty("endpoints") List<Endpoint> endpoints
     ) {}
 
+    /**
+     * Represents a single documented API endpoint and all associated metadata.
+     */
     public record Endpoint(
             @JsonProperty("name") String name,
             @JsonProperty("deprecated") boolean deprecated,
@@ -52,15 +62,20 @@ public record ApiDocument(
             @JsonProperty("errors") List<Error> errors
     ) {}
 
+    /**
+     * Represents a structured error entry mapped from an exception handler.
+     */
     public record Error(
             @JsonProperty("status") String status,
             @JsonProperty("status_code") int statusCode,
             @JsonProperty("description") String description,
             @JsonProperty("error_code") String errorCode,
-
             @JsonProperty("response") Map<String, Object> response
     ) {}
 
+    /**
+     * Represents a query parameter and its metadata.
+     */
     public record Param(
             @JsonProperty("name") String name,
             @JsonProperty("description") String description,
@@ -70,6 +85,9 @@ public record ApiDocument(
             @JsonProperty("constraints") List<String> constraints
     ) {}
 
+    /**
+     * Represents an HTTP header mapped from a controller method.
+     */
     public record Header(
             @JsonProperty("name") String name,
             @JsonProperty("type") String type,
@@ -77,6 +95,9 @@ public record ApiDocument(
             @JsonProperty("description") String description
     ) {}
 
+    /**
+     * Represents a path variable used in the endpoint URL.
+     */
     public record PathVariable(
             @JsonProperty("name") String name,
             @JsonProperty("type") String type,

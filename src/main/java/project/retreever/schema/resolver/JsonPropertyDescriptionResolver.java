@@ -14,14 +14,19 @@ import project.retreever.domain.model.JsonProperty;
 
 import java.lang.reflect.AnnotatedElement;
 
+/**
+ * Resolves human-readable descriptions for a {@link JsonProperty}.
+ * Looks for {@link Description} or {@link FieldInfo} annotations on
+ * fields or parameters and applies the associated text.
+ */
 public class JsonPropertyDescriptionResolver {
 
     /**
-     * Resolves the description from the given annotated element (e.g., Field, Parameter).
-     * If the @Description annotation is present, set the description on the given JsonProperty.
+     * Applies description metadata from annotations declared on the
+     * provided element. Checks @Description first, then @FieldInfo.
      *
-     * @param jsonProp The JsonProperty to set description on
-     * @param annotatedElement The element possibly annotated with @Description
+     * @param jsonProp         the target JSON property
+     * @param annotatedElement the element annotated with description metadata
      */
     public static void resolve(JsonProperty jsonProp, AnnotatedElement annotatedElement) {
         if (annotatedElement == null || jsonProp == null) {
@@ -33,7 +38,7 @@ public class JsonPropertyDescriptionResolver {
             jsonProp.description(descriptionAnnotation.value());
         } else {
             FieldInfo info = annotatedElement.getAnnotation(FieldInfo.class);
-            if(info != null) {
+            if (info != null) {
                 jsonProp.description(info.description());
             }
         }

@@ -15,6 +15,11 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Registry for storing resolved {@link ApiError} definitions.
+ * Ensures each exception type is documented once and provides
+ * lookup utilities for endpoints referencing specific errors.
+ */
 public class ApiErrorRegistry extends DocRegistry<ApiError> {
 
     private final ApiErrorResolver apiErrorResolver;
@@ -24,8 +29,11 @@ public class ApiErrorRegistry extends DocRegistry<ApiError> {
     }
 
     /**
-     * Accepts a list of handler methods, resolves ApiErrors,
-     * registers them, and returns the refs.
+     * Resolves error models from the given handler methods,
+     * registers them, and returns their reference keys.
+     *
+     * @param methods controller advice handler methods
+     * @return list of registered error reference names
      */
     public List<String> registerApiErrors(List<Method> methods) {
 
@@ -37,7 +45,10 @@ public class ApiErrorRegistry extends DocRegistry<ApiError> {
     }
 
     /**
-     * Registers a single ApiError by its exception class name.
+     * Registers a single ApiError using its exception class name as the key.
+     *
+     * @param apiError resolved error model
+     * @return reference key used for lookup
      */
     public String registerApiError(ApiError apiError) {
 
@@ -51,8 +62,11 @@ public class ApiErrorRegistry extends DocRegistry<ApiError> {
     }
 
     /**
-     * Accepts an array of exception classes declared on @ApiEndpoint(errors={})
-     * Returns the list of refs **only if** they are already registered.
+     * Returns reference keys for exception types declared on @ApiEndpoint(errors = {...}),
+     * but **only if** those errors have already been registered through handler resolution.
+     *
+     * @param exceptionTypes exception classes referenced on an endpoint
+     * @return list of matching error reference keys
      */
     public List<String> getErrorRefs(Class<? extends Throwable>[] exceptionTypes) {
 

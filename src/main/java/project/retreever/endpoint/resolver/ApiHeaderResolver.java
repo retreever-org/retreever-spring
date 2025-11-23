@@ -21,10 +21,9 @@ import java.lang.reflect.Parameter;
 import java.util.*;
 
 /**
- * Resolves all headers for an API endpoint:
- * 1. Spring mapping-level headers
- * 2. @RequestHeader parameters
- * 3. @ApiEndpoint(headers={}) registry lookups
+ * Resolves all headers used by an API endpoint.
+ * Combines headers declared in Spring mappings, method parameters,
+ * and custom header references from @ApiEndpoint.
  */
 public class ApiHeaderResolver {
 
@@ -34,33 +33,43 @@ public class ApiHeaderResolver {
         this.registry = registry;
     }
 
+    /**
+     * Resolves and attaches all headers for the given endpoint.
+     * Processing order:
+     * <ol>
+     *     <li>Headers declared in @RequestMapping</li>
+     *     <li>Method parameters annotated with @RequestHeader</li>
+     *     <li>Custom headers referenced via @ApiEndpoint</li>
+     * </ol>
+     *
+     * @param endpoint the endpoint being enriched
+     * @param method   the controller method being inspected
+     */
     public void resolveHeaders(project.retreever.domain.model.ApiEndpoint endpoint, Method method) {
 
         List<ApiHeader> result = new ArrayList<>();
 
-        // ---- 1. Mapping Headers ----
         result.addAll(resolveMappingHeaders(method));
-
-        // ---- 2. @RequestHeader params ----
         result.addAll(resolveRequestHeaderParams(method));
-
-        // ---- 3. @ApiEndpoint(headers={}) ----
         result.addAll(resolveCustomHeaderRefs(method));
 
-        // ---- Deduplicate by exact header name ----
         Map<String, ApiHeader> unique = new LinkedHashMap<>();
         for (ApiHeader h : result) {
             if (h.getName() != null) {
-                unique.putIfAbsent(h.getName(), h); // case-sensitive
+                unique.putIfAbsent(h.getName(), h);
             }
         }
 
         endpoint.setHeaders(new ArrayList<>(unique.values()));
     }
 
-    // ------------------------------------------------------------------------
-    // 1. Headers declared in @RequestMapping / @GetMapping(headers=...)
-    // ------------------------------------------------------------------------
+    /**
+     * Extracts header definitions declared directly on
+     * mapping annotations (e.g. @RequestMapping(headers="X-Auth")).
+     *
+     * @param method the controller method
+     * @return list of resolved mapping-level headers
+     */
     private List<ApiHeader> resolveMappingHeaders(Method method) {
 
         RequestMapping mapping = method.getAnnotation(RequestMapping.class);
@@ -71,13 +80,12 @@ public class ApiHeaderResolver {
         List<ApiHeader> list = new ArrayList<>();
 
         for (String header : mapping.headers()) {
-            // format can be "Key=Value" or "Key"
             String[] parts = header.split("=", 2);
             String name = parts[0].trim();
 
             ApiHeader h = new ApiHeader()
                     .setName(name)
-                    .setType(JsonPropertyTypeResolver.resolve(String.class)) // always STRING
+                    .setType(JsonPropertyTypeResolver.resolve(String.class))
                     .setRequired(true);
 
             list.add(h);
@@ -86,9 +94,13 @@ public class ApiHeaderResolver {
         return list;
     }
 
-    // ------------------------------------------------------------------------
-    // 2. Headers via method parameters: @RequestHeader
-    // ------------------------------------------------------------------------
+    /**
+     * Resolves headers defined via method parameters annotated
+     * with @RequestHeader, including optional descriptions.
+     *
+     * @param method controller method
+     * @return list of resolved parameter headers
+     */
     private List<ApiHeader> resolveRequestHeaderParams(Method method) {
 
         List<ApiHeader> list = new ArrayList<>();
@@ -105,7 +117,6 @@ public class ApiHeaderResolver {
                     .setRequired(ann.required())
                     .setType(JsonPropertyTypeResolver.resolve(p.getType()));
 
-            // optional description via your @Description annotation
             project.retreever.domain.annotation.Description desc =
                     p.getAnnotation(project.retreever.domain.annotation.Description.class);
             if (desc != null) header.setDescription(desc.value());
@@ -116,10 +127,13 @@ public class ApiHeaderResolver {
         return list;
     }
 
-    // ------------------------------------------------------------------------
-    // 3. Custom headers referenced in @ApiEndpoint(headers={})
-    //    Resolved using ApiHeaderRegistry by exact name.
-    // ------------------------------------------------------------------------
+    /**
+     * Resolves custom headers referenced via @ApiEndpoint(headers={}),
+     * pulling them from the shared ApiHeaderRegistry.
+     *
+     * @param method controller method
+     * @return list of resolved custom headers
+     */
     private List<ApiHeader> resolveCustomHeaderRefs(Method method) {
 
         ApiEndpoint api = method.getAnnotation(ApiEndpoint.class);

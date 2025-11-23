@@ -14,11 +14,10 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Represents a node in a JSON schema model.
- * Each JsonProperty can be:
- * - primitive (STRING, NUMBER, BOOLEAN, ENUM)
- * - object    (with nested properties)
- * - array     (with a single element schema)
+ * Represents a single entry in the resolved JSON schema.
+ * Supports primitives, objects (with nested properties),
+ * and arrays (with a single element definition).
+ * Built during schema resolution using reflection and validation metadata.
  */
 public class JsonProperty {
 

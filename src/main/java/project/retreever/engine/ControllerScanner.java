@@ -16,8 +16,19 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Scans the Spring application context for all {@link RestController}-annotated
+ * classes by inspecting registered request handler mappings.
+ */
 public class ControllerScanner {
 
+    /**
+     * Returns all controller classes detected by Spring MVC's
+     * {@link RequestMappingHandlerMapping}.
+     *
+     * @param context the active Spring application context
+     * @return a set of controller types
+     */
     public static Set<Class<?>> scanControllers(ApplicationContext context) {
 
         RequestMappingHandlerMapping mapping =

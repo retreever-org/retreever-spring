@@ -13,13 +13,17 @@ import project.retreever.domain.model.JsonProperty;
 import java.util.*;
 
 /**
- * Builds structure used by API documentation for:
- *  - model
- *  - example_model
- *  - metadata (dot-notation, constraints array)
+ * Renders a JSON-schema-like structure for a list of {@link JsonProperty}.
+ * Output includes:
+ * - model (type-only structure)
+ * - example_model (example values)
+ * - metadata (dot-notation keys + constraints/description)
  */
 public class ApiSchemaRenderer {
 
+    /**
+     * Builds a combined schema block containing model, example, and metadata.
+     */
     public static Map<String, Object> execute(List<JsonProperty> properties) {
 
         Map<String, Object> root = new LinkedHashMap<>();
@@ -41,9 +45,7 @@ public class ApiSchemaRenderer {
         return root;
     }
 
-    // =====================================================================
     // MODEL
-    // =====================================================================
 
     private static void buildModel(JsonProperty prop, Map<String, Object> out) {
 
@@ -103,15 +105,14 @@ public class ApiSchemaRenderer {
         return p.getType().name().toLowerCase();
     }
 
-    // =====================================================================
     // EXAMPLE MODEL
-    // =====================================================================
 
     private static void buildExample(JsonProperty prop, Map<String, Object> out) {
 
         switch (prop.getType()) {
 
-            case STRING, NUMBER, BOOLEAN, ENUM, NULL -> out.put(prop.getName(), prop.getExampleValue());
+            case STRING, NUMBER, BOOLEAN, ENUM, NULL ->
+                    out.put(prop.getName(), prop.getExampleValue());
 
             case OBJECT -> {
                 Map<String, Object> child = new LinkedHashMap<>();
@@ -158,9 +159,7 @@ public class ApiSchemaRenderer {
         };
     }
 
-    // =====================================================================
-    // METADATA (dot notation, constraints as array)
-    // =====================================================================
+    // METADATA
 
     private static void buildMetadata(JsonProperty prop,
                                       String parentPath,

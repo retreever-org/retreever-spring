@@ -13,14 +13,18 @@ import project.retreever.domain.model.JsonProperty;
 
 import java.lang.reflect.Field;
 
+/**
+ * Resolves example values for a {@link JsonProperty} from {@link FieldInfo}.
+ * If the annotation declares a non-empty example, it is applied to the property.
+ */
 public class JsonPropertyExampleResolver {
 
     /**
-     * Resolves and sets the example value of a JsonProperty from the @FieldInfo annotation on the field,
-     * if present and non-empty. If not present or blank, no example is set.
+     * Applies an example value to the given JSON property, if the field
+     * contains a {@link FieldInfo} annotation with a defined example.
      *
-     * @param property The JsonProperty to set the example on
-     * @param field The field annotated potentially with @FieldInfo
+     * @param property the property to update
+     * @param field    the field annotated with FieldInfo
      */
     public static void resolve(JsonProperty property, Field field) {
         if (property == null || field == null) {

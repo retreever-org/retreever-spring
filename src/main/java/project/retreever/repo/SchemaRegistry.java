@@ -14,6 +14,11 @@ import project.retreever.schema.resolver.TypeResolver;
 
 import java.util.List;
 
+/**
+ * Registry for storing resolved JSON schemas keyed by reference name.
+ * Ensures each DTO type is processed once, returning a stable schema
+ * reference for reuse across endpoints.
+ */
 public class SchemaRegistry extends DocRegistry<List<JsonProperty>> {
 
     private final JsonSchemaResolver jsonSchemaResolver;
@@ -22,6 +27,12 @@ public class SchemaRegistry extends DocRegistry<List<JsonProperty>> {
         this.jsonSchemaResolver = jsonSchemaResolver;
     }
 
+    /**
+     * Resolves and registers the schema for the given DTO class if not already present.
+     *
+     * @param dtoClass the class whose schema should be generated
+     * @return reference name used as the registry key
+     */
     public String registerSchema(Class<?> dtoClass) {
         String ref = TypeResolver.resolveRefName(dtoClass);
 
@@ -33,4 +44,3 @@ public class SchemaRegistry extends DocRegistry<List<JsonProperty>> {
         return ref;
     }
 }
-

@@ -8,6 +8,10 @@
 
 package project.retreever.domain.model;
 
+/**
+ * Represents a resolved HTTP header used by an endpoint.
+ * Includes name, type, requirement flag, and optional description.
+ */
 public class ApiHeader {
 
     private String name;                   // e.g. Authorization

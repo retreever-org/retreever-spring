@@ -18,7 +18,18 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Converts ApiDoc (internal model) into ApiDocument (DTO for serialization).
+ * Assembles the internal {@link ApiDoc} model into a fully serialized-friendly
+ * {@link ApiDocument} DTO used by the UI/JSON renderer layer.
+ *
+ * <p>
+ * Responsible for mapping:
+ * <ul>
+ *     <li>Groups → DTO groups</li>
+ *     <li>Endpoints → DTO endpoints</li>
+ *     <li>Parameters, headers, path variables</li>
+ *     <li>Request/response schemas via {@link SchemaLookupService}</li>
+ * </ul>
+ * </p>
  */
 public class ApiDocumentAssembler {
 
@@ -29,15 +40,17 @@ public class ApiDocumentAssembler {
     }
 
     /**
-     * Converts entire ApiDoc into ApiDocument ready for JSON serialization.
+     * Converts the full {@link ApiDoc} model into its serializable counterpart.
+     *
+     * @param source internal model representing the entire API documentation
+     * @return DTO representation ready for JSON output
      */
     public ApiDocument assemble(ApiDoc source) {
 
         List<ApiDocument.ApiGroup> groups = new ArrayList<>();
 
         for (ApiGroup g : source.getGroups()) {
-            ApiDocument.ApiGroup dto = mapGroup(g);
-            groups.add(dto);
+            groups.add(mapGroup(g));
         }
 
         return new ApiDocument(
@@ -50,9 +63,9 @@ public class ApiDocumentAssembler {
         );
     }
 
-    // ----------------------------------------------------------------------
-    // GROUP MAPPING
-    // ----------------------------------------------------------------------
+    /**
+     * Maps a single {@link ApiGroup} into DTO form.
+     */
     private ApiDocument.ApiGroup mapGroup(ApiGroup g) {
 
         List<ApiDocument.Endpoint> endpoints = new ArrayList<>();
@@ -69,19 +82,15 @@ public class ApiDocumentAssembler {
         );
     }
 
-    // ----------------------------------------------------------------------
-    // ENDPOINT MAPPING
-    // ----------------------------------------------------------------------
+    /**
+     * Maps a single {@link ApiEndpoint} into DTO form, including request,
+     * response and error schema resolution.
+     */
     private ApiDocument.Endpoint mapEndpoint(ApiEndpoint ep) {
 
-        Map<String, Object> requestSchema =
-                schemaLookupService.resolveRequest(ep);
-
-        Map<String, Object> responseSchema =
-                schemaLookupService.resolveResponse(ep);
-
-        List<Map<String, Object>> errorSchemas =
-                schemaLookupService.resolveErrors(ep);
+        Map<String, Object> requestSchema = schemaLookupService.resolveRequest(ep);
+        Map<String, Object> responseSchema = schemaLookupService.resolveResponse(ep);
+        List<Map<String, Object>> errorSchemas = schemaLookupService.resolveErrors(ep);
 
         return new ApiDocument.Endpoint(
                 ep.getName(),
@@ -103,9 +112,9 @@ public class ApiDocumentAssembler {
         );
     }
 
-    // ----------------------------------------------------------------------
-    // MAPPING: PATH VARIABLES
-    // ----------------------------------------------------------------------
+    /**
+     * Maps path variables into DTO form.
+     */
     private List<ApiDocument.PathVariable> mapPathVariables(List<ApiPathVariable> vars) {
 
         if (vars == null) return List.of();
@@ -124,9 +133,9 @@ public class ApiDocumentAssembler {
         return list;
     }
 
-    // ----------------------------------------------------------------------
-    // MAPPING: QUERY PARAMS
-    // ----------------------------------------------------------------------
+    /**
+     * Maps query params into DTO form.
+     */
     private List<ApiDocument.Param> mapParams(List<ApiParam> params) {
 
         if (params == null) return List.of();
@@ -147,9 +156,9 @@ public class ApiDocumentAssembler {
         return list;
     }
 
-    // ----------------------------------------------------------------------
-    // MAPPING: HEADERS
-    // ----------------------------------------------------------------------
+    /**
+     * Maps headers into DTO form.
+     */
     private List<ApiDocument.Header> mapHeaders(List<ApiHeader> headers) {
 
         if (headers == null) return List.of();
@@ -168,9 +177,10 @@ public class ApiDocumentAssembler {
         return list;
     }
 
-    // ----------------------------------------------------------------------
-    // MAPPING: ERRORS
-    // ----------------------------------------------------------------------
+    /**
+     * Converts internal error maps (produced by {@link SchemaLookupService})
+     * into DTO {@link ApiDocument.Error} records.
+     */
     private List<ApiDocument.Error> mapErrors(List<Map<String, Object>> errors) {
 
         if (errors == null) return List.of();
@@ -190,6 +200,9 @@ public class ApiDocumentAssembler {
         return list;
     }
 
+    /**
+     * Ensures map values are safely converted into a String-key map for DTO compatibility.
+     */
     private static Map<String, Object> safeMap(Object obj) {
         if (obj instanceof Map<?, ?> raw) {
             Map<String, Object> result = new LinkedHashMap<>();
@@ -200,6 +213,6 @@ public class ApiDocumentAssembler {
             });
             return result;
         }
-        return null; // or Collections.emptyMap()
+        return null;
     }
 }

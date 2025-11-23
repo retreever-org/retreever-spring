@@ -15,9 +15,14 @@ import project.retreever.repo.SchemaRegistry;
 import java.lang.reflect.Method;
 
 /**
- * Resolves Input/Output schema and parameter metadata for a controller method.
- * Handles request body resolution, response body resolution, and provides
- * stubs for path variables, query parameters, and headers.
+ * Aggregates all input/output metadata resolution for an API endpoint.
+ * Delegates to resolvers for:
+ * <ul>
+ *     <li>Path variables</li>
+ *     <li>Query parameters</li>
+ *     <li>Headers</li>
+ *     <li>Request/Response body schemas</li>
+ * </ul>
  */
 public class ApiEndpointIOResolver {
 
@@ -30,10 +35,16 @@ public class ApiEndpointIOResolver {
         this.headerResolver = new ApiHeaderResolver(apiHeaderRegistry);
     }
 
+    /**
+     * Resolves all I/O components for the given endpoint:
+     * path variables, query params, headers, and body schemas.
+     *
+     * @param endpoint the endpoint model to populate
+     * @param method   the controller method being inspected
+     */
     public void resolve(ApiEndpoint endpoint, Method method) {
         ApiPathVariableResolver.resolvePathVariables(endpoint, method);
         ApiQueryParamResolver.resolveQueryParams(endpoint, method);
-
         headerResolver.resolveHeaders(endpoint, method);
         bodyResolver.resolve(endpoint, method);
     }

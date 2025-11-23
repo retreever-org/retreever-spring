@@ -22,10 +22,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Resolves path variable metadata for an endpoint.
+ * Extracts name, type, description, and validation constraints
+ * from parameters annotated with {@link PathVariable}.
+ */
 public class ApiPathVariableResolver {
 
     /**
-     * Placeholder for resolving path variables (to be implemented later).
+     * Populates the endpoint's path variable list by scanning parameters
+     * annotated with {@link PathVariable}.
+     *
+     * @param endpoint the endpoint model to enrich
+     * @param method   the controller method being inspected
      */
     public static void resolvePathVariables(ApiEndpoint endpoint, Method method) {
 
@@ -38,27 +47,25 @@ public class ApiPathVariableResolver {
 
             ApiPathVariable var = new ApiPathVariable();
 
-            // name
+            // Determine variable name
             String name = pv.name().isBlank()
                     ? (!pv.value().isBlank() ? pv.value() : param.getName())
                     : pv.name();
-
             var.setName(name);
 
-            // type
+            // Resolve JSON type
             Class<?> rawType = param.getType();
             JsonPropertyType jsonType = JsonPropertyTypeResolver.resolve(rawType);
             var.setType(jsonType);
 
-            // description
+            // Optional description
             Description desc = param.getAnnotation(Description.class);
             if (desc != null) {
                 var.setDescription(desc.value());
             }
 
-            // constraints
-            Set<String> constraints =
-                    ConstraintResolver.resolve(param.getAnnotations());
+            // Validation constraints
+            Set<String> constraints = ConstraintResolver.resolve(param.getAnnotations());
             constraints.forEach(var::addConstraint);
 
             vars.add(var);

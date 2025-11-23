@@ -21,55 +21,59 @@ import project.retreever.view.dto.ApiDocument;
 
 import java.util.Set;
 
+/**
+ * Coordinates the Retreever pipeline and drives the full documentation build.
+ */
 public class RetreeverOrchestrator {
 
     private final ApiDocumentAssembler assembler;
     private final ApiDocResolver docResolver;
 
+    /**
+     * Constructs the orchestrator and wires all core components.
+     */
     public RetreeverOrchestrator() {
 
-        // ─────────────────────────────────────────────
-        // Low-level schema
-        // ─────────────────────────────────────────────
+        // JSON schema generator + registry
         JsonSchemaResolver jsonSchemaResolver = new JsonSchemaResolver();
         SchemaRegistry schemaRegistry = new SchemaRegistry(jsonSchemaResolver);
 
-        // ─────────────────────────────────────────────
-        // Headers
-        // ─────────────────────────────────────────────
+        // Shared header definitions
         ApiHeaderRegistry headerRegistry = new ApiHeaderRegistry();
 
-        // ─────────────────────────────────────────────
-        // Errors
-        // ─────────────────────────────────────────────
+        // Error resolver + registry for @ExceptionHandler mappings
         ApiErrorResolver errorResolver = new ApiErrorResolver(jsonSchemaResolver);
         ApiErrorRegistry errorRegistry = new ApiErrorRegistry(errorResolver);
 
-        // ─────────────────────────────────────────────
-        // Endpoint IO + Endpoint Resolver
-        // ─────────────────────────────────────────────
+        // Request/response schema + header/param/path-var resolution
         ApiEndpointIOResolver ioResolver =
                 new ApiEndpointIOResolver(schemaRegistry, headerRegistry);
 
+        // Full endpoint resolver (metadata + IO + errors)
         ApiEndpointResolver endpointResolver =
                 new ApiEndpointResolver(schemaRegistry, headerRegistry, errorRegistry);
 
-        // ─────────────────────────────────────────────
-        // Group & AppDoc Resolver
-        // ─────────────────────────────────────────────
+        // Controller → ApiGroup resolver
         ApiGroupResolver groupResolver = new ApiGroupResolver(endpointResolver);
+
+        // Application-level documentation resolver
         this.docResolver = new ApiDocResolver(groupResolver);
 
-        // ─────────────────────────────────────────────
-        // View Layer helpers (lookup + DTO transformation)
-        // ─────────────────────────────────────────────
-        SchemaLookupService lookup = new SchemaLookupService(schemaRegistry, errorRegistry);
+        // Converts internal schemas to renderable model/example/metadata DTO
+        SchemaLookupService lookup =
+                new SchemaLookupService(schemaRegistry, errorRegistry);
+
+        // Builds final ApiDocument DTO for serialization
         this.assembler = new ApiDocumentAssembler(lookup);
     }
 
-    // ─────────────────────────────────────────────
-    // Builds the full API Document
-    // ─────────────────────────────────────────────
+    /**
+     * Builds the full API documentation output.
+     *
+     * @param applicationClass root application class
+     * @param controllers      detected controller classes
+     * @return full assembled ApiDocument DTO
+     */
     public ApiDocument build(Class<?> applicationClass, Set<Class<?>> controllers) {
         var doc = docResolver.resolve(applicationClass, controllers);
         return assembler.assemble(doc);

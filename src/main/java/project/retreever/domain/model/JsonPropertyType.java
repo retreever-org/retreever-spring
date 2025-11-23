@@ -8,6 +8,9 @@
 
 package project.retreever.domain.model;
 
+/**
+ * Supported JSON value types used when building schema properties.
+ */
 public enum JsonPropertyType {
     STRING,
     NUMBER,

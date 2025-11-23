@@ -16,16 +16,32 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Resolves the media types an endpoint consumes and produces.
+ * Reads values from method-level Spring mapping annotations such as
+ * {@link GetMapping}, {@link PostMapping}, {@link PutMapping},
+ * {@link PatchMapping}, {@link DeleteMapping}, and {@link RequestMapping}.
+ */
 public class EndpointContentTypeResolver {
 
+    /**
+     * Populates consume and produce media types for the given endpoint.
+     *
+     * @param endpoint the endpoint model to enrich
+     * @param method   the controller method being inspected
+     */
     public static void resolve(ApiEndpoint endpoint, Method method) {
         endpoint.setConsumes(resolveConsumes(method));
         endpoint.setProduces(resolveProduces(method));
     }
 
+    /**
+     * Resolves the list of media types the method consumes.
+     * Checks all Spring mapping annotations in common priority order.
+     */
     private static List<String> resolveConsumes(Method method) {
 
-        // GET mapping rarely defines consumes, but we check anyway
+        // GET usually doesn't specify consumes, but still checked
         GetMapping get = method.getAnnotation(GetMapping.class);
         if (get != null && get.consumes().length > 0) {
             return Arrays.asList(get.consumes());
@@ -56,10 +72,14 @@ public class EndpointContentTypeResolver {
             return Arrays.asList(req.consumes());
         }
 
-        // default: no consumes defined
+        // No consumes declared
         return Collections.emptyList();
     }
 
+    /**
+     * Resolves the list of media types the method produces.
+     * Follows the same pattern as {@link #resolveConsumes(Method)}.
+     */
     private static List<String> resolveProduces(Method method) {
 
         GetMapping get = method.getAnnotation(GetMapping.class);
@@ -94,5 +114,4 @@ public class EndpointContentTypeResolver {
 
         return Collections.emptyList();
     }
-
 }

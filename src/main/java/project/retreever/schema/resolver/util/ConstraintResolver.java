@@ -13,10 +13,19 @@ import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Resolves validation constraints from Jakarta Bean Validation annotations.
+ * Used during schema generation to attach rules such as nullability,
+ * size limits, numeric ranges, and regex patterns to JsonProperty nodes.
+ */
 public class ConstraintResolver {
 
     /**
-     * Resolves bean validation constraints from annotations.
+     * Extracts constraint descriptors from the given annotations.
+     * Only a subset of commonly used validation annotations is supported.
+     *
+     * @param annotations the annotations declared on a field or parameter
+     * @return a set of formatted constraint strings
      */
     public static Set<String> resolve(Annotation[] annotations) {
 
@@ -57,7 +66,10 @@ public class ConstraintResolver {
     }
 
     /**
-     * Determines if the constraints imply `required=true`.
+     * Determines whether the provided annotations imply the value must be present.
+     *
+     * @param annotations the annotations to inspect
+     * @return true if a NotNull, NotBlank, or NotEmpty annotation is present
      */
     public static boolean isRequired(Annotation[] annotations) {
         return has(annotations, NotNull.class)
@@ -72,4 +84,3 @@ public class ConstraintResolver {
         return false;
     }
 }
-

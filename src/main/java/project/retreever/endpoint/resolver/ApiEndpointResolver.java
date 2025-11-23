@@ -16,6 +16,11 @@ import project.retreever.repo.SchemaRegistry;
 import java.lang.reflect.Method;
 import java.util.List;
 
+/**
+ * Main coordinator responsible for resolving a complete {@link ApiEndpoint}
+ * from a controller method. Aggregates metadata, path/method info,
+ * content types, IO schemas, parameters, and error references.
+ */
 public class ApiEndpointResolver {
 
     private final ApiEndpointIOResolver endpointIOResolver;
@@ -28,26 +33,41 @@ public class ApiEndpointResolver {
         this.endpointIOResolver = new ApiEndpointIOResolver(schemaRegistry, headerRegistry);
     }
 
+    /**
+     * Resolves and constructs an {@link ApiEndpoint} representation
+     * from the given controller method.
+     * <p>
+     * Steps:
+     * <ol>
+     *     <li>Metadata (name, description, security, status, deprecation)</li>
+     *     <li>Path and HTTP method</li>
+     *     <li>Consumes/produces media types</li>
+     *     <li>Request/response schemas, parameters, headers</li>
+     *     <li>Error references from {@code @ApiEndpoint(errors={})}</li>
+     * </ol>
+     *
+     * @param method the controller method to analyze
+     * @return fully resolved endpoint model
+     */
     public ApiEndpoint resolve(Method method) {
         ApiEndpoint endpoint = new ApiEndpoint();
 
-        // 1. Resolving name, secure?, status, description, deprecated values
+        // 1. Name, secured flag, status, description, deprecated
         EndpointMetadataResolver.resolve(endpoint, method);
 
-        // 2. Resolving path and method values
+        // 2. Path and HTTP method
         EndpointPathAndMethodResolver.resolve(endpoint, method);
 
-        // 3. Resolving consumes and produces values
+        // 3. Consumes/produces media types
         EndpointContentTypeResolver.resolve(endpoint, method);
 
-        /*
-        4. Resolving responseSchemaRef, requestSchemaRef, pathVariables, queryParams, and headers
-        (while ensuring the schema registration in to the SchemaRegistry)
-         */
+        // 4. Request schema, response schema, path vars, query params, headers
         endpointIOResolver.resolve(endpoint, method);
 
-        // 5. Mapping ApiError Refs to Endpoint via pre-resolved set of ApiErrors in ApiErrorRegistry.
-        project.retreever.domain.annotation.ApiEndpoint ann = method.getAnnotation(project.retreever.domain.annotation.ApiEndpoint.class);
+        // 5. Apply error refs from annotation, only if already registered
+        project.retreever.domain.annotation.ApiEndpoint ann =
+                method.getAnnotation(project.retreever.domain.annotation.ApiEndpoint.class);
+
         if (ann != null) {
             Class<? extends Throwable>[] errors = ann.errors();
             List<String> errorRefs = apiErrorRegistry.getErrorRefs(errors);
@@ -56,7 +76,4 @@ public class ApiEndpointResolver {
 
         return endpoint;
     }
-
-
 }
-

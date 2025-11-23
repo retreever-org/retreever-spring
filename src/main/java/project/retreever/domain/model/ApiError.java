@@ -14,15 +14,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents a single error response for an API endpoint.
- * Mapped from @ExceptionHandler methods in ControllerAdvice.
+ * Represents a resolved error model for an API endpoint.
+ * Built from {@code @ExceptionHandler} methods and includes
+ * status, description, exception type, and an optional error body schema.
  */
 public class ApiError {
 
     private final HttpStatus status;
-    private final String description;         // doc description for this error
-    private final String exceptionName;       // Fully qualified exception class name
-    private String errorCode;                 // optional custom code (if app uses it)
+    private final String description;
+    private final String exceptionName;       // fully qualified exception type
+    private String errorCode;                 // optional custom code
 
     private final List<JsonProperty> errorBody = new ArrayList<>();
 

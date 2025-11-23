@@ -16,6 +16,9 @@ import project.retreever.view.dto.ApiDocument;
 
 import java.util.Map;
 
+/**
+ * Exposes Retreever's API documentation via HTTP endpoints.
+ */
 @RestController
 @RequestMapping("/retreever-tool")
 public class RetreeverController {
@@ -26,6 +29,11 @@ public class RetreeverController {
         this.bootstrap = bootstrap;
     }
 
+    /**
+     * Simple health/ping endpoint for checking tool availability.
+     *
+     * @return basic status and uptime info
+     */
     @GetMapping("/ping")
     public Map<String, Object> ping() {
         return Map.of(
@@ -34,9 +42,13 @@ public class RetreeverController {
         );
     }
 
+    /**
+     * Returns the full API documentation snapshot.
+     *
+     * @return the assembled API document
+     */
     @GetMapping
     public ApiDocument getDoc() {
         return bootstrap.getDocument();
     }
 }
-

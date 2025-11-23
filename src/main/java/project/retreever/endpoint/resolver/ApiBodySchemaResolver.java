@@ -2,7 +2,6 @@
  * Copyright (c) 2025 Retreever Contributors
  *
  * Licensed under the MIT License.
- * You may obtain a copy of the License at:
  *     https://opensource.org/licenses/MIT
  */
 
@@ -19,8 +18,10 @@ import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 
 /**
- * Resolves request and response body schema references for a controller method.
- * Registers all resolved schema's to the registry.
+ * Resolves request and response body schema references for controller methods.
+ * Detects @RequestBody parameters, infers complex DTO parameters,
+ * determines response types, and registers all discovered schemas
+ * into the {@link SchemaRegistry}.
  */
 public class ApiBodySchemaResolver {
 
@@ -31,7 +32,11 @@ public class ApiBodySchemaResolver {
     }
 
     /**
-     * Entry point for resolving request and response body schema references.
+     * Main entry point for attaching request/response schema references
+     * to an {@link ApiEndpoint}.
+     *
+     * @param endpoint the endpoint being enriched
+     * @param method   the controller method being inspected
      */
     public void resolve(ApiEndpoint endpoint, Method method) {
         resolveRequestSchema(endpoint, method);

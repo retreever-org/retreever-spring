@@ -8,7 +8,7 @@
 
     <groupId>dev.retreever</groupId>
     <artifactId>retreever</artifactId>
-    <version>1.0.0</version>
+    <version>0.1.0</version>
     <name>Retreever</name>
     <description>Lightweight developer-first toolkit for generating and testing API documentation in Spring Boot apps</description>
     <url>https://github.com/Retreever-org/retreever-java</url>
@@ -41,10 +41,25 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <spring.boot.version>3.5.8</spring.boot.version>
     </properties>
 
+    <!-- Import Spring Boot managed versions -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring.boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
-        <!-- Needed for compilation but not bundled into consumer's dependency tree -->
+
+        <!-- Provided because your lib needs them but should not package them -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -57,11 +72,13 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- Testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 
 </project>

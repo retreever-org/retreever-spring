@@ -13,8 +13,19 @@ import project.retreever.domain.model.JsonPropertyType;
 import java.util.Collection;
 import java.util.Map;
 
+/**
+ * Determines the appropriate {@link JsonPropertyType} for a given Java class.
+ * Handles primitives, wrappers, collections, arrays, enums, maps, and defaults
+ * to OBJECT for custom types.
+ */
 public class JsonPropertyTypeResolver {
 
+    /**
+     * Resolves the JSON schema type corresponding to the provided class.
+     *
+     * @param clazz the Java type to inspect
+     * @return the inferred JsonPropertyType
+     */
     public static JsonPropertyType resolve(Class<?> clazz) {
 
         if (clazz == null) {

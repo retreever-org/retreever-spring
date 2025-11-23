@@ -14,6 +14,12 @@ import project.retreever.domain.annotation.ApiEndpoint;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
+/**
+ * Resolves endpoint-level metadata such as name, security flags,
+ * HTTP status, description, and deprecation markers.
+ * Reads metadata from {@link ApiEndpoint}, Spring Security annotations,
+ * and Java reflection.
+ */
 public class EndpointMetadataResolver {
 
     private static final Class<? extends Annotation> PRE_AUTHORIZE_ANNOTATION = loadPreAuthorize();
@@ -28,22 +34,35 @@ public class EndpointMetadataResolver {
         }
     }
 
+    /**
+     * Populates the core metadata fields of an {@link project.retreever.domain.model.ApiEndpoint}.
+     * Handles:
+     * <ul>
+     *     <li>Endpoint name (from annotation or prettified method name)</li>
+     *     <li>Security flag (via @ApiEndpoint or @PreAuthorize)</li>
+     *     <li>HTTP status and description</li>
+     *     <li>Deprecated marker</li>
+     * </ul>
+     *
+     * @param endpoint the endpoint model to enrich
+     * @param method   the controller method
+     */
     public static void resolve(
             project.retreever.domain.model.ApiEndpoint endpoint,
             Method method
     ) {
 
-        // ---- 1. Resolve @ApiEndpoint annotation ----
+        // Read @ApiEndpoint if present
         ApiEndpoint annotation = method.getAnnotation(ApiEndpoint.class);
 
-        // ---- NAME ----
+        // Name
         if (annotation != null && !annotation.name().isBlank()) {
             endpoint.setName(annotation.name());
         } else {
             endpoint.setName(prettifyName(method.getName()));
         }
 
-        // ---- SECURED ----
+        // Security checks
         if (annotation != null && annotation.secured()) {
             endpoint.secure();
         }
@@ -52,7 +71,7 @@ public class EndpointMetadataResolver {
             endpoint.secure();
         }
 
-        // ---- STATUS & DESCRIPTION ----
+        // Status & description
         if (annotation != null) {
             endpoint.setStatus(annotation.status());
             endpoint.setDescription(annotation.description());
@@ -60,12 +79,16 @@ public class EndpointMetadataResolver {
             endpoint.setStatus(HttpStatus.OK);
         }
 
-        // ---- DEPRECATED ----
+        // Deprecated marker
         if (method.isAnnotationPresent(Deprecated.class)) {
             endpoint.deprecate();
         }
     }
 
+    /**
+     * Converts a raw method name into a readable title.
+     * Example: "getUserDetails" → "Get User Details".
+     */
     private static String prettifyName(String raw) {
         if (raw == null || raw.isBlank()) return raw;
 

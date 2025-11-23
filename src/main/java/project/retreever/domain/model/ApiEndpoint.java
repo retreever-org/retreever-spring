@@ -13,29 +13,32 @@ import org.springframework.http.HttpStatus;
 import java.util.List;
 
 /**
- * Represents a single REST endpoint in the Retreever documentation model.
+ * Represents a fully resolved API endpoint, including path info,
+ * HTTP metadata, parameters, schemas, and error models.
+ * Built by the endpoint resolver during controller inspection.
  */
 public class ApiEndpoint {
+
     private String name;                    // typically method name
     private String path;                    // /users/{id}
     private String httpMethod;              // GET, POST, etc.
     private HttpStatus status;              // default response status
-    private String description;             // from @RetreeverApi or Javadoc
-    private boolean isSecured = false;      // default false unless specified
+    private String description;             // resolved from annotation or Javadoc
+    private boolean isSecured = false;
 
     private List<String> consumes;
     private List<String> produces;
 
-    private List<ApiPathVariable> pathVariables;   // @PathVariable
-    private List<ApiParam> queryParams;     // @RequestParam
-    private List<ApiHeader> headers;        // @RequestHeader
+    private List<ApiPathVariable> pathVariables;
+    private List<ApiParam> queryParams;
+    private List<ApiHeader> headers;
 
-    private String requestSchemaRef; // request schema
-    private String responseSchemaRef;// success response schema
+    private String requestSchemaRef;
+    private String responseSchemaRef;
 
-    private List<String> errorRefs;          // error responses
+    private List<String> errorRefs;
 
-    private boolean deprecated;             // marking deprecated endpoint
+    private boolean deprecated;
 
     // ─────────── Getters ───────────
 
@@ -99,7 +102,7 @@ public class ApiEndpoint {
         return deprecated;
     }
 
-    // ─────────── Fluent Setters ───────────
+    // ─────────── Fluent / Mutator Setters ───────────
 
     public ApiEndpoint setName(String name) {
         this.name = name;

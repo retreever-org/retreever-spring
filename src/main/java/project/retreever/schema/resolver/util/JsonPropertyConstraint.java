@@ -9,9 +9,9 @@
 package project.retreever.schema.resolver.util;
 
 /**
- * Utility class for describing constraints applied to JSON properties.
- * These constraints mirror common validation rules such as
- * NOT_NULL, LENGTH, RANGE, REGEX, ENUM, etc.
+ * Utility class for building constraint descriptors used in JSON schema output.
+ * Produces simple string markers for rules such as nullability, length,
+ * numeric ranges, regex patterns, and allowed enum values.
  */
 public final class JsonPropertyConstraint {
 

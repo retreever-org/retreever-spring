@@ -12,15 +12,17 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Represents only query parameters (@RequestParam).
+ * Represents a resolved query parameter for an endpoint.
+ * Captures type, requirement flags, default values,
+ * and any extracted validation constraints.
  */
 public class ApiParam {
 
     private String name;
     private JsonPropertyType type;      // STRING, NUMBER, BOOLEAN...
-    private boolean required;           // default = false unless specified
-    private String description;         // optional custom doc field
-    private String defaultValue;        // from @RequestParam defaultValue
+    private boolean required;
+    private String description;
+    private String defaultValue;
 
     private final Set<String> constraints = new HashSet<>();
 

@@ -16,23 +16,40 @@ import project.retreever.repo.SchemaRegistry;
 
 import java.util.*;
 
+/**
+ * Provides lookup utilities for converting schema references stored in an
+ * {@link ApiEndpoint} into fully rendered documentation structures using
+ * {@link ApiSchemaRenderer}.
+ *
+ * <p>Supports lookup for:
+ * <ul>
+ *     <li>Request body schema</li>
+ *     <li>Response body schema</li>
+ *     <li>Error response schemas</li>
+ * </ul>
+ */
 public class SchemaLookupService {
 
     private final SchemaRegistry schemaRegistry;
     private final ApiErrorRegistry apiErrorRegistry;
 
+    /**
+     * Creates a new lookup service using the provided registries.
+     *
+     * @param schemaRegistry   registry holding DTO schema definitions
+     * @param apiErrorRegistry registry holding resolved ApiError definitions
+     */
     public SchemaLookupService(SchemaRegistry schemaRegistry,
                                ApiErrorRegistry apiErrorRegistry) {
         this.schemaRegistry = schemaRegistry;
         this.apiErrorRegistry = apiErrorRegistry;
     }
 
-    // --------------------------------------------------------------------
-    // MAIN FUNCTIONS
-    // --------------------------------------------------------------------
-
     /**
-     * Resolves request schema into rendered {model, example_model, metadata}
+     * Resolves and renders the request body schema for the given endpoint.
+     *
+     * @param endpoint API endpoint descriptor
+     * @return rendered schema map or {@code null} if no request schema exists
      */
     public Map<String, Object> resolveRequest(ApiEndpoint endpoint) {
         String ref = endpoint.getRequestSchemaRef();
@@ -45,7 +62,10 @@ public class SchemaLookupService {
     }
 
     /**
-     * Resolves response schema into rendered {model, example_model, metadata}
+     * Resolves and renders the response body schema for the given endpoint.
+     *
+     * @param endpoint API endpoint descriptor
+     * @return rendered schema map or {@code null} if no response schema exists
      */
     public Map<String, Object> resolveResponse(ApiEndpoint endpoint) {
         String ref = endpoint.getResponseSchemaRef();
@@ -58,7 +78,10 @@ public class SchemaLookupService {
     }
 
     /**
-     * Resolves all error responses (mapped by endpoint.getErrorRefs())
+     * Resolves and renders all error response schemas associated with the endpoint.
+     *
+     * @param endpoint API endpoint descriptor
+     * @return list of rendered error maps, empty if no errors defined
      */
     public List<Map<String, Object>> resolveErrors(ApiEndpoint endpoint) {
 
@@ -70,18 +93,18 @@ public class SchemaLookupService {
         for (String ref : refs) {
             ApiError err = apiErrorRegistry.get(ref);
             if (err == null) continue;
-
-            Map<String, Object> dto = renderError(err);
-            result.add(dto);
+            result.add(renderError(err));
         }
 
         return result;
     }
 
-    // --------------------------------------------------------------------
-    // INTERNAL — Build Error DTO
-    // --------------------------------------------------------------------
-
+    /**
+     * Builds the rendered structure for a single {@link ApiError}.
+     *
+     * @param err ApiError definition model
+     * @return rendered error documentation structure
+     */
     private Map<String, Object> renderError(ApiError err) {
 
         Map<String, Object> out = new LinkedHashMap<>();
@@ -91,7 +114,6 @@ public class SchemaLookupService {
         out.put("description", err.getDescription());
         out.put("error_code", err.getErrorCode());
 
-        // build schema for error response body
         List<JsonProperty> props = err.getErrorBody();
         if (props == null || props.isEmpty()) {
             out.put("response", null);
@@ -102,4 +124,3 @@ public class SchemaLookupService {
         return out;
     }
 }
-

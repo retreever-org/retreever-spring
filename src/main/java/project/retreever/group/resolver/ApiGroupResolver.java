@@ -18,6 +18,11 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Resolves a Spring {@code @RestController} into an {@link ApiGroup}.
+ * Detects controller metadata, resolves its endpoints, and groups them
+ * under a common name and description.
+ */
 public class ApiGroupResolver {
 
     private final ApiEndpointResolver endpointResolver;
@@ -27,7 +32,18 @@ public class ApiGroupResolver {
     }
 
     /**
-     * Resolves a Controller class into an ApiGroup model.
+     * Builds an {@link ApiGroup} from a controller class.
+     * <p>
+     * Steps:
+     * <ul>
+     *     <li>Verify class is annotated with {@code @RestController}</li>
+     *     <li>Read {@code @ApiGroup} name/description or derive fallback</li>
+     *     <li>Mark deprecated groups if needed</li>
+     *     <li>Resolve all valid API endpoints within the class</li>
+     * </ul>
+     *
+     * @param controllerClass Spring REST controller class
+     * @return resolved ApiGroup or {@code null} if class is not a controller
      */
     public ApiGroup resolve(Class<?> controllerClass) {
 
@@ -38,8 +54,9 @@ public class ApiGroupResolver {
 
         ApiGroup group = new ApiGroup();
 
-        // ---- Group name & description ----
-        project.retreever.domain.annotation.ApiGroup ann = controllerClass.getAnnotation(project.retreever.domain.annotation.ApiGroup.class);
+        // Group name & description
+        project.retreever.domain.annotation.ApiGroup ann =
+                controllerClass.getAnnotation(project.retreever.domain.annotation.ApiGroup.class);
 
         if (ann != null) {
             group.setName(ann.name());
@@ -50,15 +67,16 @@ public class ApiGroupResolver {
             group.setDescription("");
         }
 
-        // ---- Deprecated? ----
+        // Deprecated marker
         if (controllerClass.isAnnotationPresent(Deprecated.class)) {
             group.deprecate();
         }
 
-        // ---- Resolve endpoints ----
+        // Resolve endpoints
         List<ApiEndpoint> endpoints = new ArrayList<>();
 
         for (Method method : controllerClass.getDeclaredMethods()) {
+            // Only consider methods with a valid HTTP mapping
             if (EndpointPathAndMethodResolver.resolveHttpMethod(method) != null) {
                 ApiEndpoint ep = endpointResolver.resolve(method);
                 endpoints.add(ep);
@@ -66,12 +84,16 @@ public class ApiGroupResolver {
         }
 
         group.setEndpoints(endpoints);
-
         return group;
     }
 
     /**
-     * Converts "UserController" -> "User Controller APIs"
+     * Converts a controller class name into a clean API group name.
+     * Example:
+     * <pre>
+     *     UserController -> User APIs
+     *     AccountRestController -> Account APIs
+     * </pre>
      */
     private String prettifyName(String raw) {
         if (raw == null || raw.isBlank()) {
@@ -81,10 +103,10 @@ public class ApiGroupResolver {
         // Remove common controller suffixes
         String name = raw
                 .replaceAll("(RestController|ApiController|Controller|Ctrl|Resource|Handler)$", "")
-                .replaceAll("_+$", "") // remove trailing underscores
+                .replaceAll("_+$", "")
                 .trim();
 
-        // Insert spaces between camelCase or PascalCase transitions
+        // Insert spacing for camelCase / PascalCase
         name = name.replaceAll("([a-z])([A-Z])", "$1 $2")
                 .replaceAll("([A-Z])([A-Z][a-z])", "$1 $2")
                 .trim();
@@ -96,6 +118,4 @@ public class ApiGroupResolver {
 
         return name + " APIs";
     }
-
 }
-

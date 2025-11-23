@@ -13,13 +13,23 @@ import project.retreever.domain.model.ApiEndpoint;
 
 import java.lang.reflect.Method;
 
+/**
+ * Resolves the final HTTP path and HTTP method for a controller method.
+ * Combines class-level and method-level mappings and normalizes the result.
+ */
 public class EndpointPathAndMethodResolver {
 
+    /**
+     * Populates the endpoint path and HTTP method based on Spring mapping annotations.
+     *
+     * @param endpoint the endpoint model to fill
+     * @param method   the controller method
+     */
     public static void resolve(ApiEndpoint endpoint, Method method) {
 
-        String classPath   = resolveClassPath(method);
-        String methodPath  = resolveMethodPath(method);
-        String httpMethod  = resolveHttpMethod(method);
+        String classPath  = resolveClassPath(method);
+        String methodPath = resolveMethodPath(method);
+        String httpMethod = resolveHttpMethod(method);
 
         String fullPath = normalizePath(classPath, methodPath);
         endpoint.setPath(fullPath);
@@ -30,6 +40,9 @@ public class EndpointPathAndMethodResolver {
         endpoint.setHttpMethod(httpMethod.toUpperCase());
     }
 
+    /**
+     * Extracts class-level path from @RequestMapping on the controller class.
+     */
     private static String resolveClassPath(Method method) {
         RequestMapping mapping = method.getDeclaringClass().getAnnotation(RequestMapping.class);
 
@@ -39,6 +52,9 @@ public class EndpointPathAndMethodResolver {
         return "";
     }
 
+    /**
+     * Resolves method-level path from mapping annotations.
+     */
     public static String resolveMethodPath(Method method) {
 
         GetMapping get = method.getAnnotation(GetMapping.class);
@@ -74,6 +90,9 @@ public class EndpointPathAndMethodResolver {
         return "";
     }
 
+    /**
+     * Resolves the HTTP method for a given controller method.
+     */
     public static String resolveHttpMethod(Method method) {
 
         if (method.isAnnotationPresent(GetMapping.class)) return "GET";
@@ -87,9 +106,13 @@ public class EndpointPathAndMethodResolver {
             return req.method()[0].name();
         }
 
-        return null; // fallback handled outside
+        return null;
     }
 
+    /**
+     * Joins class and method paths, ensures leading slashes,
+     * and collapses duplicate slashes.
+     */
     private static String normalizePath(String base, String sub) {
         if (base == null) base = "";
         if (sub == null) sub = "";
@@ -98,10 +121,9 @@ public class EndpointPathAndMethodResolver {
         if (!base.startsWith("/")) base = "/" + base;
         if (!sub.startsWith("/")) sub = "/" + sub;
 
-        // join
         String combined = base + sub;
 
-        // collapse double slashes
+        // collapse "///" into "/"
         return combined.replaceAll("//+", "/");
     }
 }

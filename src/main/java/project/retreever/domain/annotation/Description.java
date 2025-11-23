@@ -14,10 +14,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Used for Request Params, Path Variables and Headers in API endpoints.
+ * Adds human-readable descriptions to parameters or fields.
+ * Retreever uses this to enrich request metadata such as
+ * path variables, query params, and headers.
  */
 @Target({ElementType.PARAMETER, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Description {
+
     String value();
 }

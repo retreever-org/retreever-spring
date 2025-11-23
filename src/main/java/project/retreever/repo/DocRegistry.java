@@ -11,6 +11,13 @@ package project.retreever.repo;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * Generic ordered registry for storing items by key.
+ * Used by various resolver components to accumulate
+ * intermediate or final documentation models.
+ *
+ * @param <T> type of item stored in the registry
+ */
 public class DocRegistry<T> {
 
     private final Map<String, T> items = new LinkedHashMap<>();

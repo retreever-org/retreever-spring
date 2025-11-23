@@ -12,7 +12,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Represents a path variable in an endpoint URL: /users/{id}
+ * Represents a resolved path variable from an endpoint URL.
+ * Captures name, inferred type, description, and any constraints.
  */
 public class ApiPathVariable {
 

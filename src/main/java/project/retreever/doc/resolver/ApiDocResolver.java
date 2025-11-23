@@ -18,7 +18,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Resolves the application-level ApiDoc model.
+ * Builds the top-level {@link ApiDoc} model for the application.
+ * Aggregates metadata from the main application class and resolves all
+ * controller groups discovered in the codebase.
  */
 public class ApiDocResolver {
 
@@ -29,10 +31,15 @@ public class ApiDocResolver {
     }
 
     /**
-     * Resolves metadata + all controller groups into a complete ApiDoc object.
+     * Produces a fully populated {@link ApiDoc} containing:
+     * <ul>
+     *     <li>Application metadata (name, description, version)</li>
+     *     <li>All resolved {@link ApiGroup} entries</li>
+     * </ul>
      *
-     * @param applicationClass The @SpringBootApplication class
-     * @param controllers      All controller classes in the application
+     * @param applicationClass the @SpringBootApplication class
+     * @param controllers      all detected controller classes
+     * @return assembled ApiDoc object
      */
     public ApiDoc resolve(Class<?> applicationClass, Set<Class<?>> controllers) {
 
@@ -45,19 +52,20 @@ public class ApiDocResolver {
     }
 
     /**
-     * Loads application-level metadata from @ApiDoc or defaults.
+     * Loads application-level metadata from {@code @ApiDoc} or
+     * derives sensible defaults when absent.
      */
     private void resolveAppMetadata(ApiDoc doc, Class<?> applicationClass) {
 
-        project.retreever.domain.annotation.ApiDoc ann = applicationClass.getAnnotation(project.retreever.domain.annotation.ApiDoc.class);
+        project.retreever.domain.annotation.ApiDoc ann =
+                applicationClass.getAnnotation(project.retreever.domain.annotation.ApiDoc.class);
 
-        // name
         if (ann != null) {
             doc.setName(ann.name());
             doc.setDescription(ann.description());
             doc.setVersion(ann.version());
         } else {
-            // fallback to class name
+            // fallback to prettified class name
             doc.setName(prettifyName(applicationClass.getSimpleName()));
             doc.setDescription("");
             doc.setVersion("v1");
@@ -65,7 +73,8 @@ public class ApiDocResolver {
     }
 
     /**
-     * Resolves all controller classes into ApiGroups.
+     * Converts all {@code @RestController} classes into {@link ApiGroup} entries.
+     * Only groups with at least one endpoint are included.
      */
     private void resolveControllerGroups(ApiDoc doc, Set<Class<?>> controllers) {
 
@@ -84,7 +93,8 @@ public class ApiDocResolver {
     }
 
     /**
-     * Converts "RetreeverApplication" -> "Retreever Application"
+     * Creates a user-friendly name from the application class name.
+     * Example: "RetreeverApplication" → "Retreever"
      */
     private String prettifyName(String raw) {
         String spaced = raw

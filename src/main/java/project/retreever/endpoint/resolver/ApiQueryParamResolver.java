@@ -23,10 +23,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Resolves query parameters for an endpoint. Extracts name, type,
+ * default value, required flag, description, and validation constraints
+ * from parameters annotated with {@link RequestParam}.
+ */
 public class ApiQueryParamResolver {
 
     /**
-     * Placeholder for resolving query parameters (to be implemented later).
+     * Populates the endpoint's query parameter metadata based on
+     * @RequestParam annotations declared on method parameters.
+     *
+     * @param endpoint the endpoint to enrich
+     * @param method   the controller method to inspect
      */
     public static void resolveQueryParams(ApiEndpoint endpoint, Method method) {
 
@@ -39,32 +48,32 @@ public class ApiQueryParamResolver {
 
             ApiParam qp = new ApiParam();
 
-            // name
+            // Determine parameter name
             String name = rp.name().isBlank()
                     ? (!rp.value().isBlank() ? rp.value() : param.getName())
                     : rp.name();
             qp.setName(name);
 
-            // type
+            // Determine JSON type
             Class<?> raw = param.getType();
             JsonPropertyType jsonType = JsonPropertyTypeResolver.resolve(raw);
             qp.setType(jsonType);
 
-            // required
+            // Required flag from annotation
             qp.setRequired(rp.required());
 
-            // default value
+            // Default value
             if (!rp.defaultValue().equals(ValueConstants.DEFAULT_NONE)) {
                 qp.setDefaultValue(rp.defaultValue());
             }
 
-            // description from @Description
+            // Optional description from @Description
             Description desc = param.getAnnotation(Description.class);
             if (desc != null) {
                 qp.setDescription(desc.value());
             }
 
-            // constraints via ConstraintResolver
+            // Validation constraints
             Set<String> constraints = ConstraintResolver.resolve(param.getAnnotations());
             constraints.forEach(qp::addConstraint);
 

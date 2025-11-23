@@ -11,12 +11,11 @@ package project.retreever.domain.model;
 import java.util.List;
 
 /**
- * Controller level Documentation
+ * Represents a documentation group derived from a controller.
+ * Groups sharing the same name are merged in the final view.
  */
 public class ApiGroup {
-    /**
-     * Groups with the same name will be merged in view.
-     */
+
     private String name;
     private String description;
     private List<ApiEndpoint> endpoints;
