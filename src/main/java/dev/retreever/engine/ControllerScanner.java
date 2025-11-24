@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -23,20 +24,20 @@ import java.util.stream.Collectors;
 public class ControllerScanner {
 
     /**
-     * Returns all controller classes detected by Spring MVC's
-     * {@link RequestMappingHandlerMapping}.
+     * Collects controller classes by merging handler methods from all
+     * {@link RequestMappingHandlerMapping} beans.
      *
      * @param context the active Spring application context
      * @return a set of controller types
      */
     public static Set<Class<?>> scanControllers(ApplicationContext context) {
 
-        RequestMappingHandlerMapping mapping =
-                context.getBean(RequestMappingHandlerMapping.class);
+        Map<String, RequestMappingHandlerMapping> mappings =
+                context.getBeansOfType(RequestMappingHandlerMapping.class);
 
-        return mapping.getHandlerMethods()
-                .values()
+        return mappings.values()
                 .stream()
+                .flatMap(m -> m.getHandlerMethods().values().stream())
                 .map(HandlerMethod::getBeanType)
                 .filter(type -> type.isAnnotationPresent(RestController.class))
                 .collect(Collectors.toSet());
