@@ -31,6 +31,7 @@ import java.util.Set;
 public class RetreeverOrchestrator {
 
     private final ApiDocumentAssembler assembler;
+    private final ApiErrorResolver errorResolver;
     private final ApiDocResolver docResolver;
 
     /**
@@ -46,8 +47,8 @@ public class RetreeverOrchestrator {
         ApiHeaderRegistry headerRegistry = new ApiHeaderRegistry();
 
         // Error resolver + registry for @ExceptionHandler mappings
-        ApiErrorResolver errorResolver = new ApiErrorResolver(jsonSchemaResolver);
-        ApiErrorRegistry errorRegistry = new ApiErrorRegistry(errorResolver);
+        ApiErrorRegistry errorRegistry = new ApiErrorRegistry();
+        this.errorResolver = new ApiErrorResolver(jsonSchemaResolver, errorRegistry);
 
         // Request/response schema + header/param/path-var resolution
         ApiEndpointIOResolver ioResolver =
@@ -78,7 +79,8 @@ public class RetreeverOrchestrator {
      * @param controllers      detected controller classes
      * @return full assembled ApiDocument DTO
      */
-    public ApiDocument build(Class<?> applicationClass, Set<Class<?>> controllers) {
+    public ApiDocument build(Class<?> applicationClass, Set<Class<?>> controllers, Set<Class<?>> controllerAdvices) {
+        errorResolver.resolve(controllerAdvices);
         var doc = docResolver.resolve(applicationClass, controllers);
         return assembler.assemble(doc);
     }

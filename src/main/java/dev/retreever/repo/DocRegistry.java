@@ -37,4 +37,8 @@ public class DocRegistry<T> {
     public Map<String, T> getAll() {
         return items;
     }
+
+    public int size() {
+        return items.size();
+    }
 }

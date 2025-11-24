@@ -9,9 +9,7 @@
 package dev.retreever.repo;
 
 import dev.retreever.domain.model.ApiError;
-import dev.retreever.endpoint.resolver.ApiErrorResolver;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,28 +19,6 @@ import java.util.List;
  * lookup utilities for endpoints referencing specific errors.
  */
 public class ApiErrorRegistry extends DocRegistry<ApiError> {
-
-    private final ApiErrorResolver apiErrorResolver;
-
-    public ApiErrorRegistry(ApiErrorResolver apiErrorResolver) {
-        this.apiErrorResolver = apiErrorResolver;
-    }
-
-    /**
-     * Resolves error models from the given handler methods,
-     * registers them, and returns their reference keys.
-     *
-     * @param methods controller advice handler methods
-     * @return list of registered error reference names
-     */
-    public List<String> registerApiErrors(List<Method> methods) {
-
-        List<ApiError> errors = apiErrorResolver.resolve(methods);
-
-        return errors.stream()
-                .map(this::registerApiError)
-                .toList();
-    }
 
     /**
      * Registers a single ApiError using its exception class name as the key.
@@ -70,19 +46,17 @@ public class ApiErrorRegistry extends DocRegistry<ApiError> {
      */
     public List<String> getErrorRefs(Class<? extends Throwable>[] exceptionTypes) {
 
-        List<String> refs = new ArrayList<>();
-
-        if (exceptionTypes == null) {
-            return refs;
+        if (exceptionTypes == null || exceptionTypes.length == 0) {
+            return List.of();
         }
 
+        List<String> refs = new ArrayList<>(exceptionTypes.length);
+
         for (Class<? extends Throwable> ex : exceptionTypes) {
-            String key = ex.getName();
-            if (contains(key)) {
-                refs.add(key);
-            }
+            refs.add(ex.getName());
         }
 
         return refs;
     }
+
 }

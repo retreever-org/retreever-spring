@@ -8,6 +8,8 @@
 
 package dev.retreever.boot;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
@@ -19,7 +21,6 @@ import dev.retreever.view.dto.ApiDocument;
 
 import java.time.Instant;
 import java.util.Set;
-import java.util.logging.Logger;
 
 /**
  * Bootstrap component responsible for building and caching the API document
@@ -28,7 +29,7 @@ import java.util.logging.Logger;
 @Component
 public class RetreeverBootstrap {
 
-    private final Logger log = Logger.getLogger(RetreeverBootstrap.class.getName());
+    private final Logger log = LoggerFactory.getLogger(RetreeverBootstrap.class);
 
     private final RetreeverOrchestrator orchestrator;
     private ApiDocument cached;
@@ -43,18 +44,19 @@ public class RetreeverBootstrap {
      */
     @EventListener(ApplicationReadyEvent.class)
     public void init(ApplicationReadyEvent event) {
-        log.info("Initializing Retreever API Document...");
+        log.debug("Initializing Retreever...");
 
         ApplicationContext context = event.getApplicationContext();
         Class<?> appClass = event.getSpringApplication().getMainApplicationClass();
 
         // Scan for @RestController-annotated classes
         Set<Class<?>> controllers = ControllerScanner.scanControllers(context);
+        Set<Class<?>> controllerAdvices = ControllerScanner.scanControllerAdvices(context);
 
         // Build final documentation snapshot
-        this.cached = orchestrator.build(appClass, controllers);
+        this.cached = orchestrator.build(appClass, controllers, controllerAdvices);
 
-        log.info("✅ Retreever API Document built successfully.");
+        log.info("Retreever initialized.");
     }
 
     /**

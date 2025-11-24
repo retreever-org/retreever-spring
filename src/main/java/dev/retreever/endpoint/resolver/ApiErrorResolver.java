@@ -9,6 +9,7 @@
 package dev.retreever.endpoint.resolver;
 
 import dev.retreever.domain.annotation.ApiError;
+import dev.retreever.repo.ApiErrorRegistry;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,8 +20,7 @@ import dev.retreever.schema.resolver.TypeResolver;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Resolves {@link dev.retreever.domain.model.ApiError} models from controller advice methods.
@@ -32,10 +32,37 @@ import java.util.List;
 public class ApiErrorResolver {
 
     private final JsonSchemaResolver jsonSchemaResolver;
+    private final ApiErrorRegistry errorRegistry;
 
-    public ApiErrorResolver(JsonSchemaResolver jsonSchemaResolver) {
+    public ApiErrorResolver(
+            JsonSchemaResolver jsonSchemaResolver,
+            ApiErrorRegistry errorRegistry
+    ) {
         this.jsonSchemaResolver = jsonSchemaResolver;
+        this.errorRegistry = errorRegistry;
     }
+
+    public List<dev.retreever.domain.model.ApiError> resolve(Set<Class<?>> controllerAdvices) {
+
+        List<dev.retreever.domain.model.ApiError> allErrors = new ArrayList<>();
+
+        for (Class<?> adviceClass : controllerAdvices) {
+            Method[] methods = adviceClass.getDeclaredMethods();
+
+            // Delegate to existing resolver (already implemented)
+            List<dev.retreever.domain.model.ApiError> resolved =
+                    resolve(Arrays.asList(methods));
+
+            if (resolved != null && !resolved.isEmpty()) {
+                allErrors.addAll(resolved);
+            }
+        }
+
+        // Register all resolved errors
+        allErrors.forEach(errorRegistry::registerApiError);
+        return allErrors;
+    }
+
 
     /**
      * Scans the provided methods and produces ApiError objects for each
