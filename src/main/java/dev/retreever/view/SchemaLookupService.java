@@ -58,7 +58,7 @@ public class SchemaLookupService {
         List<JsonProperty> props = schemaRegistry.get(ref);
         if (props == null) return null;
 
-        return ApiSchemaRenderer.execute(props);
+        return ApiSchemaRenderer.execute(props, ApiSchemaRenderer.SchemaType.REQUEST);
     }
 
     /**
@@ -74,7 +74,7 @@ public class SchemaLookupService {
         List<JsonProperty> props = schemaRegistry.get(ref);
         if (props == null) return null;
 
-        return ApiSchemaRenderer.execute(props);
+        return ApiSchemaRenderer.execute(props, ApiSchemaRenderer.SchemaType.RESPONSE);
     }
 
     /**
@@ -118,7 +118,7 @@ public class SchemaLookupService {
         if (props == null || props.isEmpty()) {
             out.put("response", null);
         } else {
-            out.put("response", ApiSchemaRenderer.execute(props));
+            out.put("response", ApiSchemaRenderer.execute(props, ApiSchemaRenderer.SchemaType.RESPONSE));
         }
 
         return out;

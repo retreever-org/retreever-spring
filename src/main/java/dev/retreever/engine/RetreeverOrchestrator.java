@@ -22,6 +22,7 @@ import dev.retreever.view.ApiDocumentAssembler;
 import dev.retreever.view.SchemaLookupService;
 import dev.retreever.view.dto.ApiDocument;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -35,10 +36,10 @@ public class RetreeverOrchestrator {
     /**
      * Constructs the orchestrator and wires all core components.
      */
-    public RetreeverOrchestrator() {
+    public RetreeverOrchestrator(List<String> basePackages) {
 
         // JSON schema generator + registry
-        JsonSchemaResolver jsonSchemaResolver = new JsonSchemaResolver();
+        JsonSchemaResolver jsonSchemaResolver = new JsonSchemaResolver(basePackages);
         SchemaRegistry schemaRegistry = new SchemaRegistry(jsonSchemaResolver);
 
         // Shared header definitions

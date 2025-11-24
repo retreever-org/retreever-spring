@@ -11,44 +11,46 @@ package dev.retreever.schema.resolver;
 import dev.retreever.domain.model.JsonProperty;
 import dev.retreever.domain.model.JsonPropertyType;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Resolves JSON-schema-like structures for Java classes.
- * Performs recursive inspection of fields, detects arrays/collections,
- * resolves nested objects, and applies metadata (constraints,
- * descriptions, examples) via specialized resolvers.
- *
- * <p>Handles:</p>
- * <ul>
- *     <li>Primitive, enum, object, and array types</li>
- *     <li>Generic collection element extraction</li>
- *     <li>Cyclic reference detection</li>
- *     <li>Annotation-driven metadata enrichment</li>
- * </ul>
+ * Expands only domain model classes belonging to the application's base package.
+ * Prevents infinite recursion using a visited set, returning lightweight reference
+ * nodes when encountering self-referential structures.
  */
 public class JsonSchemaResolver {
 
-    /**
-     * Tracks types currently being processed to avoid infinite loops
-     * when encountering self-referential or cyclic class structures.
-     */
     private final Set<Class<?>> visited = new HashSet<>();
+    private final List<String> basePackages;
 
     /**
-     * Resolves all JSON schema properties for the given class.
-     *
-     * @param clazz the Java class to scan
-     * @return a list of top-level JsonProperty entries
+     * @param basePackages the consumer application's root package,
+     *                    used to decide which classes qualify as domain models.
+     */
+    public JsonSchemaResolver(List<String> basePackages) {
+        this.basePackages = basePackages;
+    }
+
+    /**
+     * Resolves the schema for a Java class into a list of JsonProperty entries.
+     * Returns a reference node if recursion is detected.
      */
     public List<JsonProperty> resolve(Class<?> clazz) {
-        if (clazz == null || visited.contains(clazz)) {
+        if (clazz == null) {
             return List.of();
         }
 
-        visited.add(clazz);
+        if (visited.contains(clazz)) {
+            return List.of(JsonProperty.reference(clazz.getSimpleName()));
+        }
 
+        visited.add(clazz);
         List<JsonProperty> schema = new ArrayList<>();
 
         for (Field field : clazz.getDeclaredFields()) {
@@ -60,10 +62,7 @@ public class JsonSchemaResolver {
     }
 
     /**
-     * Converts a single field into its corresponding JsonProperty tree.
-     *
-     * @param field the field to inspect
-     * @return resolved JsonProperty
+     * Converts a Java field into its JsonProperty representation.
      */
     private JsonProperty resolveField(Field field) {
         Type type = field.getGenericType();
@@ -74,7 +73,7 @@ public class JsonSchemaResolver {
 
         switch (propType) {
             case OBJECT -> handleObject(jsonProp, rawClass);
-            case ARRAY -> handleArray(jsonProp, type);
+            case ARRAY -> handleArray(jsonProp, field.getGenericType());
             default -> handlePrimitive(jsonProp, field);
         }
 
@@ -82,40 +81,83 @@ public class JsonSchemaResolver {
     }
 
     /**
-     * Resolves nested object structure recursively.
-     *
-     * @param jsonProp parent JSON property
-     * @param rawClass class representing the nested object
+     * Expands nested object properties only when the type belongs to the consumer's domain package.
      */
     private void handleObject(JsonProperty jsonProp, Class<?> rawClass) {
+
+        if (rawClass == null) {
+            return;
+        }
+
+        JsonPropertyType type = JsonPropertyTypeResolver.resolve(rawClass);
+        if (type != JsonPropertyType.OBJECT) {
+            return;
+        }
+
+        if (!isDomainModel(rawClass)) {
+            return;
+        }
+
+        if (visited.contains(rawClass)) {
+            jsonProp.addProperty(JsonProperty.reference(rawClass.getSimpleName()));
+            return;
+        }
+
+        visited.add(rawClass);
         List<JsonProperty> nested = resolve(rawClass);
+        visited.remove(rawClass);
+
         nested.forEach(jsonProp::addProperty);
     }
 
+
     /**
-     * Resolves array or collection element schemas.
-     *
-     * @param jsonProp representing the array property
-     * @param fieldType the raw or generic type for the array/collection
+     * Determines whether a class belongs to the consumer application's domain model.
+     */
+    private boolean isDomainModel(Class<?> clazz) {
+        if (clazz == null) return false;
+
+        Package pkg = clazz.getPackage();
+        if (pkg == null) return false;
+
+        String name = pkg.getName();
+        if (name.isEmpty()) return false;
+
+        for (String base : basePackages) {
+            if (name.startsWith(base)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+
+    /**
+     * Resolves array/collection element schema safely with recursion handling.
      */
     private void handleArray(JsonProperty jsonProp, Type fieldType) {
         Type elemType = extractElementType(fieldType);
-        if (elemType == null) return;
+        if (elemType == null) {
+            return;
+        }
 
         Class<?> elemClass = TypeResolver.extractRawClass(elemType);
-        List<JsonProperty> elementSchema = resolve(elemClass);
 
-        if (!elementSchema.isEmpty()) {
-            // Use first property as schema reference for elements
-            jsonProp.arrayElement(elementSchema.get(0));
+        if (elemClass != null && visited.contains(elemClass)) {
+            jsonProp.arrayElement(JsonProperty.reference(elemClass.getSimpleName()));
+            return;
+        }
+
+        List<JsonProperty> elementProps = resolve(elemClass);
+        if (!elementProps.isEmpty()) {
+            jsonProp.arrayElement(elementProps.get(0));
         }
     }
 
     /**
-     * Applies annotation-driven metadata for primitive-like types.
-     *
-     * @param jsonProp the target property
-     * @param field    source field with annotations
+     * Applies metadata from annotations for primitive-like types.
      */
     private void handlePrimitive(JsonProperty jsonProp, Field field) {
         JsonPropertyConstraintResolver.resolve(jsonProp, field);
@@ -124,10 +166,7 @@ public class JsonSchemaResolver {
     }
 
     /**
-     * Extracts an element type from an array or generic collection.
-     *
-     * @param type raw or generic type
-     * @return detected element type or null
+     * Extracts element type for arrays or generic collections.
      */
     private Type extractElementType(Type type) {
         if (type instanceof Class<?> clazz && clazz.isArray()) {

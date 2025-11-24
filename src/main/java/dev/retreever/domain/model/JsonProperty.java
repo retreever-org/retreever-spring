@@ -14,10 +14,11 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Represents a single entry in the resolved JSON schema.
- * Supports primitives, objects (with nested properties),
- * and arrays (with a single element definition).
- * Built during schema resolution using reflection and validation metadata.
+ * Represents a single JSON schema-like property.
+ *
+ * <p>Supports primitives, objects with nested properties,
+ * arrays with a defined element type, and reference
+ * placeholders used to safely represent recursive structures.</p>
  */
 public class JsonProperty {
 
@@ -30,15 +31,17 @@ public class JsonProperty {
 
     private final Set<String> constraints = new HashSet<>();
 
-    // For OBJECT types
+    /** Nested properties for OBJECT types. */
     private List<JsonProperty> properties;
 
-    // For ARRAY types
+    /** Element schema for ARRAY types. */
     private JsonProperty arrayElement;
 
-    // ────────────────────────────────────────────
-    // Constructors
-    // ────────────────────────────────────────────
+    /**
+     * Optional reference to another schema type. Used when the
+     * resolver detects self-referencing or cyclic object graphs.
+     */
+    private String ref;
 
     private JsonProperty(String name, JsonPropertyType type) {
         this.name = name;
@@ -53,9 +56,18 @@ public class JsonProperty {
         return new JsonProperty(name, type);
     }
 
-    // ────────────────────────────────────────────
-    // Fluent API
-    // ────────────────────────────────────────────
+    /**
+     * Creates a reference node pointing to another type.
+     * Used for recursion-safe schema output.
+     *
+     * @param refName the target type name
+     * @return JsonProperty marked as a reference
+     */
+    public static JsonProperty reference(String refName) {
+        JsonProperty prop = new JsonProperty(refName, JsonPropertyType.OBJECT);
+        prop.ref = refName;
+        return prop;
+    }
 
     public JsonProperty required() {
         this.required = true;
@@ -89,10 +101,6 @@ public class JsonProperty {
         this.arrayElement = element;
     }
 
-    // ────────────────────────────────────────────
-    // Convenience Checks
-    // ────────────────────────────────────────────
-
     public boolean isObject() {
         return type == JsonPropertyType.OBJECT;
     }
@@ -101,9 +109,9 @@ public class JsonProperty {
         return type == JsonPropertyType.ARRAY;
     }
 
-    // ────────────────────────────────────────────
-    // Getters
-    // ────────────────────────────────────────────
+    public boolean isReference() {
+        return ref != null;
+    }
 
     public String getName() {
         return name;
@@ -135,5 +143,9 @@ public class JsonProperty {
 
     public JsonProperty getArrayElement() {
         return arrayElement;
+    }
+
+    public String getRef() {
+        return ref;
     }
 }

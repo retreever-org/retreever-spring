@@ -10,6 +10,7 @@ package dev.retreever.schema.resolver;
 
 import dev.retreever.domain.model.JsonProperty;
 import dev.retreever.schema.resolver.util.ConstraintResolver;
+import dev.retreever.schema.resolver.util.JsonPropertyConstraint;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -32,11 +33,30 @@ public class JsonPropertyConstraintResolver {
     public static void resolve(JsonProperty jsonProp, Field field) {
         Annotation[] anns = field.getAnnotations();
 
+        // Normal constraints
         Set<String> constraints = ConstraintResolver.resolve(anns);
         constraints.forEach(jsonProp::addConstraint);
+
+        // ENUM handling
+        Class<?> type = field.getType();
+        if (type.isEnum()) {
+            appendAllowedValueConstraintIfEnum(jsonProp, type);
+        }
 
         if (ConstraintResolver.isRequired(anns)) {
             jsonProp.required();
         }
+    }
+
+    private static void appendAllowedValueConstraintIfEnum(JsonProperty jsonProp, Class<?> type) {
+            Object[] constants = type.getEnumConstants();
+            String[] names = new String[constants.length];
+
+            for (int i = 0; i < constants.length; i++) {
+                names[i] = ((Enum<?>) constants[i]).name();
+            }
+
+            String enumConstraint = JsonPropertyConstraint.enumValue(names);
+            jsonProp.addConstraint(enumConstraint);
     }
 }

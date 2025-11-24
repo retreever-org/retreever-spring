@@ -13,6 +13,8 @@ import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;
 
+import static dev.retreever.schema.resolver.util.JsonPropertyConstraint.*;
+
 /**
  * Resolves validation constraints from Jakarta Bean Validation annotations.
  * Used during schema generation to attach rules such as nullability,
@@ -35,29 +37,29 @@ public class ConstraintResolver {
 
             switch (a.annotationType().getSimpleName()) {
 
-                case "NotNull" -> result.add("NOT_NULL");
-                case "NotBlank" -> result.add("NOT_BLANK");
-                case "NotEmpty" -> result.add("NOT_EMPTY");
+                case "NotNull" -> result.add(NOT_NULL);
+                case "NotBlank" -> result.add(NOT_BLANK);
+                case "NotEmpty" -> result.add(NOT_EMPTY);
 
                 case "Size" -> {
                     Size s = (Size) a;
-                    if (s.min() > 0) result.add("MIN_LENGTH:" + s.min());
-                    if (s.max() < Integer.MAX_VALUE) result.add("MAX_LENGTH:" + s.max());
+                    if (s.min() > 0) result.add(minLength(s.min()));
+                    if (s.max() < Integer.MAX_VALUE) result.add(maxLength(s.max()));
                 }
 
                 case "Min" -> {
                     Min m = (Min) a;
-                    result.add("MIN_VALUE:" + m.value());
+                    result.add(minValue(m.value()));
                 }
 
                 case "Max" -> {
                     Max m = (Max) a;
-                    result.add("MAX_VALUE:" + m.value());
+                    result.add(maxValue(m.value()));
                 }
 
                 case "Pattern" -> {
                     Pattern p = (Pattern) a;
-                    result.add("PATTERN:" + p.regexp());
+                    result.add(regex( p.regexp()));
                 }
             }
         }
