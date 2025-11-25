@@ -45,7 +45,7 @@ public class JsonPropertyTypeResolver {
             if (clazz == boolean.class) return JsonPropertyType.BOOLEAN;
             if (clazz == char.class) return JsonPropertyType.STRING;
             if (clazz == void.class) return JsonPropertyType.NULL;
-            return JsonPropertyType.NUMBER; // byte, short, int, long, float, double
+            return JsonPropertyType.NUMBER;
         }
 
         // Wrapper types
@@ -62,22 +62,24 @@ public class JsonPropertyTypeResolver {
             return JsonPropertyType.ARRAY;
         }
 
-        // Collections like List, Set, Queue...
+        // Collections like List, Set...
         if (Collection.class.isAssignableFrom(clazz)) {
             return JsonPropertyType.ARRAY;
         }
 
-        // Enums → Enum type
+        // Maps → treat as ARRAY (value schema)
+        if (Map.class.isAssignableFrom(clazz)) {
+            return JsonPropertyType.ARRAY;
+        }
+
+        // Enums
         if (clazz.isEnum()) {
             return JsonPropertyType.ENUM;
         }
 
-        // Known special types
-        if (clazz == UUID.class) {
-            return JsonPropertyType.UUID;
-        }
+        // Special types
+        if (clazz == UUID.class) return JsonPropertyType.UUID;
 
-        // Temporal types (mapped to RFC-3339 compliant types)
         if (clazz == Instant.class) return JsonPropertyType.DATE_TIME;
         if (clazz == LocalDate.class) return JsonPropertyType.DATE;
         if (clazz == LocalTime.class) return JsonPropertyType.TIME;
@@ -85,31 +87,23 @@ public class JsonPropertyTypeResolver {
         if (clazz == OffsetDateTime.class) return JsonPropertyType.DATE_TIME;
         if (clazz == ZonedDateTime.class) return JsonPropertyType.DATE_TIME;
 
-        // Duration / Period → semantically useful for clients
         if (clazz == Duration.class) return JsonPropertyType.DURATION;
         if (clazz == Period.class) return JsonPropertyType.PERIOD;
 
-        // URI / URL
         if (clazz == URI.class || clazz == URL.class) {
             return JsonPropertyType.URI;
         }
 
-        // InputStreams represent binary payloads
         if (InputStream.class.isAssignableFrom(clazz)) {
             return JsonPropertyType.BINARY;
         }
 
-        // Maps → JSON Object
-        if (Map.class.isAssignableFrom(clazz)) {
-            return JsonPropertyType.OBJECT;
-        }
-
-        // Void wrapper
         if (clazz == Void.class) {
             return JsonPropertyType.NULL;
         }
 
-        // Anything else → treat as complex object
+        // Records & POJOs
         return JsonPropertyType.OBJECT;
     }
+
 }

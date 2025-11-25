@@ -8,6 +8,7 @@
 
 package dev.retreever.engine;
 
+import dev.retreever.config.SchemaConfig;
 import dev.retreever.doc.resolver.ApiDocResolver;
 import dev.retreever.endpoint.resolver.ApiEndpointIOResolver;
 import dev.retreever.endpoint.resolver.ApiEndpointResolver;
@@ -39,8 +40,11 @@ public class RetreeverOrchestrator {
      */
     public RetreeverOrchestrator(List<String> basePackages) {
 
+        // Initialize schema configuration with Base Packages
+        SchemaConfig.init(basePackages);
+
         // JSON schema generator + registry
-        JsonSchemaResolver jsonSchemaResolver = new JsonSchemaResolver(basePackages);
+        JsonSchemaResolver jsonSchemaResolver = new JsonSchemaResolver();
         SchemaRegistry schemaRegistry = new SchemaRegistry(jsonSchemaResolver);
 
         // Shared header definitions
@@ -52,11 +56,11 @@ public class RetreeverOrchestrator {
 
         // Request/response schema + header/param/path-var resolution
         ApiEndpointIOResolver ioResolver =
-                new ApiEndpointIOResolver(schemaRegistry, headerRegistry);
+                new ApiEndpointIOResolver(schemaRegistry, headerRegistry, jsonSchemaResolver);
 
         // Full endpoint resolver (metadata + IO + errors)
         ApiEndpointResolver endpointResolver =
-                new ApiEndpointResolver(schemaRegistry, headerRegistry, errorRegistry);
+                new ApiEndpointResolver(schemaRegistry, headerRegistry, errorRegistry, jsonSchemaResolver);
 
         // Controller → ApiGroup resolver
         ApiGroupResolver groupResolver = new ApiGroupResolver(endpointResolver);

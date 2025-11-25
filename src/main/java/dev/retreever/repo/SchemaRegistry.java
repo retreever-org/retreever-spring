@@ -30,17 +30,13 @@ public class SchemaRegistry extends DocRegistry<List<JsonProperty>> {
     /**
      * Resolves and registers the schema for the given DTO class if not already present.
      *
-     * @param dtoClass the class whose schema should be generated
+     * @param schema schema of the DTO
+     * @param clazz  the class whose schema should be generated
      * @return reference name used as the registry key
      */
-    public String registerSchema(Class<?> dtoClass) {
-        String ref = TypeResolver.resolveRefName(dtoClass);
-
-        if (!contains(ref)) {
-            List<JsonProperty> props = jsonSchemaResolver.resolve(dtoClass);
-            add(ref, props);
-        }
-
+    public String registerSchema(List<JsonProperty> schema, Class<?> clazz) {
+        String ref = TypeResolver.resolveRefName(clazz);
+        add(ref, schema);
         return ref;
     }
 }

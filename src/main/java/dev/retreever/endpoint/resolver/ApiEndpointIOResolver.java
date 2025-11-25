@@ -11,6 +11,7 @@ package dev.retreever.endpoint.resolver;
 import dev.retreever.domain.model.ApiEndpoint;
 import dev.retreever.repo.ApiHeaderRegistry;
 import dev.retreever.repo.SchemaRegistry;
+import dev.retreever.schema.resolver.JsonSchemaResolver;
 
 import java.lang.reflect.Method;
 
@@ -30,8 +31,9 @@ public class ApiEndpointIOResolver {
     private final ApiHeaderResolver headerResolver;
 
     public ApiEndpointIOResolver(SchemaRegistry schemaRegistry,
-                                 ApiHeaderRegistry apiHeaderRegistry) {
-        this.bodyResolver = new ApiBodySchemaResolver(schemaRegistry);
+                                 ApiHeaderRegistry apiHeaderRegistry,
+                                 JsonSchemaResolver schemaResolver) {
+        this.bodyResolver = new ApiBodySchemaResolver(schemaRegistry, schemaResolver);
         this.headerResolver = new ApiHeaderResolver(apiHeaderRegistry);
     }
 

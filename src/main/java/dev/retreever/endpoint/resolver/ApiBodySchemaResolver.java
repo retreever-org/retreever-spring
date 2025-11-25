@@ -2,81 +2,116 @@
  * Copyright (c) 2025 Retreever Contributors
  *
  * Licensed under the MIT License.
+ * You may obtain a copy of the License at:
  *     https://opensource.org/licenses/MIT
  */
 
 package dev.retreever.endpoint.resolver;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
 import dev.retreever.domain.model.ApiEndpoint;
+import dev.retreever.domain.model.JsonProperty;
+import dev.retreever.schema.resolver.JsonSchemaResolver;
 import dev.retreever.repo.SchemaRegistry;
 import dev.retreever.schema.resolver.TypeResolver;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.List;
 
 /**
  * Resolves request and response body schema references for controller methods.
- * Detects @RequestBody parameters, infers complex DTO parameters,
- * determines response types, and registers all discovered schemas
- * into the {@link SchemaRegistry}.
+ * <p>
+ * This implementation preserves full generic type information end-to-end.
+ * Wrapper types such as ResponseEntity<T>, ApiResponse<T>, PageResponse<T>,
+ * and deeply nested generics (A<B<C<D>>>) are resolved accurately.
+ * <p>
+ * <b>Rules:</b>
+ * <ul>
+ *   <li>RequestBody → use parameter.getParameterizedType()</li>
+ *   <li>ResponseBody → use method.getGenericReturnType()</li>
+ *   <li>NEVER collapse Type → Class (keeps T intact)</li>
+ *   <li>Schema registry receives raw class only for naming</li>
+ * </ul>
  */
 public class ApiBodySchemaResolver {
 
     private final SchemaRegistry schemaRegistry;
+    private final JsonSchemaResolver jsonSchemaResolver;
 
-    public ApiBodySchemaResolver(SchemaRegistry schemaRegistry) {
+    public ApiBodySchemaResolver(
+            SchemaRegistry schemaRegistry,
+            JsonSchemaResolver jsonSchemaResolver
+    ) {
         this.schemaRegistry = schemaRegistry;
+        this.jsonSchemaResolver = jsonSchemaResolver;
     }
 
     /**
      * Main entry point for attaching request/response schema references
      * to an {@link ApiEndpoint}.
-     *
-     * @param endpoint the endpoint being enriched
-     * @param method   the controller method being inspected
      */
     public void resolve(ApiEndpoint endpoint, Method method) {
         resolveRequestSchema(endpoint, method);
         resolveResponseSchema(endpoint, method);
     }
 
+    // REQUEST BODY
     private void resolveRequestSchema(ApiEndpoint endpoint, Method method) {
 
-        Parameter reqBodyParam = findRequestBodyParameter(method);
-        boolean consumesJson = endpoint.getConsumes()
-                .stream().anyMatch(c -> c.equalsIgnoreCase("application/json"));
+        Parameter body = findRequestBodyParameter(method);
 
-        if (consumesJson && reqBodyParam == null) {
+        // No @RequestBody found
+        if (body == null) {
             endpoint.setRequestBody(null);
             return;
         }
 
-        if (reqBodyParam != null) {
-            Class<?> type = extractClass(reqBodyParam.getParameterizedType());
-            setSchemaRef(endpoint, type, true);
-            return;
-        }
+        // IMPORTANT: Never convert to Class. Keep Type as-is.
+        Type requestType = body.getParameterizedType();
 
-        endpoint.setRequestBody(null);
+        setSchemaRef(endpoint, requestType, true);
     }
 
+    private Parameter findRequestBodyParameter(Method method) {
+        for (Parameter p : method.getParameters()) {
+            if (p.isAnnotationPresent(RequestBody.class)) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    // RESPONSE BODY
     private void resolveResponseSchema(ApiEndpoint endpoint, Method method) {
 
-        Class<?> returnType = extractReturnClass(method);
+        Type returnType = method.getGenericReturnType();  // full generic type
 
-        if (returnType == null || returnType == Void.class || returnType == void.class) {
-            endpoint.setResponseBody(null);
-            return;
+        // Unwrap ResponseEntity<T>
+        if (returnType instanceof ParameterizedType p) {
+            Class<?> raw = TypeResolver.extractRawClass(p.getRawType());
+            if (raw == ResponseEntity.class) {
+                returnType = p.getActualTypeArguments()[0]; // unwrap inner
+            }
         }
 
         setSchemaRef(endpoint, returnType, false);
     }
 
-    private void setSchemaRef(ApiEndpoint endpoint, Class<?> clazz, boolean isRequest) {
-        String ref = schemaRegistry.registerSchema(clazz);
+    // SCHEMA REGISTRATION
+    private void setSchemaRef(ApiEndpoint endpoint, Type type, boolean isRequest) {
+
+        // Resolve JSON schema with full generic type preserved
+        List<JsonProperty> schema = jsonSchemaResolver.resolve(type);
+
+        // Schema registry uses raw class only for naming
+        Class<?> raw = TypeResolver.extractRawClass(type);
+
+        String ref = schemaRegistry.registerSchema(schema, raw);
+
         if (isRequest) {
             endpoint.setRequestBody(ref);
         } else {
@@ -84,50 +119,7 @@ public class ApiBodySchemaResolver {
         }
     }
 
-    private Parameter findRequestBodyParameter(Method method) {
-        for (Parameter param : method.getParameters()) {
-            if (param.isAnnotationPresent(RequestBody.class)) {
-                return param;
-            }
-        }
-        return null;
-    }
-
-    private Class<?> extractReturnClass(Method method) {
-
-        java.lang.reflect.Type type = method.getGenericReturnType();
-        Class<?> raw = extractClass(type);
-
-        if (raw == ResponseEntity.class && type instanceof ParameterizedType p) {
-            java.lang.reflect.Type inner = p.getActualTypeArguments()[0];
-            return extractClass(inner);
-        }
-
-        return raw;
-    }
-
-    private Class<?> findSingleComplexParameter(Method method) {
-
-        Class<?> found = null;
-
-        for (Parameter param : method.getParameters()) {
-            if (param.getAnnotations().length > 0) continue;
-
-            Class<?> type = extractClass(param.getParameterizedType());
-
-            if (isPrimitiveLike(type)) continue;
-            if (found != null) return null;
-
-            found = type;
-        }
-
-        return found;
-    }
-
-    private Class<?> extractClass(java.lang.reflect.Type type) {
-        return TypeResolver.extractRawClass(type);
-    }
-
+    // UTIL
     private boolean isPrimitiveLike(Class<?> type) {
         return type.isPrimitive()
                 || Number.class.isAssignableFrom(type)

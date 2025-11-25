@@ -94,6 +94,13 @@ public class JsonProperty {
         this.properties.add(child);
     }
 
+    public void addObjectProperty(List<JsonProperty> object) {
+        if (this.type != JsonPropertyType.OBJECT) {
+            throw new IllegalStateException("Cannot add properties to non-object type");
+        }
+        this.properties.addAll(object);
+    }
+
     public void arrayElement(JsonProperty element) {
         if (this.type != JsonPropertyType.ARRAY) {
             throw new IllegalStateException("Cannot set array element on non-array type");

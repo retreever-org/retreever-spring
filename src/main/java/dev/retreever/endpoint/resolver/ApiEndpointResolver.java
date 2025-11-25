@@ -12,6 +12,7 @@ import dev.retreever.domain.annotation.ApiEndpoint;
 import dev.retreever.repo.ApiErrorRegistry;
 import dev.retreever.repo.ApiHeaderRegistry;
 import dev.retreever.repo.SchemaRegistry;
+import dev.retreever.schema.resolver.JsonSchemaResolver;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -28,9 +29,10 @@ public class ApiEndpointResolver {
 
     public ApiEndpointResolver(SchemaRegistry schemaRegistry,
                                ApiHeaderRegistry headerRegistry,
-                               ApiErrorRegistry apiErrorRegistry) {
+                               ApiErrorRegistry apiErrorRegistry,
+                               JsonSchemaResolver schemaResolver) {
         this.apiErrorRegistry = apiErrorRegistry;
-        this.endpointIOResolver = new ApiEndpointIOResolver(schemaRegistry, headerRegistry);
+        this.endpointIOResolver = new ApiEndpointIOResolver(schemaRegistry, headerRegistry, schemaResolver);
     }
 
     /**
