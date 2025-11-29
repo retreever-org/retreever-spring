@@ -66,4 +66,8 @@ public final class SchemaRegistry {
     public void clear() {
         schemas.clear();
     }
+
+    public Map<String, Schema> getSchemas() {
+        return schemas;
+    }
 }

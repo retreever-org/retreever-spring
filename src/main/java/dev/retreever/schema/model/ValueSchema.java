@@ -14,4 +14,9 @@ public class ValueSchema implements Schema {
     public JsonPropertyType getType() {
         return type;
     }
+
+    @Override
+    public String toString() {
+        return "ValueSchema{" + type.name() + "}";
+    }
 }

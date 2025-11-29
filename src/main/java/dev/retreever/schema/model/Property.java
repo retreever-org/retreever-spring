@@ -75,4 +75,33 @@ public class Property implements Schema {
             this.constraints.add(constraint);
         }
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("Property{name=").append(name)
+                .append(", type=").append(type != null ? type.name() : "null")
+                .append(", value=").append(value != null ? value.toString() : "null");
+
+        if (required) {
+            sb.append(", required=true");
+        }
+
+        if (description != null && !description.isBlank()) {
+            sb.append(", desc=").append(description);
+        }
+
+        if (example != null) {
+            sb.append(", example=").append(example);
+        }
+
+        if (!constraints.isEmpty()) {
+            sb.append(", constraints=[").append(String.join(", ", constraints)).append("]");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+
 }

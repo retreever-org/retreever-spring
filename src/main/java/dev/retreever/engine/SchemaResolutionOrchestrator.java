@@ -12,7 +12,6 @@ import dev.retreever.config.SchemaConfig;
 import dev.retreever.repo.SchemaRegistry;
 import dev.retreever.schema.model.Schema;
 import dev.retreever.schema.resolver.SchemaResolver;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +36,7 @@ public class SchemaResolutionOrchestrator {
 
     public SchemaResolutionOrchestrator(SchemaRegistry schemaRegistry) {
         this.schemaRegistry = schemaRegistry;
+        log.debug("packages allowed for scanning: {}", SchemaConfig.getBasePackages());
     }
 
     public void resolveAllSchema(Class<?> applicationClass,
@@ -51,6 +51,11 @@ public class SchemaResolutionOrchestrator {
 
         // Optimize registry
         schemaRegistry.optimize();
+
+        schemaRegistry.getSchemas().values().forEach(schema -> {
+                    System.out.println(schema.toString());
+                }
+        );
 
         log.info("SchemaResolutionOrchestrator: {} schemas registered", schemaRegistry.size());
     }

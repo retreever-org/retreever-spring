@@ -28,4 +28,25 @@ public class ObjectSchema implements Schema {
     public boolean isEmpty() {
         return properties.isEmpty();
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ObjectSchema{");
+
+        if (properties.isEmpty()) {
+            sb.append("empty");
+        } else {
+            properties.values().forEach(prop ->
+                    sb.append(prop.getName()).append("=").append(prop).append(", ")
+            );
+            // Remove trailing comma and space
+            if (!properties.isEmpty()) {
+                sb.setLength(sb.length() - 2);
+            }
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+
 }

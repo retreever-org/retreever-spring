@@ -42,6 +42,6 @@ public class RetreeverAutoConfiguration {
 
         String basePackage = appClass.getPackage().getName();
 
-        return new RetreeverOrchestrator(List.of(basePackage));
+        return new RetreeverOrchestrator(List.of(basePackage, "java.util"));
     }
 }

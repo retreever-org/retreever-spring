@@ -15,4 +15,10 @@ public class ArraySchema implements Schema {
     public Schema getElementSchema() {
         return elementSchema;
     }
+
+    @Override
+    public String toString() {
+        return "ArraySchema{items=" + (elementSchema != null ? elementSchema.toString() : "null") + "}";
+    }
+
 }
