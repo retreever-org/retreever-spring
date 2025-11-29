@@ -1,164 +1,117 @@
 package dev.retreever.view;
 
-
 import dev.retreever.schema.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
- * Renders a Schema tree into the final 3-part documentation structure:
- *
- * <pre>
- * {
- *   "model": { ... },
- *   "example_model": { ... },
- *   "metadata": { ... }   // only for request bodies
- * }
- * </pre>
- *
- * This renderer is intentionally stateless and pure.
+ * Renders Schema → 3-part JSON structure for API documentation.
  */
 public final class SchemaViewRenderer {
+
+    public static final String MODEL_KEY = "model";
+    public static final String EXAMPLE_MODEL_KEY = "example_model";
+    public static final String METADATA_KEY = "metadata";
 
     private static final Logger log = LoggerFactory.getLogger(SchemaViewRenderer.class);
 
     private SchemaViewRenderer() {}
 
-    // PUBLIC API
-
     public static Map<String, Object> renderRequest(Schema schema) {
-        if (isSchemaNull(schema)) return null;
         return render(schema, true);
     }
 
     public static Map<String, Object> renderResponse(Schema schema) {
-        if (isSchemaNull(schema)) return null;
         return render(schema, false);
     }
 
-    // INTERNAL
-
-    private static boolean isSchemaNull(Schema schema) {
-        if(schema == null) {
-            log.error("Schema is null");
-            return true;
-        }
-        return false;
-    }
-
     private static Map<String, Object> render(Schema schema, boolean includeMetadata) {
+        if (schema == null) return null;
 
-        Map<String, Object> root = new LinkedHashMap<>();
-
-        Object model = renderModel(schema);
-        Object example = renderExample(schema);
-
-        root.put("model", model);
-        root.put("example_model", example);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put(MODEL_KEY, renderModel(schema));
+        result.put(EXAMPLE_MODEL_KEY, renderExample(schema));
 
         if (includeMetadata) {
             Map<String, Object> metadata = new LinkedHashMap<>();
             buildMetadata(schema, "", metadata);
-            root.put("metadata", metadata);
+            result.put(METADATA_KEY, metadata);
         }
-
-        return root;
+        return result;
     }
 
-    // MODEL RENDERING
-
     private static Object renderModel(Schema s) {
-
+        if (s instanceof Property prop) {
+            return prop.getType().displayName();
+        }
         if (s instanceof ValueSchema vs) {
             return vs.getType().displayName();
         }
-
         if (s instanceof ArraySchema arr) {
             Schema element = arr.getElementSchema();
-            if (element == null) return List.of();
-            return List.of(renderModel(element));
+            return element != null ? List.of(renderModel(element)) : List.of();
         }
-
         if (s instanceof ObjectSchema obj) {
             Map<String, Object> out = new LinkedHashMap<>();
-            for (Property p : obj.getProperties().values()) {
-                out.put(p.getName(), renderModel(p.getValue()));
-            }
+            obj.getProperties().values().forEach(p ->
+                    out.put(p.getName(), renderModel(p))
+            );
             return out;
         }
-
         return null;
     }
-
-    // EXAMPLE RENDERING
 
     private static Object renderExample(Schema s) {
-
-        if (s instanceof ValueSchema) {
-            return null; // primitive example not available at schema-level
+        if (s instanceof Property prop) {
+            return generateLeafExample(prop);
         }
-
         if (s instanceof ArraySchema arr) {
             Schema element = arr.getElementSchema();
-            if (element == null) return List.of();
-            return List.of(renderExample(element));
+            return element != null ? List.of(renderExample(element)) : List.of();
         }
-
         if (s instanceof ObjectSchema obj) {
             Map<String, Object> out = new LinkedHashMap<>();
-            for (Property p : obj.getProperties().values()) {
-                out.put(p.getName(), renderExample(p.getValue()));
-            }
+            obj.getProperties().values().forEach(p ->
+                    out.put(p.getName(), renderExample(p))
+            );
             return out;
         }
-
         return null;
     }
 
-    // METADATA RENDERING (REQUEST ONLY)
+    private static Object generateLeafExample(Property prop) {
+        return switch (prop.getType()) {
+            case STRING -> prop.getExample() != null ? prop.getExample() : "example";
+            case NUMBER -> 123;
+            case BOOLEAN -> true;
+            case UUID -> "550e8400-e29b-41d4-a716-446655440000";
+            case DATE_TIME -> "2025-01-29T10:15:30Z";
+            case DATE -> "2025-01-29";
+            default -> null;
+        };
+    }
 
-    private static void buildMetadata(
-            Schema s,
-            String parentPath,
-            Map<String, Object> out
-    ) {
-
-        if (s instanceof ValueSchema) {
-            // ValueSchema only collected when wrapped inside Property
+    private static void buildMetadata(Schema s, String parentPath, Map<String, Object> out) {
+        if (s instanceof Property prop && prop.getValue() instanceof ValueSchema) {
+            Map<String, Object> meta = new LinkedHashMap<>();
+            meta.put("description", Optional.ofNullable(prop.getDescription()).orElse(""));
+            meta.put("constraints", new ArrayList<>(prop.getConstraints()));
+            out.put(parentPath.isEmpty() ? prop.getName() : parentPath, meta);
             return;
         }
 
         if (s instanceof ArraySchema arr) {
             Schema el = arr.getElementSchema();
-            if (el != null) {
-                String path = parentPath.isEmpty() ? "[0]" : parentPath + "[]";
-                buildMetadata(el, path, out);
-            }
+            if (el != null) buildMetadata(el, parentPath + "[0]", out);
             return;
         }
 
         if (s instanceof ObjectSchema obj) {
             for (Property p : obj.getProperties().values()) {
-
-                String path = parentPath.isEmpty()
-                        ? p.getName()
-                        : parentPath + "." + p.getName();
-
-                Schema value = p.getValue();
-
-                if (value instanceof ValueSchema) {
-                    Map<String, Object> meta = new LinkedHashMap<>();
-                    meta.put("description", Optional.ofNullable(p.getDescription()).orElse(""));
-                    meta.put("constraints", p.getConstraints());
-                    out.put(path, meta);
-                } else {
-                    buildMetadata(value, path, out);
-                }
+                String path = parentPath.isEmpty() ? p.getName() : parentPath + "." + p.getName();
+                buildMetadata(p, path, out);
             }
         }
     }

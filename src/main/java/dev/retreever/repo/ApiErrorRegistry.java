@@ -10,21 +10,30 @@ package dev.retreever.repo;
 
 import dev.retreever.endpoint.model.ApiError;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 
 /**
- * Registry storing ApiError definitions resolved from @ExceptionHandler methods.
+ * Thread-safe singleton registry storing ApiError definitions resolved from @ExceptionHandler methods.
  * Keyed by the exception's fully qualified class name.
  * <p>
  * No schema resolving is done here.
- * No JsonProperty is used anymore.
  */
-public class ApiErrorRegistry extends DocRegistry<ApiError> {
+public final class ApiErrorRegistry extends DocRegistry<ApiError> {
+
+    private static final ApiErrorRegistry INSTANCE = new ApiErrorRegistry();
+    private static final Map<String, ApiError> errors = new ConcurrentHashMap<>();
+
+    private ApiErrorRegistry() {
+    }
+
+    public static ApiErrorRegistry getInstance() {
+        return INSTANCE;
+    }
 
     /**
-     * Registers an ApiError using its exception class name.
+     * Registers an ApiError using its exception class name. Deduplicates automatically.
      */
     public void register(ApiError error) {
         String key = error.getExceptionName();
@@ -42,32 +51,27 @@ public class ApiErrorRegistry extends DocRegistry<ApiError> {
     }
 
     /**
-     * Converts @ApiEndpoint(errors={...}) exception classes
-     * into ApiError lookups that actually exist.
-     * <p>
-     * Instead of returning Strings (old model),
-     * we return the resolved ApiError models directly.
+     * Retrieves all registered ApiErrors.
      */
-    public List<ApiError> resolveErrors(Class<? extends Throwable>[] exceptionTypes) {
-
-        if (exceptionTypes == null || exceptionTypes.length == 0) {
-            return List.of();
-        }
-
-        List<ApiError> out = new ArrayList<>();
-
-        for (Class<? extends Throwable> ex : exceptionTypes) {
-            ApiError err = get(ex);
-            if (err != null) {
-                out.add(err);
-            }
-        }
-
-        return out;
-    }
-
     public Collection<ApiError> values() {
         return getAll().values();
     }
-}
 
+    /**
+     * Optimizes registry: log stats.
+     */
+    public void optimize() {
+        System.out.println("ApiErrorRegistry: " + errors.size() + " unique errors registered");
+    }
+
+    /**
+     * Clears all registered errors.
+     */
+    public void clear() {
+        errors.clear();
+    }
+
+    public int size() {
+        return errors.size();
+    }
+}

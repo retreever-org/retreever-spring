@@ -1,54 +1,65 @@
+/*
+ * Copyright (c) 2025 Retreever Contributors
+ *
+ * Licensed under the MIT License.
+ * You may obtain a copy of the License at:
+ * https://opensource.org/licenses/MIT
+ */
+
 package dev.retreever.view;
 
 import dev.retreever.endpoint.model.*;
 import dev.retreever.repo.ApiErrorRegistry;
 import dev.retreever.repo.SchemaRegistry;
 import dev.retreever.schema.model.Schema;
+import dev.retreever.schema.resolver.SchemaResolver;
 import dev.retreever.view.dto.ApiDocument;
 
-import java.time.Instant;
+import org.springframework.http.HttpStatus;
+
 import java.lang.reflect.Type;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
+/**
+ * Assembles internal ApiDoc → final ApiDocument DTO for JSON serialization.
+ * Integrates SchemaRegistry + ApiErrorRegistry + SchemaViewRenderer.
+ */
 public class ApiDocumentAssembler {
 
-    private final SchemaRegistry registry;
+    private final SchemaRegistry schemaRegistry;
     private final ApiErrorRegistry errorRegistry;
 
-    public ApiDocumentAssembler(SchemaRegistry registry, ApiErrorRegistry errorRegistry) {
-        this.registry = registry;
+    public ApiDocumentAssembler(SchemaRegistry schemaRegistry, ApiErrorRegistry errorRegistry) {
+        this.schemaRegistry = schemaRegistry;
         this.errorRegistry = errorRegistry;
     }
 
-    // PUBLIC ENTRY
-    public ApiDocument assemble(ApiDoc doc) {
-
-        List<ApiDocument.ApiGroup> groups = new ArrayList<>();
-
-        for (ApiGroup g : doc.getGroups()) {
-            groups.add(mapGroup(g));
-        }
+    // PUBLIC ENTRY POINT
+    public ApiDocument assemble(ApiDoc apiDoc) {
+        List<ApiDocument.ApiGroup> groups = apiDoc.getGroups().stream()
+                .map(this::mapGroup)
+                .collect(Collectors.toList());
 
         return new ApiDocument(
-                doc.getName(),
-                doc.getDescription(),
-                doc.getVersion(),
-                doc.getUriPrefix(),
+                apiDoc.getName(),
+                apiDoc.getDescription(),
+                apiDoc.getVersion(),
+                apiDoc.getUriPrefix(),
                 Instant.now(),
                 groups
         );
     }
 
-    // GROUP
+    // GROUP MAPPING
     private ApiDocument.ApiGroup mapGroup(ApiGroup group) {
-
-        List<ApiDocument.Endpoint> endpoints = new ArrayList<>();
-
-        for (ApiEndpoint ep : group.getEndpoints()) {
-            endpoints.add(mapEndpoint(ep));
-        }
+        List<ApiDocument.Endpoint> endpoints = group.getEndpoints().stream()
+                .map(this::mapEndpoint)
+                .collect(Collectors.toList());
 
         return new ApiDocument.ApiGroup(
                 group.getName(),
@@ -58,141 +69,130 @@ public class ApiDocumentAssembler {
         );
     }
 
-    // ENDPOINT
-    private ApiDocument.Endpoint mapEndpoint(ApiEndpoint ep) {
-
-        Map<String, Object> request = renderRequestSchema(ep.getRequestBodyType());
-        Map<String, Object> response = renderResponseSchema(ep.getResponseBodyType());
-        List<ApiDocument.Error> errors = renderErrors(ep.getErrorBodyTypes());
-
+    // ENDPOINT MAPPING (FULL SPEC ALIGNMENT)
+    private ApiDocument.Endpoint mapEndpoint(ApiEndpoint endpoint) {
         return new ApiDocument.Endpoint(
-                ep.getName(),
-                ep.isDeprecated(),
-                ep.getDescription(),
-                ep.isSecured(),
-                ep.getHttpMethod(),
-                ep.getPath(),
-                ep.getStatus().toString(),
-                ep.getStatus().value(),
-                ep.getConsumes(),
-                ep.getProduces(),
-                mapPathVariables(ep.getPathVariables()),
-                mapQueryParams(ep.getQueryParams()),
-                mapHeaders(ep.getHeaders()),
-                request,
-                response,
-                errors
+                endpoint.getName(),
+                endpoint.isDeprecated(),
+                endpoint.getDescription(),
+                endpoint.isSecured(),
+                endpoint.getHttpMethod(),
+                endpoint.getPath(),
+                formatStatus(endpoint.getStatus()),
+                endpoint.getStatus().value(),
+                safeList(endpoint.getConsumes()),
+                safeList(endpoint.getProduces()),
+                mapPathVariables(endpoint.getPathVariables()),
+                mapQueryParams(endpoint.getQueryParams()),
+                mapHeaders(endpoint.getHeaders()),
+                renderRequest(endpoint.getRequestBodyType()),
+                renderResponse(endpoint.getResponseBodyType()),
+                mapErrors(endpoint)
         );
     }
 
     // SCHEMA RENDERING
-    private Map<String, Object> renderRequestSchema(Type t) {
-        if (t == null) return null;
-        Schema s = registry.getResolved(t);
-        if (s == null) return null;
-        return SchemaViewRenderer.renderRequest(s);
+    private Map<String, Object> renderRequest(Type type) {
+        if (type == null) return null;
+        Schema schema = schemaRegistry.getSchema(type);
+        return schema != null ? SchemaViewRenderer.renderRequest(schema) : null;
     }
 
-    private Map<String, Object> renderResponseSchema(Type t) {
-        if (t == null) return null;
-        Schema s = registry.getResolved(t);
-        if (s == null) return null;
-        return SchemaViewRenderer.renderResponse(s);
+    private Map<String, Object> renderResponse(Type type) {
+        if (type == null) return null;
+        Schema schema = schemaRegistry.getSchema(type);
+        return schema != null ? SchemaViewRenderer.renderResponse(schema) : null;
     }
 
-    private List<ApiDocument.Error> renderErrors(List<Type> types) {
-        if (types == null || types.isEmpty()) return List.of();
+    // ERROR MAPPING (ApiErrorRegistry INTEGRATED)
+    private List<ApiDocument.Error> mapErrors(ApiEndpoint endpoint) {
+        return endpoint.getErrorBodyTypes().stream()
+                .map(this::renderError)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
 
-        List<ApiDocument.Error> list = new ArrayList<>();
+    private ApiDocument.Error renderError(Type errorType) {
+        if (errorType == null) return null;
 
-        for (Type t : types) {
+        // 1. Extract exception class from error body type
+        Class<?> classType = SchemaResolver.extractRawClass(errorType);
+        if (classType == null || !Throwable.class.isAssignableFrom(classType)) {
+            return null;
+        }
+        @SuppressWarnings("unchecked")
+        Class<? extends Throwable> exceptionClass = (Class<? extends Throwable>) classType;
 
-            // Lookup key = exception type FQN
-            String key = t.getTypeName();
+        // 2. Lookup ApiError from registry
+        ApiError apiError = errorRegistry.get(exceptionClass);
+        if (apiError == null) return null;
 
-            ApiError apiError = errorRegistry.get(key);
-
-            if (apiError == null) {
-                // Unknown error → minimal fallback block
-                list.add(new ApiDocument.Error(
-                        key,          // status
-                        0,            // status_code
-                        "",           // description
-                        key,          // error_code
-                        null          // response model
-                ));
-                continue;
-            }
-
-            // Get the schema of the error body (already resolved in registry)
-            Schema bodySchema = null;
-            if (apiError.getErrorBodyType() != null) {
-                bodySchema = registry.getResolved(apiError.getErrorBodyType());
-            }
-
-            Map<String, Object> rendered =
-                    (bodySchema == null)
-                            ? null
-                            : SchemaViewRenderer.renderResponse(bodySchema);
-
-            list.add(new ApiDocument.Error(
-                    apiError.getStatus().toString(),
-                    apiError.getStatus().value(),
-                    apiError.getDescription(),
-                    apiError.getErrorCode(),
-                    rendered
-            ));
+        // 3. Render error body schema (if present)
+        Schema schema = null;
+        Type errorBodyType = apiError.getErrorBodyType();
+        if (errorBodyType != null) {
+            schema = schemaRegistry.getSchema(errorBodyType);
         }
 
-        return list;
+        Map<String, Object> response = schema != null
+                ? SchemaViewRenderer.renderResponse(schema)
+                : null;
+
+        // 4. Map to final DTO
+        return new ApiDocument.Error(
+                apiError.getStatus().name(),
+                apiError.getStatus().value(),
+                apiError.getDescription(),
+                apiError.getErrorCode(),
+                response
+        );
     }
 
-
-    // PROPS / PARAMS
+    // PARAMETER MAPPINGS
     private List<ApiDocument.PathVariable> mapPathVariables(List<ApiPathVariable> vars) {
-        if (vars == null) return List.of();
-
-        List<ApiDocument.PathVariable> list = new ArrayList<>();
-        for (ApiPathVariable v : vars) {
-            list.add(new ApiDocument.PathVariable(
-                    v.getName(),
-                    v.getType().name().toLowerCase(),
-                    v.getDescription(),
-                    new ArrayList<>(v.getConstraints())
-            ));
-        }
-        return list;
+        if (vars == null || vars.isEmpty()) return List.of();
+        return vars.stream()
+                .map(v -> new ApiDocument.PathVariable(
+                        v.getName(),
+                        v.getType().displayName(),
+                        v.getDescription(),
+                        new ArrayList<>(v.getConstraints())
+                ))
+                .collect(Collectors.toList());
     }
 
     private List<ApiDocument.Param> mapQueryParams(List<ApiParam> params) {
-        if (params == null) return List.of();
-
-        List<ApiDocument.Param> list = new ArrayList<>();
-        for (ApiParam p : params) {
-            list.add(new ApiDocument.Param(
-                    p.getName(),
-                    p.getDescription(),
-                    p.getType().name().toLowerCase(),
-                    p.isRequired() ? "true" : "false",
-                    p.getDefaultValue(),
-                    new ArrayList<>(p.getConstraints())
-            ));
-        }
-        return list;
+        if (params == null || params.isEmpty()) return List.of();
+        return params.stream()
+                .map(p -> new ApiDocument.Param(
+                        p.getName(),
+                        p.getDescription(),
+                        p.getType().displayName(),
+                        String.valueOf(p.isRequired()),
+                        p.getDefaultValue(),
+                        new ArrayList<>(p.getConstraints())
+                ))
+                .collect(Collectors.toList());
     }
 
     private List<ApiDocument.Header> mapHeaders(List<ApiHeader> headers) {
-        if (headers == null) return List.of();
+        if (headers == null || headers.isEmpty()) return List.of();
+        return headers.stream()
+                .map(h -> new ApiDocument.Header(
+                        h.getName(),
+                        h.getType().displayName(),
+                        String.valueOf(h.isRequired()),
+                        h.getDescription()
+                ))
+                .collect(Collectors.toList());
+    }
 
-        List<ApiDocument.Header> list = new ArrayList<>();
-        for (ApiHeader h : headers) {
-            list.add(new ApiDocument.Header(
-                    h.getName(),
-                    h.getType().name().toLowerCase(),
-                    h.isRequired() ? "true" : "false",
-                    h.getDescription()
-            ));
-        }
-        return list;
+    // UTILITIES
+    private String formatStatus(HttpStatus status) {
+        return status != null ? status.getReasonPhrase() : "UNKNOWN";
+    }
+
+    private <T> List<T> safeList(List<T> list) {
+        return list != null ? list : List.of();
     }
 }
