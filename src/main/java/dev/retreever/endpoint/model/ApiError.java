@@ -1,4 +1,4 @@
-package dev.retreever.domain.model;
+package dev.retreever.endpoint.model;
 
 import org.springframework.http.HttpStatus;
 

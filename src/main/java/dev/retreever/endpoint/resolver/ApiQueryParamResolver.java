@@ -11,9 +11,9 @@ package dev.retreever.endpoint.resolver;
 import dev.retreever.schema.resolver.JsonPropertyTypeResolver;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ValueConstants;
-import dev.retreever.domain.annotation.Description;
-import dev.retreever.domain.model.ApiEndpoint;
-import dev.retreever.domain.model.ApiParam;
+import dev.retreever.annotation.Description;
+import dev.retreever.endpoint.model.ApiEndpoint;
+import dev.retreever.endpoint.model.ApiParam;
 import dev.retreever.schema.model.JsonPropertyType;
 import dev.retreever.schema.resolver.util.ConstraintResolver;
 

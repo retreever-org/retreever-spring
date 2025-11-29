@@ -6,7 +6,7 @@
  *     https://opensource.org/licenses/MIT
  */
 
-package dev.retreever.domain.model;
+package dev.retreever.endpoint.model;
 
 import java.util.List;
 

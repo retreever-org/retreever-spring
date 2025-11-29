@@ -6,7 +6,7 @@
  *     https://opensource.org/licenses/MIT
  */
 
-package dev.retreever.domain.annotation;
+package dev.retreever.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

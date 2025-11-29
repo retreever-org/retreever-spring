@@ -1,6 +1,6 @@
 package dev.retreever.endpoint.resolver;
 
-import dev.retreever.domain.model.ApiEndpoint;
+import dev.retreever.endpoint.model.ApiEndpoint;
 import dev.retreever.repo.ApiHeaderRegistry;
 
 import java.lang.reflect.Method;

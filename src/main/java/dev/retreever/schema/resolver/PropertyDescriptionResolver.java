@@ -8,8 +8,8 @@
 
 package dev.retreever.schema.resolver;
 
-import dev.retreever.domain.annotation.Description;
-import dev.retreever.domain.annotation.FieldInfo;
+import dev.retreever.annotation.Description;
+import dev.retreever.annotation.FieldInfo;
 import dev.retreever.schema.model.Property;
 
 import java.lang.reflect.AnnotatedElement;

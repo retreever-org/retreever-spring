@@ -8,7 +8,7 @@
 
 package dev.retreever.repo;
 
-import dev.retreever.domain.model.ApiError;
+import dev.retreever.endpoint.model.ApiError;
 
 import java.util.ArrayList;
 import java.util.Collection;

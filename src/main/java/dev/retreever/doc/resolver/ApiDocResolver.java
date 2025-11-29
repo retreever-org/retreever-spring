@@ -8,9 +8,9 @@
 
 package dev.retreever.doc.resolver;
 
-import dev.retreever.domain.annotation.ApiDoc;
+import dev.retreever.annotation.ApiDoc;
 import org.springframework.web.bind.annotation.RestController;
-import dev.retreever.domain.model.ApiGroup;
+import dev.retreever.endpoint.model.ApiGroup;
 import dev.retreever.group.resolver.ApiGroupResolver;
 
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Builds the top-level {@link dev.retreever.domain.model.ApiDoc} model for the application.
+ * Builds the top-level {@link dev.retreever.endpoint.model.ApiDoc} model for the application.
  * Aggregates metadata from the main application class and resolves all
  * controller groups discovered in the codebase.
  */
@@ -31,7 +31,7 @@ public class ApiDocResolver {
     }
 
     /**
-     * Produces a fully populated {@link dev.retreever.domain.model.ApiDoc} containing:
+     * Produces a fully populated {@link dev.retreever.endpoint.model.ApiDoc} containing:
      * <ul>
      *     <li>Application metadata (name, description, version)</li>
      *     <li>All resolved {@link ApiGroup} entries</li>
@@ -41,9 +41,9 @@ public class ApiDocResolver {
      * @param controllers      all detected controller classes
      * @return assembled ApiDoc object
      */
-    public dev.retreever.domain.model.ApiDoc resolve(Class<?> applicationClass, Set<Class<?>> controllers) {
+    public dev.retreever.endpoint.model.ApiDoc resolve(Class<?> applicationClass, Set<Class<?>> controllers) {
 
-        dev.retreever.domain.model.ApiDoc doc = new dev.retreever.domain.model.ApiDoc();
+        dev.retreever.endpoint.model.ApiDoc doc = new dev.retreever.endpoint.model.ApiDoc();
 
         resolveAppMetadata(doc, applicationClass);
         resolveControllerGroups(doc, controllers);
@@ -55,7 +55,7 @@ public class ApiDocResolver {
      * Loads application-level metadata from {@code @ApiDoc} or
      * derives sensible defaults when absent.
      */
-    private void resolveAppMetadata(dev.retreever.domain.model.ApiDoc doc, Class<?> applicationClass) {
+    private void resolveAppMetadata(dev.retreever.endpoint.model.ApiDoc doc, Class<?> applicationClass) {
 
         ApiDoc ann =
                 applicationClass.getAnnotation(ApiDoc.class);
@@ -76,7 +76,7 @@ public class ApiDocResolver {
      * Converts all {@code @RestController} classes into {@link ApiGroup} entries.
      * Only groups with at least one endpoint are included.
      */
-    private void resolveControllerGroups(dev.retreever.domain.model.ApiDoc doc, Set<Class<?>> controllers) {
+    private void resolveControllerGroups(dev.retreever.endpoint.model.ApiDoc doc, Set<Class<?>> controllers) {
 
         List<ApiGroup> groups = new ArrayList<>();
 

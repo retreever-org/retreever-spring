@@ -8,9 +8,9 @@
 
 package dev.retreever.group.resolver;
 
-import dev.retreever.domain.annotation.ApiGroup;
+import dev.retreever.annotation.ApiGroup;
 import org.springframework.web.bind.annotation.RestController;
-import dev.retreever.domain.model.ApiEndpoint;
+import dev.retreever.endpoint.model.ApiEndpoint;
 import dev.retreever.endpoint.resolver.ApiEndpointResolver;
 import dev.retreever.endpoint.resolver.EndpointPathAndMethodResolver;
 
@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Resolves a Spring {@code @RestController} into an {@link dev.retreever.domain.model.ApiGroup}.
+ * Resolves a Spring {@code @RestController} into an {@link dev.retreever.endpoint.model.ApiGroup}.
  * Detects controller metadata, resolves its endpoints, and groups them
  * under a common name and description.
  */
@@ -32,7 +32,7 @@ public class ApiGroupResolver {
     }
 
     /**
-     * Builds an {@link dev.retreever.domain.model.ApiGroup} from a controller class.
+     * Builds an {@link dev.retreever.endpoint.model.ApiGroup} from a controller class.
      * <p>
      * Steps:
      * <ul>
@@ -45,14 +45,14 @@ public class ApiGroupResolver {
      * @param controllerClass Spring REST controller class
      * @return resolved ApiGroup or {@code null} if class is not a controller
      */
-    public dev.retreever.domain.model.ApiGroup resolve(Class<?> controllerClass) {
+    public dev.retreever.endpoint.model.ApiGroup resolve(Class<?> controllerClass) {
 
         // Must be a Spring controller
         if (!controllerClass.isAnnotationPresent(RestController.class)) {
             return null;
         }
 
-        dev.retreever.domain.model.ApiGroup group = new dev.retreever.domain.model.ApiGroup();
+        dev.retreever.endpoint.model.ApiGroup group = new dev.retreever.endpoint.model.ApiGroup();
 
         // Group name & description
         ApiGroup ann =

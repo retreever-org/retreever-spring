@@ -6,9 +6,7 @@
  *     https://opensource.org/licenses/MIT
  */
 
-package dev.retreever.domain.annotation;
-
-import org.springframework.http.HttpStatus;
+package dev.retreever.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -16,15 +14,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks a method as an explicit error mapping for documentation.
- * Retreever uses this to record the status code and description
- * associated with an exception handler.
+ * Provides optional documentation metadata for a DTO field.
+ * Retreever uses this to enhance schema descriptions and include
+ * example values in the generated output.
  */
-@Target(ElementType.METHOD)
+@Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ApiError {
-
-    HttpStatus status();
+public @interface FieldInfo {
 
     String description() default "";
+
+    String example() default "";
 }

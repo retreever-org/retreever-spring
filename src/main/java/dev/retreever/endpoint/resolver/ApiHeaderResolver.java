@@ -8,13 +8,13 @@
 
 package dev.retreever.endpoint.resolver;
 
-import dev.retreever.domain.annotation.Description;
+import dev.retreever.annotation.Description;
 import dev.retreever.schema.resolver.JsonPropertyTypeResolver;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import dev.retreever.domain.annotation.ApiEndpoint;
-import dev.retreever.domain.model.ApiHeader;
+import dev.retreever.annotation.ApiEndpoint;
+import dev.retreever.endpoint.model.ApiHeader;
 import dev.retreever.repo.ApiHeaderRegistry;
 
 import java.lang.reflect.Method;
@@ -46,7 +46,7 @@ public class ApiHeaderResolver {
      * @param endpoint the endpoint being enriched
      * @param method   the controller method being inspected
      */
-    public void resolveHeaders(dev.retreever.domain.model.ApiEndpoint endpoint, Method method) {
+    public void resolveHeaders(dev.retreever.endpoint.model.ApiEndpoint endpoint, Method method) {
 
         List<ApiHeader> result = new ArrayList<>();
 

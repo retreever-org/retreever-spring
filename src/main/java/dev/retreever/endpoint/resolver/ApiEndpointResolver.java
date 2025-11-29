@@ -1,6 +1,6 @@
 package dev.retreever.endpoint.resolver;
 
-import dev.retreever.domain.model.ApiEndpoint;
+import dev.retreever.endpoint.model.ApiEndpoint;
 import dev.retreever.repo.ApiHeaderRegistry;
 
 import java.lang.reflect.Method;
@@ -8,7 +8,7 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 
 /**
- * Builds a dev.retreever.domain.model.ApiEndpoint from a controller method.
+ * Builds a dev.retreever.endpoint.model.ApiEndpoint from a controller method.
  * NO schema resolving happens here.
  * Only metadata + Java Types.
  */
@@ -39,8 +39,8 @@ public class ApiEndpointResolver {
         ioResolver.resolve(ep, method);
 
         // 5. Error types (NO resolving here, only store Types)
-        dev.retreever.domain.annotation.ApiEndpoint ann =
-                method.getAnnotation(dev.retreever.domain.annotation.ApiEndpoint.class);
+        dev.retreever.annotation.ApiEndpoint ann =
+                method.getAnnotation(dev.retreever.annotation.ApiEndpoint.class);
 
         if (ann != null && ann.errors().length > 0) {
             Arrays.stream(ann.errors())

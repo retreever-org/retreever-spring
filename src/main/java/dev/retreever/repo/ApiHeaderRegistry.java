@@ -8,7 +8,7 @@
 
 package dev.retreever.repo;
 
-import dev.retreever.domain.model.ApiHeader;
+import dev.retreever.endpoint.model.ApiHeader;
 
 import java.util.List;
 

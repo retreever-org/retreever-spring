@@ -1,6 +1,6 @@
 package dev.retreever.view;
 
-import dev.retreever.domain.model.*;
+import dev.retreever.endpoint.model.*;
 import dev.retreever.repo.ApiErrorRegistry;
 import dev.retreever.repo.SchemaRegistry;
 import dev.retreever.schema.model.Schema;

@@ -9,7 +9,7 @@
 package dev.retreever.endpoint.resolver;
 
 import org.springframework.http.HttpStatus;
-import dev.retreever.domain.annotation.ApiEndpoint;
+import dev.retreever.annotation.ApiEndpoint;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -35,7 +35,7 @@ public class EndpointMetadataResolver {
     }
 
     /**
-     * Populates the core metadata fields of an {@link dev.retreever.domain.model.ApiEndpoint}.
+     * Populates the core metadata fields of an {@link dev.retreever.endpoint.model.ApiEndpoint}.
      * Handles:
      * <ul>
      *     <li>Endpoint name (from annotation or prettified method name)</li>
@@ -48,7 +48,7 @@ public class EndpointMetadataResolver {
      * @param method   the controller method
      */
     public static void resolve(
-            dev.retreever.domain.model.ApiEndpoint endpoint,
+            dev.retreever.endpoint.model.ApiEndpoint endpoint,
             Method method
     ) {
 

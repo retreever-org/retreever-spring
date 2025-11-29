@@ -8,7 +8,7 @@
 
 package dev.retreever.endpoint.resolver;
 
-import dev.retreever.domain.annotation.ApiError;
+import dev.retreever.annotation.ApiError;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Resolves {@link dev.retreever.domain.model.ApiError} models from controller advice methods.
+ * Resolves {@link dev.retreever.endpoint.model.ApiError} models from controller advice methods.
  * Processes only methods annotated with {@link ExceptionHandler},
  * extracts declared exception types, determines HTTP status and
  * description (via @ApiError), and resolves the error body schema
@@ -35,9 +35,9 @@ public class ApiErrorResolver {
      * @param methods a list of potential exception handler methods
      * @return resolved error models
      */
-    public List<dev.retreever.domain.model.ApiError> resolve(List<Method> methods) {
+    public List<dev.retreever.endpoint.model.ApiError> resolve(List<Method> methods) {
 
-        List<dev.retreever.domain.model.ApiError> result = new ArrayList<>();
+        List<dev.retreever.endpoint.model.ApiError> result = new ArrayList<>();
 
         for (Method method : methods) {
 
@@ -70,7 +70,7 @@ public class ApiErrorResolver {
             // Create one ApiError per declared exception type
             for (Class<?> ex : exceptionTypes) {
 
-                dev.retreever.domain.model.ApiError err = dev.retreever.domain.model.ApiError.create(
+                dev.retreever.endpoint.model.ApiError err = dev.retreever.endpoint.model.ApiError.create(
                         status,
                         description,
                         ex.getName()

@@ -6,7 +6,7 @@
  *     https://opensource.org/licenses/MIT
  */
 
-package dev.retreever.domain.annotation;
+package dev.retreever.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -14,15 +14,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Provides optional documentation metadata for a DTO field.
- * Retreever uses this to enhance schema descriptions and include
- * example values in the generated output.
+ * Adds human-readable descriptions to parameters or fields.
+ * Retreever uses this to enrich request metadata such as
+ * path variables, query params, and headers.
  */
-@Target(ElementType.FIELD)
+@Target({ElementType.PARAMETER, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface FieldInfo {
+public @interface Description {
 
-    String description() default "";
-
-    String example() default "";
+    String value();
 }

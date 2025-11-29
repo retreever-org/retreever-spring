@@ -9,7 +9,7 @@
 package dev.retreever.endpoint.resolver;
 
 import org.springframework.web.bind.annotation.*;
-import dev.retreever.domain.model.ApiEndpoint;
+import dev.retreever.endpoint.model.ApiEndpoint;
 
 import java.lang.reflect.Method;
 
