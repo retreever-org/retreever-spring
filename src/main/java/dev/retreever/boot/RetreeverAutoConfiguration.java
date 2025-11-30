@@ -8,6 +8,7 @@
 
 package dev.retreever.boot;
 
+import dev.retreever.endpoint.model.ApiHeader;
 import dev.retreever.engine.RetreeverOrchestrator;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -16,6 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Auto-configures all Retreever components using component scanning.
@@ -29,19 +31,21 @@ public class RetreeverAutoConfiguration {
 
         // Find the @SpringBootApplication class
         String[] appBeans = context.getBeanNamesForAnnotation(SpringBootApplication.class);
+        Map<String, ApiHeader> headerBeans = context.getBeansOfType(ApiHeader.class);
+        var headers = headerBeans.values().stream().toList();
 
         if (appBeans.length == 0) {
             // fallback — but extremely unlikely
-            return new RetreeverOrchestrator(List.of());
+            return new RetreeverOrchestrator(List.of(), headers);
         }
 
         Class<?> appClass = context.getType(appBeans[0]);
         if (appClass == null || appClass.getPackage() == null) {
-            return new RetreeverOrchestrator(List.of());
+            return new RetreeverOrchestrator(List.of(), headers);
         }
 
         String basePackage = appClass.getPackage().getName();
 
-        return new RetreeverOrchestrator(List.of(basePackage, "java.util"));
+        return new RetreeverOrchestrator(List.of(basePackage, "java.util"), headers);
     }
 }

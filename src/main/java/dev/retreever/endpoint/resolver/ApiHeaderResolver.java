@@ -9,6 +9,7 @@
 package dev.retreever.endpoint.resolver;
 
 import dev.retreever.annotation.Description;
+import dev.retreever.schema.model.JsonPropertyType;
 import dev.retreever.schema.resolver.JsonPropertyTypeResolver;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,22 +48,74 @@ public class ApiHeaderResolver {
      * @param method   the controller method being inspected
      */
     public void resolveHeaders(dev.retreever.endpoint.model.ApiEndpoint endpoint, Method method) {
+        List<ApiHeader> mappingHeaders = resolveMappingHeaders(method);
+        List<ApiHeader> requestHeaders = resolveRequestHeaderParams(method);
+        List<ApiHeader> customHeaders = resolveCustomHeaderRefs(method);
 
-        List<ApiHeader> result = new ArrayList<>();
+        // Priority: customHeaders for description, mapping/request for required
+        Map<String, ApiHeader> merged = mergeHeaders(mappingHeaders, requestHeaders, customHeaders);
 
-        result.addAll(resolveMappingHeaders(method));
-        result.addAll(resolveRequestHeaderParams(method));
-        result.addAll(resolveCustomHeaderRefs(method));
+        endpoint.setHeaders(new ArrayList<>(merged.values()));
+    }
 
-        Map<String, ApiHeader> unique = new LinkedHashMap<>();
-        for (ApiHeader h : result) {
-            if (h.getName() != null) {
-                unique.putIfAbsent(h.getName(), h);
+    private Map<String, ApiHeader> mergeHeaders(
+            List<ApiHeader> mappingHeaders,
+            List<ApiHeader> requestHeaders,
+            List<ApiHeader> customHeaders
+    ) {
+        Map<String, ApiHeader> result = new LinkedHashMap<>();
+
+        // 1. Start with ALL headers from all sources (preserve order)
+        mappingHeaders.stream().filter(h -> h.getName() != null).forEach(h -> initializeHeader(result, h));
+        requestHeaders.stream().filter(h -> h.getName() != null).forEach(h -> initializeHeader(result, h));
+        customHeaders.stream().filter(h -> h.getName() != null).forEach(h -> initializeHeader(result, h));
+
+        // 2. Override descriptions from customHeaders (highest priority)
+        for (ApiHeader custom : customHeaders) {
+            if (custom.getName() != null && custom.getDescription() != null) {
+                ApiHeader mergedHeader = result.get(custom.getName());
+                if (mergedHeader != null) {
+                    mergedHeader.setDescription(custom.getDescription());
+                }
             }
         }
 
-        endpoint.setHeaders(new ArrayList<>(unique.values()));
+        // 3. Override required status from mapping/request (highest priority)
+        for (ApiHeader mapping : mappingHeaders) {
+            if (mapping.getName() != null) {
+                ApiHeader mergedHeader = result.get(mapping.getName());
+                if (mergedHeader != null) {
+                    mergedHeader.setRequired(mapping.isRequired());
+                }
+            }
+        }
+
+        for (ApiHeader request : requestHeaders) {
+            if (request.getName() != null) {
+                ApiHeader mergedHeader = result.get(request.getName());
+                if (mergedHeader != null) {
+                    mergedHeader.setRequired(request.isRequired());
+                }
+            }
+        }
+
+        return result;
     }
+
+    private void initializeHeader(Map<String, ApiHeader> result, ApiHeader header) {
+        String name = header.getName();
+        ApiHeader existing = result.get(name);
+
+        if (existing == null) {
+            // New header - copy all fields
+            result.put(name, new ApiHeader()
+                    .setName(name)
+                    .setType(header.getType())
+                    .setRequired(header.isRequired())
+                    .setDescription(header.getDescription()));
+        }
+    }
+
 
     /**
      * Extracts header definitions declared directly on
@@ -148,6 +201,12 @@ public class ApiHeaderResolver {
             ApiHeader ref = registry.getHeader(name);
             if (ref != null) {
                 list.add(ref);
+            } else {
+                ApiHeader header = new ApiHeader()
+                        .setName(name)
+                        .setType(JsonPropertyType.STRING)
+                        .setRequired(true);
+                list.add(header);
             }
         }
 

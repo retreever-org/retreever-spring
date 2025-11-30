@@ -10,6 +10,7 @@ package dev.retreever.engine;
 
 import dev.retreever.config.SchemaConfig;
 import dev.retreever.doc.resolver.ApiDocResolver;
+import dev.retreever.endpoint.model.ApiHeader;
 import dev.retreever.endpoint.resolver.ApiEndpointResolver;
 import dev.retreever.group.resolver.ApiGroupResolver;
 import dev.retreever.repo.ApiErrorRegistry;
@@ -32,14 +33,14 @@ public class RetreeverOrchestrator {
     private final ApiDocumentAssembler assembler;
     private final ApiDocResolver docResolver;
 
-    public RetreeverOrchestrator(List<String> basePackages) {
+    public RetreeverOrchestrator(List<String> basePackages, List<ApiHeader> headers) {
 
         // 1. Initialise config
         SchemaConfig.init(basePackages);
 
         // 2. Registries (singletons where applicable)
         ApiErrorRegistry errorRegistry = ApiErrorRegistry.getInstance(); // ✅ Singleton
-        ApiHeaderRegistry headerRegistry = new ApiHeaderRegistry();
+        ApiHeaderRegistry headerRegistry = ApiHeaderRegistry.init(headers);
         SchemaRegistry schemaRegistry = SchemaRegistry.getInstance();
 
         // 3. Resolver chain (endpoint → group → doc)

@@ -19,7 +19,16 @@ import java.util.List;
  */
 public class ApiHeaderRegistry extends DocRegistry<ApiHeader> {
 
-    @SuppressWarnings("unchecked")
+    private static final ApiHeaderRegistry registry = new ApiHeaderRegistry();
+    private ApiHeaderRegistry() {
+        // Initialize with an empty map
+    }
+
+    public static ApiHeaderRegistry init(List<ApiHeader> headers) {
+        registry.addHeaders(headers);
+        return registry;
+    }
+
     public List<ApiHeader> getHeaders() {
         return (List<ApiHeader>) getAll().values();
     }
