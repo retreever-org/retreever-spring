@@ -20,6 +20,9 @@ public final class SchemaViewRenderer {
     public static final String MODEL_KEY = "model";
     public static final String EXAMPLE_MODEL_KEY = "example_model";
     public static final String METADATA_KEY = "metadata";
+    public static final String DESCRIPTION = "description";
+    public static final String CONSTRAINTS = "constraints";
+    public static final String REQUIRED = "required";
 
     private SchemaViewRenderer() {}
 
@@ -116,8 +119,9 @@ public final class SchemaViewRenderer {
 
         if (s instanceof Property p) {
             Map<String, Object> meta = new LinkedHashMap<>();
-            meta.put("description", p.getDescription() != null ? p.getDescription() : "");
-            meta.put("constraints", new ArrayList<>(p.getConstraints()));
+            meta.put(DESCRIPTION, p.getDescription() != null ? p.getDescription() : "");
+            meta.put(REQUIRED, p.isRequired());
+            meta.put(CONSTRAINTS, new ArrayList<>(p.getConstraints()));
             out.put(path.isEmpty() ? p.getName() : path, meta);
             return;
         }
