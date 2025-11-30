@@ -64,6 +64,7 @@ public class SchemaResolver {
             return switch (kind) {
                 case ARRAY -> ArraySchemaResolver.resolve(resolvedType);
                 case OBJECT -> ObjectSchemaResolver.resolve(resolvedType);
+                case MAP -> MapSchemaResolver.resolve(resolvedType);
                 default -> ValueSchemaResolver.resolve(resolvedType);
             };
         } finally {

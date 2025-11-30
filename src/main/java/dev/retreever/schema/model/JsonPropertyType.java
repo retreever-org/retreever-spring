@@ -18,6 +18,7 @@ public enum JsonPropertyType {
     NULL("null"),
     OBJECT("object"),
     ARRAY("array"),
+    MAP("map"),
     ENUM("enum"),
     UUID("uuid"),
     DATE("date"),

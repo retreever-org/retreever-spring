@@ -69,7 +69,7 @@ public class JsonPropertyTypeResolver {
 
         // Maps → treat as ARRAY (value schema)
         if (Map.class.isAssignableFrom(clazz)) {
-            return JsonPropertyType.ARRAY;
+            return JsonPropertyType.MAP;
         }
 
         // Enums

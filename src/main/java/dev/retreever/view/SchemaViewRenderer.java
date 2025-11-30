@@ -63,6 +63,9 @@ public final class SchemaViewRenderer {
             }
             return out;
         }
+        if (s instanceof MapSchema map) {
+            return Map.of(map.getKeyType().displayName(), renderModel(map.getValueSchema()));
+        }
         return null;
     }
 
@@ -88,6 +91,12 @@ public final class SchemaViewRenderer {
                 out.put(p.getName(), renderExample(p));
             }
             return out;
+        }
+
+        if (s instanceof MapSchema map) {
+            String keyEx = map.getKeyType().displayName();
+            Object valEx = renderExample(map.getValueSchema());
+            return valEx != null ? Map.of(keyEx, valEx) : null;
         }
 
         return generateLeafExample(s);
