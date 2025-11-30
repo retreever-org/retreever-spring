@@ -56,9 +56,7 @@ public final class SchemaViewRenderer {
         if (s instanceof ObjectSchema obj) {
             Map<String, Object> out = new LinkedHashMap<>();
             for (Property p : obj.getProperties().values()) {
-                if (p.getValue() != null) {
-                    out.put(p.getName(), renderModel(p.getValue()));
-                }
+                out.put(p.getName(), renderModel(p));
             }
             return out;
         }
@@ -67,28 +65,35 @@ public final class SchemaViewRenderer {
 
     private static Object renderExample(Schema s) {
         if (s == null) return null;
-        if (s instanceof Property p) return renderExample(p.getValue());
+
+        if (s instanceof Property p) {
+            if (p.getExample() != null) {
+                return p.getExample();
+            }
+            return renderExample(p.getValue());
+        }
+
         if (s instanceof ArraySchema arr) {
             Schema element = arr.getElementSchema();
             Object example = renderExample(element);
             return example != null ? List.of(example) : new ArrayList<>();
         }
+
         if (s instanceof ObjectSchema obj) {
             Map<String, Object> out = new LinkedHashMap<>();
             for (Property p : obj.getProperties().values()) {
-                if (p.getValue() != null) {
-                    out.put(p.getName(), renderExample(p.getValue()));
-                }
+                out.put(p.getName(), renderExample(p));
             }
             return out;
         }
+
         return generateLeafExample(s);
     }
 
     private static Object generateLeafExample(Schema s) {
         if (s instanceof ValueSchema vs) {
             return switch (vs.getType()) {
-                case STRING -> "example";
+                case STRING -> "hello";
                 case NUMBER -> 123;
                 case BOOLEAN -> true;
                 case UUID -> "550e8400-e29b-41d4-a716-446655440000";
@@ -96,9 +101,6 @@ public final class SchemaViewRenderer {
                 case DATE -> "2025-01-29";
                 default -> null;
             };
-        }
-        if (s instanceof Property p) {
-            return p.getExample() != null ? p.getExample() : "example";
         }
         return null;
     }
@@ -113,14 +115,10 @@ public final class SchemaViewRenderer {
         if (s == null) return;
 
         if (s instanceof Property p) {
-            if (p.getValue() instanceof ValueSchema) {
-                Map<String, Object> meta = new LinkedHashMap<>();
-                meta.put("description", p.getDescription() != null ? p.getDescription() : "");
-                meta.put("constraints", new ArrayList<>(p.getConstraints()));
-                out.put(path.isEmpty() ? p.getName() : path, meta);
-            } else {
-                buildMetadata(p.getValue(), path, out);
-            }
+            Map<String, Object> meta = new LinkedHashMap<>();
+            meta.put("description", p.getDescription() != null ? p.getDescription() : "");
+            meta.put("constraints", new ArrayList<>(p.getConstraints()));
+            out.put(path.isEmpty() ? p.getName() : path, meta);
             return;
         }
 
