@@ -10,7 +10,7 @@ public class Property implements Schema {
 
     private final String name; // field name
     private final JsonPropertyType type; // data type
-    private final Schema value; // value schema
+    private Schema value; // value schema
 
     private boolean required = false;
     private String description;
@@ -74,6 +74,22 @@ public class Property implements Schema {
         if (constraint != null && !constraint.isBlank()) {
             this.constraints.add(constraint);
         }
+    }
+
+    public void setRequired(boolean required) {
+        this.required = required;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setExample(Object example) {
+        this.example = example;
+    }
+
+    public void setValue(Schema value) {
+        this.value = value;
     }
 
     @Override

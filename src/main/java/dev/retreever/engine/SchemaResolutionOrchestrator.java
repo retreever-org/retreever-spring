@@ -49,16 +49,13 @@ public class SchemaResolutionOrchestrator {
         // Process Exception Handlers
         processControllerAdvices(controllerAdvices);
 
-        // Optimize registry
-        schemaRegistry.optimize();
-
         log.debug("All Schema Successfully Resolved.");
         schemaRegistry.getSchemas().values().forEach(schema -> {
                     log.debug(schema.toString());
                 }
         );
 
-        log.info("SchemaResolutionOrchestrator: {} schemas registered", schemaRegistry.size());
+        log.debug("SchemaResolutionOrchestrator: {} schemas registered", schemaRegistry.size());
     }
 
     private void processControllers(Set<Class<?>> controllers) {

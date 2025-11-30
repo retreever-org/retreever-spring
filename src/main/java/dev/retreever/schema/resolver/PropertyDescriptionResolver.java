@@ -11,6 +11,8 @@ package dev.retreever.schema.resolver;
 import dev.retreever.annotation.Description;
 import dev.retreever.annotation.FieldInfo;
 import dev.retreever.schema.model.Property;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.AnnotatedElement;
 
@@ -20,6 +22,8 @@ import java.lang.reflect.AnnotatedElement;
  * fields or parameters and applies the associated text.
  */
 public class PropertyDescriptionResolver {
+
+    private static final Logger DescLog = LoggerFactory.getLogger(PropertyDescriptionResolver.class);
 
     /**
      * Applies description metadata from annotations declared on the
@@ -36,6 +40,11 @@ public class PropertyDescriptionResolver {
         Description descriptionAnnotation = annotatedElement.getAnnotation(Description.class);
         if (descriptionAnnotation != null) {
             prop.description(descriptionAnnotation.value());
+
+            if(descriptionAnnotation.value() != null && !descriptionAnnotation.value().isEmpty()) {
+                DescLog.debug("Property: {}, Description: {}",prop.getName(), prop.getDescription());
+            }
+
         } else {
             FieldInfo info = annotatedElement.getAnnotation(FieldInfo.class);
             if (info != null) {

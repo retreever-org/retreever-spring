@@ -44,7 +44,7 @@ public class RetreeverBootstrap {
      */
     @EventListener(ApplicationReadyEvent.class)
     public void init(ApplicationReadyEvent event) {
-        log.debug("Initializing Retreever...");
+        log.info("Initializing Retreever. Resolving API Documentation.");
 
         ApplicationContext context = event.getApplicationContext();
         Class<?> appClass = event.getSpringApplication().getMainApplicationClass();
@@ -56,7 +56,7 @@ public class RetreeverBootstrap {
         // Build final documentation snapshot
         this.cached = orchestrator.build(appClass, controllers, controllerAdvices);
 
-        log.info("Retreever initialized.");
+        log.info("Retreever initialized. API Document Ready.");
     }
 
     /**
