@@ -12,6 +12,7 @@ import dev.retreever.endpoint.model.ApiHeader;
 import dev.retreever.engine.RetreeverOrchestrator;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -23,6 +24,7 @@ import java.util.Map;
  * Auto-configures all Retreever components using component scanning.
  */
 @AutoConfiguration
+@ConditionalOnProperty(prefix = "retreever", name = "enabled", havingValue = "true", matchIfMissing = true)
 @ComponentScan(basePackages = "dev.retreever")
 public class RetreeverAutoConfiguration {
 
