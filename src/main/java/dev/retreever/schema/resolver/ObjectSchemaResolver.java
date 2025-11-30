@@ -8,7 +8,6 @@
 
 package dev.retreever.schema.resolver;
 
-import dev.retreever.schema.model.JsonPropertyType;
 import dev.retreever.schema.model.ObjectSchema;
 import dev.retreever.schema.model.Property;
 import dev.retreever.schema.model.Schema;
@@ -21,7 +20,7 @@ import java.util.List;
 
 /**
  * Reflectively resolves a Java {@link Type} into an {@link ObjectSchema} by processing all fields.
- * Uses {@link PropertyResolver} for leaf types and recursive delegation for containers.
+ * Uses {@link PropertyResolver} for metadata enrichment and recursive delegation for nested schemas.
  */
 public class ObjectSchemaResolver {
 
@@ -38,19 +37,15 @@ public class ObjectSchemaResolver {
             field.setAccessible(true);
             Type fieldType = field.getGenericType();
 
-            // CRITICAL: Use resolveField for ALL nested types
+            // Resolve nested schema structure first
             Schema fieldSchema = SchemaResolver.resolveField(field, clazz, fieldType);
 
-            JsonPropertyType fieldKind = JsonPropertyTypeResolver.resolve(
-                    SchemaResolver.extractRawClass(fieldType)
-            );
-
-            Property property = new Property(
-                    field.getName(),
-                    fieldKind,
-                    fieldSchema
-            );
-            objectSchema.addProperty(property);
+            // Enrich with metadata using PropertyResolver
+            Property property = PropertyResolver.resolve(field);
+            if (property != null) {
+                property.setValue(fieldSchema);
+                objectSchema.addProperty(property);
+            }
         }
 
         return objectSchema.isEmpty() ? new ObjectSchema() : objectSchema;

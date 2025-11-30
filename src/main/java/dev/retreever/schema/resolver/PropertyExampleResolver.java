@@ -10,6 +10,8 @@ package dev.retreever.schema.resolver;
 
 import dev.retreever.annotation.FieldInfo;
 import dev.retreever.schema.model.Property;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 
@@ -18,6 +20,8 @@ import java.lang.reflect.Field;
  * If the annotation declares a non-empty example, it is applied to the property.
  */
 public class PropertyExampleResolver {
+
+    private static final Logger exLog = LoggerFactory.getLogger(PropertyExampleResolver.class);
 
     /**
      * Applies an example value to the given JSON property, if the field
@@ -35,6 +39,7 @@ public class PropertyExampleResolver {
         if (fieldInfo != null) {
             String example = fieldInfo.example();
             if (example != null && !example.isBlank()) {
+                exLog.debug("Property: {}, Example: {}", property.getName(), example);
                 property.example(example);
             }
         }
