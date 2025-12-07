@@ -17,11 +17,11 @@ import java.lang.reflect.Method;
  */
 public class ApiEndpointIOResolver {
 
-    private final ApiBodySchemaResolver bodyResolver;
+    private final ApiIOTypeResolver bodyResolver;
     private final ApiHeaderResolver headerResolver;
 
     public ApiEndpointIOResolver(ApiHeaderRegistry apiHeaderRegistry) {
-        this.bodyResolver = new ApiBodySchemaResolver();
+        this.bodyResolver = new ApiIOTypeResolver();
         this.headerResolver = new ApiHeaderResolver(apiHeaderRegistry);
     }
 

@@ -80,7 +80,7 @@ public record ApiDocument(
             @JsonProperty("name") String name,
             @JsonProperty("description") String description,
             @JsonProperty("type") String type,
-            @JsonProperty("required") String required,
+            @JsonProperty("required") boolean required,
             @JsonProperty("default_value") String defaultValue,
             @JsonProperty("constraints") List<String> constraints
     ) {}
@@ -91,7 +91,7 @@ public record ApiDocument(
     public record Header(
             @JsonProperty("name") String name,
             @JsonProperty("type") String type,
-            @JsonProperty("required") String required,
+            @JsonProperty("required") boolean required,
             @JsonProperty("description") String description
     ) {}
 

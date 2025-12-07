@@ -12,7 +12,7 @@ import java.lang.reflect.Type;
  * No resolving, no unwrapping, no registry interaction.
  * SchemaResolver handles everything later.
  */
-public class ApiBodySchemaResolver {
+public class ApiIOTypeResolver {
 
     public void resolve(ApiEndpoint endpoint, Method method) {
         extractRequestType(endpoint, method);

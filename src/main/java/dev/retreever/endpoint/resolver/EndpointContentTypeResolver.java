@@ -8,12 +8,18 @@
 
 package dev.retreever.endpoint.resolver;
 
-import org.springframework.web.bind.annotation.*;
 import dev.retreever.endpoint.model.ApiEndpoint;
+import dev.retreever.schema.model.JsonPropertyType;
+import dev.retreever.schema.resolver.JsonPropertyTypeResolver;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -23,6 +29,15 @@ import java.util.List;
  * {@link PatchMapping}, {@link DeleteMapping}, and {@link RequestMapping}.
  */
 public class EndpointContentTypeResolver {
+
+    private static final List<Class<? extends Annotation>> mappingTypes = List.of(
+            GetMapping.class,
+            PostMapping.class,
+            PutMapping.class,
+            PatchMapping.class,
+            DeleteMapping.class,
+            RequestMapping.class
+    );
 
     /**
      * Populates consume and produce media types for the given endpoint.
@@ -41,40 +56,96 @@ public class EndpointContentTypeResolver {
      */
     private static List<String> resolveConsumes(Method method) {
 
-        // GET usually doesn't specify consumes, but still checked
-        GetMapping get = method.getAnnotation(GetMapping.class);
-        if (get != null && get.consumes().length > 0) {
-            return Arrays.asList(get.consumes());
+        String[] explicit = extractConsumes(method);
+        List<String> consumes = toMutable(explicit);
+
+        // infer only if empty and only for methods that accept bodies (POST/PUT/PATCH)
+        if (consumes.isEmpty() && methodAllowsBody(method)) {
+            resolveConsumesIfEmpty(consumes, method);
         }
 
-        PostMapping post = method.getAnnotation(PostMapping.class);
-        if (post != null && post.consumes().length > 0) {
-            return Arrays.asList(post.consumes());
+        return consumes;
+    }
+
+    private static String[] extractConsumes(Method method) {
+        for (Class<? extends Annotation> type : mappingTypes) {
+            if (method.isAnnotationPresent(type)) {
+                Annotation ann = method.getAnnotation(type);
+                try {
+                    return (String[]) type.getMethod("consumes").invoke(ann);
+                } catch (Exception ignored) {
+                }
+            }
         }
 
-        PutMapping put = method.getAnnotation(PutMapping.class);
-        if (put != null && put.consumes().length > 0) {
-            return Arrays.asList(put.consumes());
-        }
+        return new String[0];
+    }
 
-        PatchMapping patch = method.getAnnotation(PatchMapping.class);
-        if (patch != null && patch.consumes().length > 0) {
-            return Arrays.asList(patch.consumes());
-        }
+    private static boolean methodAllowsBody(Method method) {
 
-        DeleteMapping delete = method.getAnnotation(DeleteMapping.class);
-        if (delete != null && delete.consumes().length > 0) {
-            return Arrays.asList(delete.consumes());
-        }
+        if (method.isAnnotationPresent(PostMapping.class)) return true;
+        if (method.isAnnotationPresent(PutMapping.class)) return true;
+        if (method.isAnnotationPresent(PatchMapping.class)) return true;
 
         RequestMapping req = method.getAnnotation(RequestMapping.class);
-        if (req != null && req.consumes().length > 0) {
-            return Arrays.asList(req.consumes());
+        if (req != null) {
+            List<RequestMethod> m = Arrays.asList(req.method());
+            return m.contains(RequestMethod.POST)
+                    || m.contains(RequestMethod.PUT)
+                    || m.contains(RequestMethod.PATCH);
         }
 
-        // No consumes declared
-        return Collections.emptyList();
+        return false;
     }
+
+    /**
+     * Resolves the consumes type by parameter level annotations such as {@code @RequestBody} or
+     * resolves by parameter type such as {@code MultipartFile} or defaults to {@code MediaType.APPLICATION_FORM_URLENCODED_VALUE}.
+     * Resolves only if the consumes list is empty
+     *
+     * @param consumes A list of MediaType
+     * @param method   method
+     */
+    private static void resolveConsumesIfEmpty(List<String> consumes, Method method) {
+
+        if (!consumes.isEmpty()) return;
+
+        Annotation[][] annMatrix = method.getParameterAnnotations();
+        Class<?>[] types = method.getParameterTypes();
+
+        for (int i = 0; i < types.length; i++) {
+
+            Class<?> type = types[i];
+            Annotation[] anns = annMatrix[i];
+            JsonPropertyType jsonType = JsonPropertyTypeResolver.resolve(type);
+
+            boolean hasRequestBody = Arrays.stream(anns)
+                    .anyMatch(a -> a.annotationType() == RequestBody.class);
+
+            boolean hasModelAttr = Arrays.stream(anns)
+                    .anyMatch(a -> a.annotationType() == ModelAttribute.class);
+
+            if (MultipartFile.class.isAssignableFrom(type)) {
+                consumes.add(MediaType.MULTIPART_FORM_DATA_VALUE);
+                continue;
+            }
+
+            if (hasModelAttr) {
+                consumes.add(MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+                continue;
+            }
+
+            if (jsonType == JsonPropertyType.OBJECT) {
+
+                if (hasRequestBody) {
+                    consumes.add(MediaType.APPLICATION_JSON_VALUE);
+                } else {
+                    consumes.add(MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+                }
+            }
+        }
+    }
+
 
     /**
      * Resolves the list of media types the method produces.
@@ -82,36 +153,66 @@ public class EndpointContentTypeResolver {
      */
     private static List<String> resolveProduces(Method method) {
 
-        GetMapping get = method.getAnnotation(GetMapping.class);
-        if (get != null && get.produces().length > 0) {
-            return Arrays.asList(get.produces());
+        String[] explicit = extractProduces(method);
+        List<String> produces = toMutable(explicit);
+
+        // Always infer when explicit produces is empty
+        if (produces.isEmpty()) {
+            resolveProducesIfEmpty(produces, method);
         }
 
-        PostMapping post = method.getAnnotation(PostMapping.class);
-        if (post != null && post.produces().length > 0) {
-            return Arrays.asList(post.produces());
+        return produces;
+    }
+
+    private static String[] extractProduces(Method method) {
+        for (Class<? extends Annotation> type : mappingTypes) {
+            if (method.isAnnotationPresent(type)) {
+                Annotation ann = method.getAnnotation(type);
+                try {
+                    return (String[]) type.getMethod("produces").invoke(ann);
+                } catch (Exception ignored) {
+                }
+            }
         }
 
-        PutMapping put = method.getAnnotation(PutMapping.class);
-        if (put != null && put.produces().length > 0) {
-            return Arrays.asList(put.produces());
+        return new String[0];
+    }
+
+    /**
+     * Resolves the produces type.
+     * Resolves only if the produces list is empty.
+     *
+     * @param produces A list of MediaType
+     * @param method   method
+     */
+    private static void resolveProducesIfEmpty(List<String> produces, Method method) {
+
+        if (!produces.isEmpty()) return;
+
+        Class<?> controllerClass = method.getDeclaringClass();
+        Class<?> returnType = method.getReturnType();
+
+        boolean isRest = controllerClass.isAnnotationPresent(RestController.class);
+        boolean isController = controllerClass.isAnnotationPresent(Controller.class);
+
+        if (returnType != String.class) {
+            produces.add(MediaType.APPLICATION_JSON_VALUE);
+            return;
         }
 
-        PatchMapping patch = method.getAnnotation(PatchMapping.class);
-        if (patch != null && patch.produces().length > 0) {
-            return Arrays.asList(patch.produces());
+        if (isRest) {
+            produces.add(MediaType.APPLICATION_JSON_VALUE);
+            return;
         }
 
-        DeleteMapping delete = method.getAnnotation(DeleteMapping.class);
-        if (delete != null && delete.produces().length > 0) {
-            return Arrays.asList(delete.produces());
+        if (isController) {
+            produces.add(MediaType.TEXT_HTML_VALUE);
+            produces.add("text/*");
         }
+    }
 
-        RequestMapping req = method.getAnnotation(RequestMapping.class);
-        if (req != null && req.produces().length > 0) {
-            return Arrays.asList(req.produces());
-        }
-
-        return Collections.emptyList();
+    private static List<String> toMutable(String[] arr) {
+        if (arr == null || arr.length == 0) return new ArrayList<>();
+        return new ArrayList<>(Arrays.asList(arr));
     }
 }

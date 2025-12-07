@@ -10,11 +10,9 @@ package dev.retreever.endpoint.resolver;
 
 import dev.retreever.annotation.ApiError;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +63,7 @@ public class ApiErrorResolver {
                     : "";
 
             // Extract return Type (NOT schema)
-            Type returnType = extractReturnType(method);
+            Type returnType = method.getGenericReturnType();
 
             // Create one ApiError per declared exception type
             for (Class<?> ex : exceptionTypes) {
@@ -73,7 +71,7 @@ public class ApiErrorResolver {
                 dev.retreever.endpoint.model.ApiError err = dev.retreever.endpoint.model.ApiError.create(
                         status,
                         description,
-                        ex.getName()
+                        ex
                 );
 
                 // Store TYPE only, no schema resolving
@@ -84,20 +82,5 @@ public class ApiErrorResolver {
         }
 
         return result;
-    }
-
-    private Type extractReturnType(Method method) {
-
-        Type generic = method.getGenericReturnType();
-
-        // unwrap ResponseEntity<T>
-        if (generic instanceof ParameterizedType p) {
-            Type raw = p.getRawType();
-            if (raw instanceof Class<?> c && c == ResponseEntity.class) {
-                return p.getActualTypeArguments()[0];
-            }
-        }
-
-        return generic;
     }
 }

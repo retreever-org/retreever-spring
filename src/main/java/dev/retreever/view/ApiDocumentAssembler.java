@@ -14,7 +14,6 @@ import dev.retreever.repo.SchemaRegistry;
 import dev.retreever.schema.model.Schema;
 import dev.retreever.schema.resolver.SchemaResolver;
 import dev.retreever.view.dto.ApiDocument;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -142,8 +141,8 @@ public class ApiDocumentAssembler {
 
     // ERROR MAPPING (ApiErrorRegistry INTEGRATED)
     private List<ApiDocument.Error> mapErrors(ApiEndpoint endpoint) {
-        log.debug("Mapping {} errors", endpoint.getErrorBodyTypes().size());
-        return endpoint.getErrorBodyTypes().stream()
+        log.debug("Mapping {} errors", endpoint.getErrorTypes().size());
+        return endpoint.getErrorTypes().stream()
                 .map(this::renderError)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
@@ -152,44 +151,35 @@ public class ApiDocumentAssembler {
     private ApiDocument.Error renderError(Type errorType) {
         if (errorType == null) return null;
 
-        // 1. Extract exception class from error body type
-        Class<?> classType = SchemaResolver.extractRawClass(errorType);
-        if (classType == null || !Throwable.class.isAssignableFrom(classType)) {
-            log.debug("Invalid exception type: {}", errorType.getTypeName());
-            return null;
-        }
-
-        @SuppressWarnings("unchecked")
-        Class<? extends Throwable> exceptionClass = (Class<? extends Throwable>) classType;
-
         // 2. Lookup ApiError from registry
-        ApiError apiError = errorRegistry.get(exceptionClass);
+        ApiError apiError = errorRegistry.get(errorType);
         if (apiError == null) {
-            log.debug("No ApiError for: {}", exceptionClass.getSimpleName());
+            log.debug("No ApiError for: {}", errorType.getTypeName());
             return null;
         }
-
-        log.debug("Error mapped: {} -> {}", exceptionClass.getSimpleName(), apiError.getStatus());
 
         // 3. Render error body schema (if present)
-        Schema schema = null;
         Type errorBodyType = apiError.getErrorBodyType();
-        if (errorBodyType != null) {
-            schema = schemaRegistry.getSchema(errorBodyType);
-        }
+        Schema schema = schemaRegistry.getSchema(errorBodyType);
 
-        Map<String, Object> response = schema != null
-                ? SchemaViewRenderer.renderResponse(schema)
-                : null;
+        Map<String, Object> response = null;
+        if(schema != null) {
+            response = SchemaViewRenderer.renderResponse(schema);
+            log.debug("Error schema rendered, for type: {}", apiError.getErrorType().getTypeName());
+        }
+        else log.debug("No Schema found in registry for: {}", errorBodyType.getTypeName());
 
         // 4. Map to final DTO
-        return new ApiDocument.Error(
+        ApiDocument.Error error = new ApiDocument.Error(
                 apiError.getStatus().getReasonPhrase(),  // Fixed: getReasonPhrase()
                 apiError.getStatus().value(),
                 apiError.getDescription(),
                 apiError.getErrorCode(),
                 response
         );
+
+        log.debug("Error mapped: {} -> {}", apiError.getErrorType().getTypeName(), apiError.getStatus());
+        return error;
     }
 
     // PARAMETER MAPPINGS (OPTIMIZED)
@@ -213,7 +203,7 @@ public class ApiDocumentAssembler {
                         p.getName(),
                         p.getDescription(),
                         p.getType().displayName(),
-                        String.valueOf(p.isRequired()),
+                        p.isRequired(),
                         p.getDefaultValue(),
                         new ArrayList<>(p.getConstraints())
                 ))
@@ -226,7 +216,7 @@ public class ApiDocumentAssembler {
                 .map(h -> new ApiDocument.Header(
                         h.getName(),
                         h.getType().displayName(),
-                        String.valueOf(h.isRequired()),
+                        h.isRequired(),
                         h.getDescription()
                 ))
                 .collect(Collectors.toList());

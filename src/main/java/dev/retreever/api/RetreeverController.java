@@ -8,6 +8,7 @@
 
 package dev.retreever.api;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,11 +36,12 @@ public class RetreeverController {
      * @return basic status and uptime info
      */
     @GetMapping("/ping")
-    public Map<String, Object> ping() {
-        return Map.of(
-                "status", "ok",
+    public ResponseEntity<Map<String, Object>> ping() {
+        Map<String, Object> response = Map.of(
+                "status", "OK",
                 "uptime", bootstrap.getUptime()
         );
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -48,7 +50,7 @@ public class RetreeverController {
      * @return the assembled API document
      */
     @GetMapping("/doc")
-    public ApiDocument getDoc() {
-        return bootstrap.getDocument();
+    public ResponseEntity<ApiDocument> getDoc() {
+        return ResponseEntity.ok(bootstrap.getDocument());
     }
 }

@@ -45,7 +45,7 @@ public class ApiEndpointResolver {
         if (ann != null && ann.errors().length > 0) {
             Arrays.stream(ann.errors())
                     .map(c -> (Type) c)
-                    .forEach(ep::addErrorBodyType);
+                    .forEach(ep::addErrorType);
         }
 
         return ep;

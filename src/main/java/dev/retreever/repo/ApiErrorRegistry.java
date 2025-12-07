@@ -9,7 +9,10 @@
 package dev.retreever.repo;
 
 import dev.retreever.endpoint.model.ApiError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
@@ -24,6 +27,7 @@ public final class ApiErrorRegistry extends DocRegistry<ApiError> {
 
     private static final ApiErrorRegistry INSTANCE = new ApiErrorRegistry();
     private static final Map<String, ApiError> errors = new ConcurrentHashMap<>();
+    private static final Logger log = LoggerFactory.getLogger(ApiErrorRegistry.class);
 
     private ApiErrorRegistry() {
     }
@@ -36,8 +40,9 @@ public final class ApiErrorRegistry extends DocRegistry<ApiError> {
      * Registers an ApiError using its exception class name. Deduplicates automatically.
      */
     public void register(ApiError error) {
-        String key = error.getExceptionName();
+        String key = error.getErrorType().getTypeName();
         if (!contains(key)) {
+            log.debug("Registering ApiError: {}", error);
             add(key, error);
         }
     }
@@ -45,9 +50,10 @@ public final class ApiErrorRegistry extends DocRegistry<ApiError> {
     /**
      * Look up an ApiError by exception class.
      */
-    public ApiError get(Class<? extends Throwable> exceptionType) {
+    public ApiError get(Type exceptionType) {
         if (exceptionType == null) return null;
-        return get(exceptionType.getName());
+        log.debug("Looking up ApiError for: {}", exceptionType.getTypeName());
+        return get(exceptionType.getTypeName());
     }
 
     /**

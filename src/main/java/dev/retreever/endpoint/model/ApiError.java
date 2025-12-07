@@ -19,19 +19,19 @@ public class ApiError {
 
     private final HttpStatus status;
     private final String description;
-    private final String exceptionName; // fully qualified exception type
+    private final Type errorType;
     private String errorCode;
 
     private Type errorBodyType; // resolved at view-assembly stage
 
-    private ApiError(HttpStatus status, String description, String exceptionName) {
+    private ApiError(HttpStatus status, String description, Type errorType) {
         this.status = status;
         this.description = description;
-        this.exceptionName = exceptionName;
+        this.errorType = errorType;
     }
 
-    public static ApiError create(HttpStatus status, String description, String exceptionName) {
-        return new ApiError(status, description, exceptionName);
+    public static ApiError create(HttpStatus status, String description, Type errorType) {
+        return new ApiError(status, description, errorType);
     }
 
     public ApiError errorCode(String code) {
@@ -54,8 +54,8 @@ public class ApiError {
         return description;
     }
 
-    public String getExceptionName() {
-        return exceptionName;
+    public Type getErrorType() {
+        return errorType;
     }
 
     public String getErrorCode() {
@@ -64,5 +64,16 @@ public class ApiError {
 
     public Type getErrorBodyType() {
         return errorBodyType;
+    }
+
+    @Override
+    public String toString() {
+        return "ApiError{" +
+                "status=" + status +
+                ", description='" + description + '\'' +
+                ", exceptionType='" + errorType.getTypeName() + '\'' +
+                ", errorCode='" + errorCode + '\'' +
+                ", errorBodyType=" + errorBodyType +
+                '}';
     }
 }

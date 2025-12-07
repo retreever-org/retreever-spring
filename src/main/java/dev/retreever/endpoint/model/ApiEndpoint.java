@@ -49,7 +49,7 @@ public class ApiEndpoint {
     /**
      * NEW — each exception handler return type corresponds to one entry
      */
-    private final List<Type> errorBodyTypes = new ArrayList<>();
+    private final List<Type> errorTypes = new ArrayList<>();
 
     private boolean deprecated;
 
@@ -109,8 +109,8 @@ public class ApiEndpoint {
         return responseBodyType;
     }
 
-    public List<Type> getErrorBodyTypes() {
-        return errorBodyTypes;
+    public List<Type> getErrorTypes() {
+        return errorTypes;
     }
 
     public boolean isDeprecated() {
@@ -184,8 +184,8 @@ public class ApiEndpoint {
     /**
      * NEW — append exception response schema types
      */
-    public void addErrorBodyType(Type type) {
-        this.errorBodyTypes.add(type);
+    public void addErrorType(Type type) {
+        this.errorTypes.add(type);
     }
 
     public void deprecate() {

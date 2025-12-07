@@ -11,6 +11,8 @@ import dev.retreever.config.SchemaConfig;
 import dev.retreever.endpoint.model.ApiError;
 import dev.retreever.endpoint.resolver.ApiErrorResolver;
 import dev.retreever.repo.ApiErrorRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.lang.reflect.Method;
@@ -25,6 +27,7 @@ import java.util.stream.Stream;
  */
 public class ApiErrorResolutionOrchestrator {
 
+    private static final Logger log = LoggerFactory.getLogger(ApiErrorResolutionOrchestrator.class);
     private final ApiErrorRegistry errorRegistry;
     private final Predicate<Class<?>> basePackageFilter;
 
@@ -45,6 +48,7 @@ public class ApiErrorResolutionOrchestrator {
 
             // Register ALL resolved errors
             errors.forEach(errorRegistry::register);
+            errorRegistry.getAll().values().forEach(error -> log.debug("Registered ApiError: {}", error));
         }
     }
 
