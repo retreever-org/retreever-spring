@@ -1,6 +1,6 @@
 <div align="center">
 
-![Retreever Logo](https://raw.githubusercontent.com/Retreever-org/retreever-java/refs/heads/main/Docmentation/Logo/Retreever_logo_white.png)
+![Retreever Logo](https://raw.githubusercontent.com/Retreever-org/retreever-java/fae0a98e028e9b7bc6b269c480b388245530ea8d/Docmentation/Logo/retreever-banner.svg)
 
 </div>
 
