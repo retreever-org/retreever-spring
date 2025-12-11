@@ -8,6 +8,7 @@
 
 package dev.retreever.api;
 
+import dev.retreever.config.TestEnvironmentConfig;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,9 +26,13 @@ import java.util.Map;
 public class RetreeverController {
 
     private final RetreeverBootstrap bootstrap;
+    private final TestEnvironmentConfig environmentConfig;
 
-    public RetreeverController(RetreeverBootstrap bootstrap) {
+    public RetreeverController(
+            RetreeverBootstrap bootstrap,
+            TestEnvironmentConfig environmentConfig) {
         this.bootstrap = bootstrap;
+        this.environmentConfig = environmentConfig;
     }
 
     /**
@@ -52,5 +57,10 @@ public class RetreeverController {
     @GetMapping("/doc")
     public ResponseEntity<ApiDocument> getDoc() {
         return ResponseEntity.ok(bootstrap.getDocument());
+    }
+
+    @GetMapping("/environment")
+    public ResponseEntity<TestEnvironmentConfig> getEnvironment() {
+        return ResponseEntity.ok(environmentConfig);
     }
 }

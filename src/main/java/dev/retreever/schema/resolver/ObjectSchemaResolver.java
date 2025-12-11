@@ -53,13 +53,29 @@ public class ObjectSchemaResolver {
 
     /**
      * Collects all declared instance fields from class hierarchy.
+     * - walks child -> parent, stopping before java.lang.Object
+     * - skips java.* classes (prevents module reflection errors)
+     * - skips synthetic and static fields (e.g. serialVersionUID)
      */
     private static Field[] getAllFields(Class<?> clazz) {
         List<Field> fields = new ArrayList<>();
         Class<?> current = clazz;
 
         while (current != null && current != Object.class) {
-            fields.addAll(Arrays.asList(current.getDeclaredFields()));
+            // Avoid traversing into JDK/internal classes
+            String pkg = current.getPackage() == null ? "" : current.getPackageName();
+            if (pkg.startsWith("java.")) {
+                break; // stop climbing into java.* superclasses
+            }
+
+            for (Field f : current.getDeclaredFields()) {
+                // Skip JVM-injected / non-instance fields
+                if (f.isSynthetic()) continue;
+                if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
+
+                fields.add(f);
+            }
+
             current = current.getSuperclass();
         }
 

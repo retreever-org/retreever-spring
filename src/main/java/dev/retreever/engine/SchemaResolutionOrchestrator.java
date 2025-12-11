@@ -10,7 +10,9 @@ package dev.retreever.engine;
 
 import dev.retreever.config.SchemaConfig;
 import dev.retreever.repo.SchemaRegistry;
+import dev.retreever.schema.model.JsonPropertyType;
 import dev.retreever.schema.model.Schema;
+import dev.retreever.schema.resolver.JsonPropertyTypeResolver;
 import dev.retreever.schema.resolver.SchemaResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,7 +112,8 @@ public class SchemaResolutionOrchestrator {
     private void processMethodParameters(Method method) {
         Parameter[] parameters = method.getParameters();
         for (Parameter param : parameters) {
-            if (isRequestBodyOrModelAttribute(param)) {
+            JsonPropertyType jsonType = JsonPropertyTypeResolver.resolve(param.getType());
+            if (jsonType.equals(JsonPropertyType.OBJECT)) {
                 Type rawParamType = param.getParameterizedType();
                 Type unwrappedType = unwrapContainerType(rawParamType);
                 registerSchema(rawParamType, unwrappedType);
@@ -178,10 +181,5 @@ public class SchemaResolutionOrchestrator {
                 method.isAnnotationPresent(PutMapping.class) ||
                 method.isAnnotationPresent(DeleteMapping.class) ||
                 method.isAnnotationPresent(PatchMapping.class);
-    }
-
-    private boolean isRequestBodyOrModelAttribute(Parameter param) {
-        return param.isAnnotationPresent(RequestBody.class) ||
-                param.isAnnotationPresent(ModelAttribute.class);
     }
 }

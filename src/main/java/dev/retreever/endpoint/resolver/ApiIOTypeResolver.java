@@ -1,6 +1,8 @@
 package dev.retreever.endpoint.resolver;
 
 import dev.retreever.endpoint.model.ApiEndpoint;
+import dev.retreever.schema.model.JsonPropertyType;
+import dev.retreever.schema.resolver.JsonPropertyTypeResolver;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.lang.reflect.Method;
@@ -36,7 +38,8 @@ public class ApiIOTypeResolver {
 
     private Parameter findRequestBodyParameter(Method method) {
         for (Parameter p : method.getParameters()) {
-            if (p.isAnnotationPresent(RequestBody.class)) return p;
+            JsonPropertyType jsonType = JsonPropertyTypeResolver.resolve(p.getType());
+            if (jsonType.equals(JsonPropertyType.OBJECT)) return p;
         }
         return null;
     }
