@@ -131,7 +131,7 @@ public class EndpointContentTypeResolver {
             }
 
             if (hasModelAttr) {
-                consumes.add(MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+                consumes.add(MediaType.MULTIPART_FORM_DATA_VALUE);
                 continue;
             }
 
@@ -140,7 +140,7 @@ public class EndpointContentTypeResolver {
                 if (hasRequestBody) {
                     consumes.add(MediaType.APPLICATION_JSON_VALUE);
                 } else {
-                    consumes.add(MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+                    consumes.add(MediaType.MULTIPART_FORM_DATA_VALUE);
                 }
             }
         }
