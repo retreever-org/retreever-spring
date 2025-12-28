@@ -18,9 +18,12 @@ import org.springframework.stereotype.Component;
 import dev.retreever.engine.ControllerScanner;
 import dev.retreever.engine.RetreeverOrchestrator;
 import dev.retreever.view.dto.ApiDocument;
+import org.springframework.util.ClassUtils;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Bootstrap component responsible for building and caching the API document
@@ -50,8 +53,15 @@ public class RetreeverBootstrap {
         Class<?> appClass = event.getSpringApplication().getMainApplicationClass();
 
         // Scan for @RestController-annotated classes
-        Set<Class<?>> controllers = ControllerScanner.scanControllers(context);
-        Set<Class<?>> controllerAdvices = ControllerScanner.scanControllerAdvices(context);
+        Set<Class<?>> allControllers = ControllerScanner.scanControllers(context);
+        Set<Class<?>> allAdvices = ControllerScanner.scanControllerAdvices(context);
+
+        // Get base packages
+        List<String> basePackages = orchestrator.getBasePackages();
+
+        // Filter to base packages only
+        Set<Class<?>> controllers = filterByBasePackages(allControllers, basePackages);
+        Set<Class<?>> controllerAdvices = filterByBasePackages(allAdvices, basePackages);
 
         // Build final documentation snapshot
         this.cached = orchestrator.build(appClass, controllers, controllerAdvices);
@@ -71,5 +81,16 @@ public class RetreeverBootstrap {
      */
     public Instant getUptime() {
         return cached.upTime();
+    }
+
+    private Set<Class<?>> filterByBasePackages(Set<Class<?>> classes, List<String> basePackages) {
+        return classes.stream()
+                .filter(clazz -> isInBasePackages(clazz, basePackages))
+                .collect(Collectors.toSet());
+    }
+
+    private boolean isInBasePackages(Class<?> clazz, List<String> basePackages) {
+        String pkg = ClassUtils.getPackageName(clazz);
+        return basePackages.stream().anyMatch(pkg::startsWith);
     }
 }

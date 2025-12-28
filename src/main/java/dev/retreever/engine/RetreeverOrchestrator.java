@@ -32,8 +32,14 @@ public class RetreeverOrchestrator {
     private final SchemaResolutionOrchestrator schemaResolutionOrchestrator;
     private final ApiDocumentAssembler assembler;
     private final ApiDocResolver docResolver;
+    private final List<String> basePackages; // ✅ Singleton
+
+    public List<String> getBasePackages() {
+        return basePackages;
+    }
 
     public RetreeverOrchestrator(List<String> basePackages, List<ApiHeader> headers) {
+        this.basePackages = basePackages;
 
         // 1. Initialise config
         SchemaConfig.init(basePackages);
