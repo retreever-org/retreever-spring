@@ -73,8 +73,8 @@ public final class SchemaViewRenderer {
         if (s == null) return null;
 
         if (s instanceof Property p) {
-            if (p.getExample() != null) {
-                return p.getExample();
+            if (p.getExample() != null && p.getValue() instanceof ValueSchema vs) {
+                return convertExample(p.getExample(), vs);
             }
             return renderExample(p.getValue());
         }
@@ -115,6 +115,22 @@ public final class SchemaViewRenderer {
             };
         }
         return null;
+    }
+
+    private static Object convertExample(Object raw, ValueSchema target) {
+        if (raw instanceof String str) {
+            return switch (target.getType()) {
+                case NUMBER -> tryParseNumber(str);
+                case BOOLEAN -> Boolean.parseBoolean(str);
+                default -> str;
+            };
+        }
+        return raw;
+    }
+
+    private static Number tryParseNumber(String s) {
+        try { return Double.parseDouble(s); }
+        catch (NumberFormatException e) { return 0; }
     }
 
     private static Map<String, Object> buildMetadata(Schema schema) {
