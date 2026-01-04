@@ -10,6 +10,7 @@ package dev.retreever.schema.resolver;
 
 import dev.retreever.schema.model.JsonPropertyType;
 import dev.retreever.schema.model.Property;
+import dev.retreever.schema.resolver.jackson.JsonNameResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,16 +32,20 @@ public class PropertyResolver {
      * @return fully enriched Property instance, or null if field is null
      */
     public static Property resolve(Field field) {
-        if (field == null) {
+        if (field == null || JsonNameResolver.isJsonIgnored(field)) {
             return null;
         }
 
         Class<?> rawType = field.getType();
         JsonPropertyType propType = JsonPropertyTypeResolver.resolve(rawType);
 
-        Property property = new Property(field.getName(), propType, null);
+        // resolve accurate property name addressing JSON/Jackson annotations
+        Class<?> declaringClass = field.getDeclaringClass();
+        String jsonName = JsonNameResolver.resolveJsonPropertyName(field, declaringClass, field.getName());
+        Property property = new Property(jsonName, propType, null);
 
         propLog.debug("Resolving metadata for prop: {}", property.getName());
+
         // Enrich with metadata using existing resolvers (safe for all types)
         PropertyConstraintResolver.resolve(property, field);
         PropertyDescriptionResolver.resolve(property, field);

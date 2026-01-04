@@ -8,15 +8,18 @@
 
 package dev.retreever.schema.resolver;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import dev.retreever.schema.model.ObjectSchema;
 import dev.retreever.schema.model.Property;
 import dev.retreever.schema.model.Schema;
+import dev.retreever.schema.resolver.jackson.JsonNameResolver;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Reflectively resolves a Java {@link Type} into an {@link ObjectSchema} by processing all fields.
@@ -30,16 +33,30 @@ public class ObjectSchemaResolver {
             return new ObjectSchema();
         }
 
+        // Check @JsonIgnoreType
+        if (clazz.isAnnotationPresent(JsonIgnoreType.class)) {
+            return null;  // Skip entire class
+        }
+
+        // Check @JsonIgnoreProperties
+        JsonIgnoreProperties ignoreProps = clazz.getAnnotation(JsonIgnoreProperties.class);
+        Set<String> ignoredNames = ignoreProps != null ? Set.of(ignoreProps.value()) : Set.of();
+
         ObjectSchema objectSchema = new ObjectSchema();
         Field[] fields = getAllFields(clazz);
 
         for (Field field : fields) {
             field.setAccessible(true);
-            Type fieldType = field.getGenericType();
 
+            // Skip ignored properties
+            if (ignoredNames.contains(field.getName()) || JsonNameResolver.isJsonIgnored(field)) {
+                continue;
+            }
+
+            // Existing logic...
+            Type fieldType = field.getGenericType();
             // Resolve nested schema structure first
             Schema fieldSchema = SchemaResolver.resolveField(field, clazz, fieldType);
-
             // Enrich with metadata using PropertyResolver
             Property property = PropertyResolver.resolve(field);
             if (property != null) {
@@ -50,6 +67,7 @@ public class ObjectSchemaResolver {
 
         return objectSchema.isEmpty() ? new ObjectSchema() : objectSchema;
     }
+
 
     /**
      * Collects all declared instance fields from class hierarchy.
