@@ -5,13 +5,16 @@ public record RetreeverPublicPaths(
 ) {
     public RetreeverPublicPaths() {
         this(new String[]{
-                "/retreever/**",
+                "/retreever",
+                "/retreever/login",
+                "/retreever/refresh",
+                "/retreever/logout",
                 "/index.html",
                 "/favicon.ico",
                 "/manifest.json",
                 "/assets/**",
                 "/images/**",
-                "/ws.js"
+                "/sw.js"
         });
     }
 

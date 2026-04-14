@@ -8,14 +8,22 @@
 
 package dev.retreever.boot;
 
+import dev.retreever.api.config.RetreeverCorsFilter;
+import dev.retreever.auth.RetreeverAuthenticationFilter;
+import dev.retreever.auth.RetreeverAuthProperties;
+import dev.retreever.auth.RetreeverAuthSupport;
+import dev.retreever.auth.RetreeverTokenService;
+import dev.retreever.config.RetreeverCorsProperties;
 import dev.retreever.endpoint.model.ApiHeader;
 import dev.retreever.engine.RetreeverOrchestrator;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.core.Ordered;
 
 import java.util.List;
 import java.util.Map;
@@ -49,5 +57,55 @@ public class RetreeverAutoConfiguration {
         String basePackage = appClass.getPackage().getName();
 
         return new RetreeverOrchestrator(List.of(basePackage, "java.util"), headers);
+    }
+
+    @Bean
+    public RetreeverAuthenticationFilter retreeverAuthenticationFilter(
+            RetreeverAuthProperties authProperties,
+            RetreeverTokenService tokenService) {
+        return new RetreeverAuthenticationFilter(authProperties, tokenService);
+    }
+
+    @Bean
+    public RetreeverCorsFilter retreeverCorsFilter(RetreeverCorsProperties corsProperties) {
+        return new RetreeverCorsFilter(corsProperties);
+    }
+
+    @Bean
+    public FilterRegistrationBean<RetreeverCorsFilter> retreeverCorsFilterRegistration(
+            RetreeverCorsFilter corsFilter) {
+        FilterRegistrationBean<RetreeverCorsFilter> registration = new FilterRegistrationBean<>(corsFilter);
+
+        registration.setName("retreeverCorsFilter");
+        registration.addUrlPatterns(
+                "/retreever",
+                "/retreever/*",
+                "/assets/*",
+                "/images/*",
+                "/index.html",
+                "/manifest.json",
+                "/sw.js",
+                "/favicon.ico"
+        );
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 5);
+
+        return registration;
+    }
+
+    @Bean
+    public FilterRegistrationBean<RetreeverAuthenticationFilter> retreeverAuthenticationFilterRegistration(
+            RetreeverAuthenticationFilter authenticationFilter) {
+        FilterRegistrationBean<RetreeverAuthenticationFilter> registration =
+                new FilterRegistrationBean<>(authenticationFilter);
+
+        registration.setName("retreeverAuthenticationFilter");
+        registration.addUrlPatterns(
+                RetreeverAuthSupport.DOC_PATH,
+                RetreeverAuthSupport.PING_PATH,
+                RetreeverAuthSupport.ENVIRONMENT_PATH
+        );
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 20);
+
+        return registration;
     }
 }

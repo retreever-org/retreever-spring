@@ -10,6 +10,7 @@ package dev.retreever.boot;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
@@ -50,7 +51,7 @@ public class RetreeverBootstrap {
         log.info("Initializing Retreever. Resolving API Documentation.");
 
         ApplicationContext context = event.getApplicationContext();
-        Class<?> appClass = event.getSpringApplication().getMainApplicationClass();
+        Class<?> appClass = resolveApplicationClass(context, event);
 
         // Scan for @RestController-annotated classes
         Set<Class<?>> allControllers = ControllerScanner.scanControllers(context);
@@ -92,5 +93,23 @@ public class RetreeverBootstrap {
     private boolean isInBasePackages(Class<?> clazz, List<String> basePackages) {
         String pkg = ClassUtils.getPackageName(clazz);
         return basePackages.stream().anyMatch(pkg::startsWith);
+    }
+
+    private Class<?> resolveApplicationClass(ApplicationContext context, ApplicationReadyEvent event) {
+        Class<?> appClass = event.getSpringApplication().getMainApplicationClass();
+        if (appClass != null) {
+            return appClass;
+        }
+
+        String[] appBeans = context.getBeanNamesForAnnotation(SpringBootApplication.class);
+        if (appBeans.length > 0) {
+            Class<?> resolvedClass = context.getType(appBeans[0]);
+            if (resolvedClass != null) {
+                return resolvedClass;
+            }
+        }
+
+        log.warn("Unable to resolve @SpringBootApplication class. Falling back to RetreeverBootstrap metadata.");
+        return RetreeverBootstrap.class;
     }
 }

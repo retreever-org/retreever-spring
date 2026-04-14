@@ -14,7 +14,7 @@ public class RetreeverResourceConfig implements WebMvcConfigurer {
                         "/index.html",
                         "/manifest.json",
                         "/favicon.ico",
-                        "/ws.js",
+                        "/sw.js",
                         "/assets/**",
                         "/images/**"
                 )

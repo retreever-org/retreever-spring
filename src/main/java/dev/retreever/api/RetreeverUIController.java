@@ -7,19 +7,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.concurrent.TimeUnit;
 
 @Controller
 public class RetreeverUIController {
 
-    @RequestMapping("/retreever")
+    @GetMapping("/retreever")
     public String entryPoint() {
         return "forward:/index.html";
     }
 
-    @RequestMapping("/retreever/**")
+    @GetMapping("/retreever/**")
     public String forwardReactRoutes() {
         return "forward:/index.html";
     }

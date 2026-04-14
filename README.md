@@ -233,3 +233,35 @@ MIT — free for personal and commercial use.
 
 Built for developers who are tired of stale documentation, duplicated effort, and YAML fatigue —
 Retreever **fetches everything you need, instantly.**
+
+<br>
+
+# Retreever Authentication
+
+Retreever can protect only its own `/retreever/**` endpoints without requiring Spring Security in the library or host app.
+
+Add credentials in the host application's properties:
+
+```properties
+retreever.auth.username=admin
+retreever.auth.password=change-me
+```
+
+With both properties present, Retreever:
+
+* keeps the React UI routes public
+* protects the Retreever data APIs such as `/retreever/doc`, `/retreever/ping`, and `/retreever/environment`
+* exposes API endpoints at `/retreever/login`, `/retreever/refresh`, and `/retreever/logout`
+* issues `HttpOnly`, `SameSite=Lax` cookies for the access token, refresh token, and device id
+* authenticates protected requests with an internal `OncePerRequestFilter`
+* encrypts token payloads with AES-GCM using a startup-generated secret and rotates refresh tokens per session
+
+Retreever generates an in-memory secret at application startup, so tokens become invalid after restart. If neither username nor password is set, auth stays disabled for backward compatibility.
+
+For separate UI development, you can allow credentialed CORS from specific origins:
+
+```properties
+retreever.allow-cross-origin=http://localhost:5173
+```
+
+Use a comma-separated list to allow multiple explicit origins. Wildcard `*` is not supported because Retreever auth uses cookies.
