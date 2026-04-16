@@ -48,8 +48,8 @@ public class RetreeverAuthProperties implements InitializingBean {
         this.refreshTokenTtl = refreshTokenTtl;
     }
 
-    public boolean isEnabled() {
-        return StringUtils.hasText(username) && StringUtils.hasText(password);
+    public boolean isDisabled() {
+        return !StringUtils.hasText(username) || !StringUtils.hasText(password);
     }
 
     @Override
@@ -63,12 +63,16 @@ public class RetreeverAuthProperties implements InitializingBean {
             );
         }
 
-        if (!accessTokenTtl.isPositive()) {
+        if (isNegative(accessTokenTtl)) {
             throw new IllegalStateException("'retreever.auth.access-token-ttl' must be a positive duration.");
         }
 
-        if (!refreshTokenTtl.isPositive()) {
+        if (isNegative(refreshTokenTtl)) {
             throw new IllegalStateException("'retreever.auth.refresh-token-ttl' must be a positive duration.");
         }
+    }
+
+    private boolean isNegative(Duration duration) {
+        return duration == null || duration.compareTo(Duration.ZERO) <= 0;
     }
 }

@@ -43,7 +43,7 @@ public class RetreeverTokenService {
     }
 
     public synchronized Optional<TokenPair> login(String username, String password) {
-        if (!properties.isEnabled()) {
+        if (properties.isDisabled()) {
             return Optional.empty();
         }
 
@@ -70,7 +70,7 @@ public class RetreeverTokenService {
     }
 
     public Optional<AuthenticatedUser> authenticate(String accessToken, String deviceId) {
-        if (!properties.isEnabled()) {
+        if (properties.isDisabled()) {
             return Optional.empty();
         }
 
@@ -98,7 +98,7 @@ public class RetreeverTokenService {
     }
 
     public synchronized Optional<TokenPair> refresh(String refreshToken, String deviceId) {
-        if (!properties.isEnabled()) {
+        if (properties.isDisabled()) {
             return Optional.empty();
         }
 

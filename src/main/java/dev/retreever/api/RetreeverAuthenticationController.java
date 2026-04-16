@@ -35,7 +35,7 @@ public class RetreeverAuthenticationController {
             @RequestBody RetreeverLoginRequest loginRequest,
             HttpServletRequest request,
             HttpServletResponse response) {
-        if (!authProperties.isEnabled()) {
+        if (authProperties.isDisabled()) {
             return ResponseEntity.notFound().build();
         }
 
@@ -52,7 +52,7 @@ public class RetreeverAuthenticationController {
 
     @PostMapping(path = "/refresh", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) {
-        if (!authProperties.isEnabled()) {
+        if (authProperties.isDisabled()) {
             return ResponseEntity.notFound().build();
         }
 
@@ -75,7 +75,7 @@ public class RetreeverAuthenticationController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
-        if (!authProperties.isEnabled()) {
+        if (authProperties.isDisabled()) {
             return ResponseEntity.notFound().build();
         }
 

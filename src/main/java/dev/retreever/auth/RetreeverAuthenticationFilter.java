@@ -24,7 +24,7 @@ public class RetreeverAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !authProperties.isEnabled();
+        return authProperties.isDisabled();
     }
 
     @Override
