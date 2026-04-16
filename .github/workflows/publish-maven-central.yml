@@ -40,14 +40,11 @@ jobs:
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
-      - name: Make Maven wrapper executable
-        run: chmod +x ./mvnw
-
       - name: Validate release tag matches pom version
         shell: bash
         run: |
           set -euo pipefail
-          project_version="$(./mvnw -q -DforceStdout help:evaluate -Dexpression=project.version)"
+          project_version="$(bash ./mvnw -q -DforceStdout help:evaluate -Dexpression=project.version)"
           release_tag="${{ github.event.release.tag_name }}"
           expected_tag="v${project_version}"
 
@@ -57,4 +54,4 @@ jobs:
           fi
 
       - name: Publish release to Maven Central
-        run: ./mvnw -B -Pcentral-release clean deploy
+        run: bash ./mvnw -B -Pcentral-release clean deploy
