@@ -1,0 +1,57 @@
+name: Publish To Maven Central
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: read
+
+concurrency:
+  group: maven-central-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: ${{ !github.event.release.prerelease && !github.event.release.draft }}
+    runs-on: ubuntu-latest
+
+    env:
+      CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+      CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
+      MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java, Maven settings, and GPG
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+          server-id: central
+          server-username: CENTRAL_USERNAME
+          server-password: CENTRAL_PASSWORD
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
+      - name: Validate release tag matches pom version
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_version="$(./mvnw -q -DforceStdout help:evaluate -Dexpression=project.version)"
+          release_tag="${{ github.event.release.tag_name }}"
+          expected_tag="v${project_version}"
+
+          if [[ "${release_tag}" != "${project_version}" && "${release_tag}" != "${expected_tag}" ]]; then
+            echo "Release tag ${release_tag} does not match project version ${project_version}."
+            exit 1
+          fi
+
+      - name: Publish release to Maven Central
+        run: ./mvnw -B -Pcentral-release clean deploy

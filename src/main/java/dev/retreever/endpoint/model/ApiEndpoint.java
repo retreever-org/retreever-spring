@@ -11,12 +11,12 @@ import java.util.List;
  * HTTP metadata, parameters, schemas, and error models.
  * <p>
  * Instead of storing string schema references, this version stores
- * raw Java {@link Type} objects so the SchemaResolver can correctly
+ * raw Java {@link Type} objects so the schema resolver can correctly
  * handle generic types such as:
  * <p>
- * ApiResponse<User>
- * ApiResponse<List<User>>
- * List<ApiResponse<Product>>
+ * {@code ApiResponse<User>}
+ * {@code ApiResponse<List<User>>}
+ * {@code List<ApiResponse<Product>>}
  * <p>
  * Type fidelity is now preserved, ensuring correct schema generation.
  */
@@ -37,25 +37,25 @@ public class ApiEndpoint {
     private List<ApiHeader> headers;
 
     /**
-     * NEW — actual Java Type to be resolved by SchemaResolver
+     * Actual Java type to be resolved by the schema resolver.
      */
     private Type requestBodyType;
 
     /**
-     * NEW — actual Java Type to be resolved by SchemaResolver
+     * Actual Java type to be resolved by the schema resolver.
      */
     private Type responseBodyType;
 
     /**
-     * NEW — each exception handler return type corresponds to one entry
+     * Each exception handler return type corresponds to one entry.
      */
     private final List<Type> errorTypes = new ArrayList<>();
 
     private boolean deprecated;
 
-    // ───────────────────────────────
+    // ----------------------------------------------------------------
     // Getters
-    // ───────────────────────────────
+    // ----------------------------------------------------------------
 
     public String getName() {
         return name;
@@ -117,9 +117,9 @@ public class ApiEndpoint {
         return deprecated;
     }
 
-    // ───────────────────────────────
+    // ----------------------------------------------------------------
     // Mutators / Fluent setters
-    // ───────────────────────────────
+    // ----------------------------------------------------------------
 
     public ApiEndpoint setName(String name) {
         this.name = name;
@@ -168,21 +168,21 @@ public class ApiEndpoint {
     }
 
     /**
-     * NEW — required for correct schema processing
+     * Required for correct schema processing.
      */
     public void setRequestBodyType(Type type) {
         this.requestBodyType = type;
     }
 
     /**
-     * NEW — required for correct schema processing
+     * Required for correct schema processing.
      */
     public void setResponseBodyType(Type type) {
         this.responseBodyType = type;
     }
 
     /**
-     * NEW — append exception response schema types
+     * Appends exception response schema types.
      */
     public void addErrorType(Type type) {
         this.errorTypes.add(type);

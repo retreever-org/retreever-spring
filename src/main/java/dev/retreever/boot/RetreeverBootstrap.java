@@ -36,10 +36,12 @@ public class RetreeverBootstrap {
     private final Logger log = LoggerFactory.getLogger(RetreeverBootstrap.class);
 
     private final RetreeverOrchestrator orchestrator;
+    private final RetreeverUiLocationResolver uiLocationResolver;
     private ApiDocument cached;
 
     public RetreeverBootstrap(RetreeverOrchestrator orchestrator) {
         this.orchestrator = orchestrator;
+        this.uiLocationResolver = new RetreeverUiLocationResolver();
     }
 
     /**
@@ -48,7 +50,7 @@ public class RetreeverBootstrap {
      */
     @EventListener(ApplicationReadyEvent.class)
     public void init(ApplicationReadyEvent event) {
-        log.info("Initializing Retreever. Resolving API Documentation.");
+        log.debug("Initializing Retreever. Resolving API documentation.");
 
         ApplicationContext context = event.getApplicationContext();
         Class<?> appClass = resolveApplicationClass(context, event);
@@ -67,7 +69,7 @@ public class RetreeverBootstrap {
         // Build final documentation snapshot
         this.cached = orchestrator.build(appClass, controllers, controllerAdvices);
 
-        log.info("Retreever initialized. API Document Ready.");
+        log.info("Retreever initialized. Explore APIs at {}", uiLocationResolver.resolve(context));
     }
 
     /**
