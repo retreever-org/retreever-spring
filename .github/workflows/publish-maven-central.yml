@@ -40,6 +40,9 @@ jobs:
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
+      - name: Make Maven wrapper executable
+        run: chmod +x ./mvnw
+
       - name: Validate release tag matches pom version
         shell: bash
         run: |
