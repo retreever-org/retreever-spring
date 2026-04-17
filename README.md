@@ -1,143 +1,58 @@
 <div align="center">
 
-![Retreever Logo](https://raw.githubusercontent.com/Retreever-org/retreever-java/fae0a98e028e9b7bc6b269c480b388245530ea8d/Docmentation/Logo/retreever-banner.svg)
+![Retreever Banner](Documentation/Logo/retreever-banner.svg)
 
 </div>
 
+# Retreever
 
-# Instant API Documentation & Testing for Spring Boot — Zero Config, Always Live.
+Retreever is a lightweight, developer-first toolkit for generating live API
+documentation and API testing UI for Spring Boot applications.
 
-Retreever is a **lightweight, developer-first toolkit** that automatically **discovers, documents, and tests** your Spring Boot APIs — *without a single manual annotation or YAML file.*
+It scans your controllers, request and response models, validation constraints,
+and exception handlers to build documentation from the application code that is
+already running.
 
-It scans your controllers, request/response models, validation constraints, and exception handlers to build a **complete, accurate, always-up-to-date** API documentation model.
+Add the dependency, start the application, open `/retreever`.
 
-Think of it as **Swagger + Postman → merged, modernized, and simplified.**
-Just add the dependency, start your app, and open:
+## Zero Config First
 
-```
-/retreever
-```
+Retreever is designed to work with zero configuration.
 
-Done. Your entire API surface is ready — documented, organized, and instantly testable.
+- No YAML is required
+- No annotations are required
+- No separate documentation layer is required
 
-<br>
+Annotations and properties are optional add-ons for improving documentation,
+grouping, examples, auth, and testing experience.
 
-# ✨ Why Retreever?
+The main integration case to handle manually is when the host application uses
+Spring Security. In that case, Retreever's public routes need to be allowed.
 
-Unlike Swagger/OpenAPI tools that require 20 lines of annotations per endpoint *and* a separate Postman collection you manually maintain, Retreever does all the work for you.
+## What Retreever Resolves
 
-### Retreever gives you:
+Retreever automatically reads and resolves:
 
-1.  ✔ **Automatic docs** (no annotation clutter)
-2.  ✔ **Automatic examples** (via annotations + constraints)
-3.  ✔ **Accurate generic resolution** (even nested)
-4.  ✔ **Automatic error mapping** (directly from your exception handlers)
-5.  ✔ **A modern Postman-like testing UI**
-6.  ✔ **Zero YAML, zero configuration**
-7.  ✔ **Reflection-accurate request & response schemas**
-8.  ✔ **Blazing fast output (~30ms)**
-9.  ✔ **A tiny JSON document (~45KB) for complex ~70 endpoint resolution**
+- `@RestController` endpoints
+- Request bodies and response types
+- Path variables, query parameters, and headers
+- Validation constraints from Jakarta Validation annotations
+- Exception mappings from `@RestControllerAdvice` and `@ExceptionHandler`
+- Nested DTOs, arrays, maps, records, and generic types
+- Endpoint metadata such as name, description, status, and security flags
 
-Just write normal Spring code — Retreever fills in everything else.
+The generated document includes:
 
-<br>
+- API name, description, and version
+- Endpoint groups
+- HTTP method, path, consumes, and produces metadata
+- Request and response schemas
+- Parameter and header metadata
+- Error responses
 
-# 🚀 Features
+## Installation
 
-## ⚡ Zero Configuration
-
-Drop it in your Spring Boot app. Retreever automatically discovers:
-
-* `@RestController` classes
-* Request bodies (`@RequestBody`)
-* Response types (`ResponseEntity<T>` and raw DTOs)
-* Path variables, query params, and headers
-* Validation annotations
-* Exception handlers (`@ExceptionHandler`)
-
-No setup. No external config. No YAML.
-
-
-
-## 🧩 Smart Schema Resolution
-
-Automatically builds a predictable JSON schema for:
-
-* Complex nested DTOs
-* Lists, arrays, maps
-* Records and plain classes
-* Enums
-* Nullable vs non-nullable fields
-* Jakarta Validation constraints
-* Field-level documentation (`@FieldInfo`)
-
-Generic substitution is deeply supported:
-
-```
-ResponseEntity<Page<OrderItemResponse>>
-```
-
-…just works.
-
-
-## 🛣️ Endpoint & Metadata Extraction
-
-Every endpoint includes:
-
-* HTTP method
-* Full resolved path
-* Params (path, query, header)
-* Consumes / produces media types
-* Security flags (`secured=true`, `@PreAuthorize`)
-* Developer-friendly name & description (`@ApiEndpoint`)
-
-Grouped automatically using `@ApiGroup`.
-
-
-
-## ❗ Automatic Error Mapping
-
-Declare your error responses *once* where they belong — your `@RestControllerAdvice`.
-
-Retreever extracts:
-
-* Error type
-* HTTP status
-* Description
-* Error body schema
-
-Your documentation stays **fully consistent** with your real exception flow.
-
-Swagger can’t do this.
-SpringDoc can’t do this.
-Retreever does.
-
-
-## 📄 Clean, Stable Output Document
-
-Every part of the system flows into a final immutable DTO:
-
-```
-ApiDocument
-```
-
-Containing:
-
-* Metadata
-* Groups
-* Endpoints
-* Request schemas
-* Response schemas
-* Example objects
-* Errors
-* Validation constraints
-
-
-# 📦 Installation
-
-(*Publishing to Maven Central in progress*)
-
-Soon you’ll simply add:
+Retreever is published to Maven Central.
 
 ```xml
 <dependency>
@@ -147,121 +62,191 @@ Soon you’ll simply add:
 </dependency>
 ```
 
+After adding the dependency, start the application and open:
 
+```text
+/retreever
+```
 
-# 📄 Example Output
+## Spring Security Integration
 
-```json
-{
-  "name": "Example API",
-  "version": "v1",
-  "groups": [
-    {
-      "name": "Product APIs",
-      "endpoints": [
-        {
-          "name": "Get Product",
-          "method": "GET",
-          "path": "/products/{id}",
-          "request": { ... },
-          "response": { ... },
-          "errors": [ ... ]
-        }
-      ]
-    }
-  ]
+If the host application uses Spring Security, Retreever's public routes must be
+allowed through the application's security configuration.
+
+Use `RetreeverPublicPaths.get()`:
+
+```java
+@Bean
+SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    return http
+            .authorizeHttpRequests(auth -> auth
+                    .requestMatchers(RetreeverPublicPaths.get()).permitAll()
+                    .anyRequest().authenticated()
+            )
+            .build();
 }
 ```
 
-Clean. Predictable. Easy to render.
+This is the main setup step required when Retreever is added to a secured host
+application.
 
-<br>
+## Optional Annotations
 
-# 📊 Comparison With Other Tools
+Retreever works without custom annotations, but these help produce cleaner and
+more intentional documentation:
 
-Retreever replaces BOTH Swagger and Postman.
+| Annotation | Purpose |
+| --- | --- |
+| `@ApiDoc` | Sets top-level API name, description, and version |
+| `@ApiGroup` | Groups controller endpoints under a named section |
+| `@ApiEndpoint` | Adds endpoint name, description, status, security flag, headers, and mapped errors |
+| `@ApiError` | Documents exception-handler status and description |
+| `@FieldInfo` | Adds field descriptions and example values |
+| `@Description` | Adds descriptions to request parameters and fields |
 
-| Feature             | Swagger  | SpringDoc | Postman | **Retreever** |
-| ------------------- | -------- | --------- | ------- | ------------- |
-| Auto-generates docs | ✔        | ✔         | ❌       | **✔**         |
-| Accurate examples   | ❌        | ❌         | Manual  | **✔**         |
-| Generic resolution  | Weak     | Medium    | ❌       | **Strong**    |
-| Error mapping       | Weak     | Weak      | ❌       | **Strong**    |
-| Always up-to-date   | ❌        | ❌         | ❌       | **✔**         |
-| Testing panel       | ❌        | ❌         | ✔       | **✔**         |
-| Annotation clutter  | ❌        | ❌         | ✔       | **Minimal**   |
-| Output size         | Bloated  | Bloated   | N/A     | **~45KB**     |
-| YAML required       | ✔        | ✔         | ❌       | **❌**         |
-| UI                  | Outdated | Outdated  | Modern  | **Modern**    |
+## Example Usage
 
-<br>
+### Application Metadata
 
-# 🧭 Roadmap
-
--  ✅ Core backend
--  ✅ Schema resolution engine
--  ✅ Error mapping
--  🚧 Frontend UI
--  🔜 Microservice discovery
--  🔜 Polymorphic type support
--  🔜 Map & multi-generic improvements
--  🔜 Gradle plugin / IDE integration
-
-<br>
-
-# 🤝 Contributing
-
-Contributions are welcome!
-
-* Report issues
-* Improve type resolution
-* Add integration tests
-* Suggest new annotations
-* Help with frontend
-
-Let’s make API documentation fast, clean, and fun.
-
-<br>
-
-# 📝 License
-
-MIT — free for personal and commercial use.
-
-<br>
-
-# ❤️ Acknowledgement
-
-Built for developers who are tired of stale documentation, duplicated effort, and YAML fatigue —
-Retreever **fetches everything you need, instantly.**
-
-<br>
-
-# Retreever Authentication
-
-Retreever can protect only its own `/retreever/**` endpoints without requiring Spring Security in the library or host app.
-
-Add credentials in the host application's properties:
-
-```properties
-retreever.auth.username=admin
-retreever.auth.password=change-me
+```java
+@SpringBootApplication
+@ApiDoc(
+        name = "Catalog API",
+        description = "Live API docs for the catalog service",
+        version = "v1"
+)
+public class CatalogApplication {
+}
 ```
 
-With both properties present, Retreever:
+### Group, Endpoint, Errors, and Field Metadata
 
-* keeps the React UI routes public
-* protects the Retreever data APIs such as `/retreever/doc`, `/retreever/ping`, and `/retreever/environment`
-* exposes API endpoints at `/retreever/login`, `/retreever/refresh`, and `/retreever/logout`
-* issues `HttpOnly`, `SameSite=Lax` cookies for the access token, refresh token, and device id
-* authenticates protected requests with an internal `OncePerRequestFilter`
-* encrypts token payloads with AES-GCM using a startup-generated secret and rotates refresh tokens per session
+```java
+@ApiGroup(
+        name = "Product Variant APIs",
+        description = "APIs for managing product variants"
+)
+@RestController
+@RequestMapping("/api/v1")
+public class ProductVariantController {
 
-Retreever generates an in-memory secret at application startup, so tokens become invalid after restart. If neither username nor password is set, auth stays disabled for backward compatibility.
+    @ApiEndpoint(
+            name = "Create Product Variant",
+            description = "Create a new product variant",
+            secured = true,
+            headers = {HttpHeaders.AUTHORIZATION, "X-Device-ID"},
+            errors = {
+                    AccessDeniedException.class,
+                    ProductNotFoundException.class,
+                    MethodArgumentNotValidException.class
+            }
+    )
+    @PostMapping("/products/{productId}/variants")
+    public ResponseEntity<ApiResponse<ProductVariantResponse>> createVariant(
+            @Description("ID/Primary Key of the product to which the variant should belong.")
+            @PathVariable Long productId,
+            @RequestBody @Valid ProductVariantRequest request
+    ) {
+        return null;
+    }
 
-For separate UI development, you can allow credentialed CORS from specific origins:
-
-```properties
-retreever.allow-cross-origin=http://localhost:5173
+    @ApiError(
+            status = HttpStatus.FORBIDDEN,
+            description = "Access Denied"
+    )
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiErrorResponse> handleAccessDenied(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiErrorResponse.build("Access Denied", ex.getMessage()));
+    }
+}
 ```
 
-Use a comma-separated list to allow multiple explicit origins. Wildcard `*` is not supported because Retreever auth uses cookies.
+```java
+public record ProductVariantRequest(
+        @FieldInfo(
+                example = "Red Mug - Ceramic",
+                description = "User-friendly name of the product variant. Required."
+        )
+        @NotBlank(message = "Title must not be blank")
+        @Size(min = 1, max = 255, message = "Title length must be between 1 and 255 characters")
+        @JsonProperty("title")
+        String title
+) {}
+```
+
+## Optional Configuration
+
+All Retreever configuration is optional.
+
+Use configuration only when you want to enhance documentation or behavior.
+
+### Optional Retreever Auth
+
+If you want authentication enforced for Retreever in the host application, set:
+
+```properties
+retreever.auth.username=Admin
+retreever.auth.password=Admin@123
+```
+
+Token TTLs default to:
+
+- access token: `30 minutes`
+- refresh token: `7 days`
+
+Override them only if you actually need different values.
+
+Detailed auth behavior is documented in
+[Documentation/Retreever-Auth-API.md](Documentation/Retreever-Auth-API.md).
+
+### Optional Environment Variable Resolution
+
+Retreever can define static environment values or extract them from API
+responses for testing workflows.
+
+Example:
+
+```yaml
+retreever:
+  env:
+    variables:
+      - name: access-token
+        source:
+          request:
+            endpoints:
+              - /api/v1/public/login
+              - /api/v1/public/login/refresh
+            method: post
+            response:
+              body-attribute-path: data.access_token
+
+      - name: refresh-token
+        source:
+          request:
+            endpoints:
+              - /api/v1/public/login
+              - /api/v1/public/login/refresh
+            method: post
+            response:
+              body-attribute-path: data.refresh_token
+
+      - name: device-id
+        source:
+          value: device-web-001
+```
+
+## Compatibility
+
+- Release line `1.x` targets Spring Boot `3.x`
+- Minimum Java version is `17`
+- Spring Boot `4.x` support is planned for a future major version
+
+## Contributing
+
+Issues, bug reports, integration tests, resolver improvements, and UI feedback
+are all welcome.
+
+## License
+
+MIT
