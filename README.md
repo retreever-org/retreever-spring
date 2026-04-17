@@ -70,8 +70,13 @@ After adding the dependency, start the application and open:
 
 ## Spring Security Integration
 
-If the host application uses Spring Security, Retreever's public routes must be
+If the host application uses Spring Security, all Retreever routes must be
 allowed through the application's security configuration.
+
+Host security should not protect Retreever endpoints directly. Retreever's own
+library-level auth handles `/retreever/doc`, `/retreever/ping`, and
+`/retreever/environment` internally after the request is allowed into the
+library.
 
 Use `RetreeverPublicPaths.get()`:
 
@@ -195,7 +200,7 @@ Token TTLs default to:
 - access token: `30 minutes`
 - refresh token: `7 days`
 
-Override them only if you actually need different values.
+Override token expiration only if you actually need different values.
 
 Detailed auth behavior is documented in
 [Documentation/Retreever-Auth-API.md](Documentation/Retreever-Auth-API.md).

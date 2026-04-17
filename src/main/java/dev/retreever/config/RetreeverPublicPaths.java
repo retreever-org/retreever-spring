@@ -6,9 +6,7 @@ public record RetreeverPublicPaths(
     public RetreeverPublicPaths() {
         this(new String[]{
                 "/retreever",
-                "/retreever/login",
-                "/retreever/refresh",
-                "/retreever/logout",
+                "/retreever/**",
                 "/index.html",
                 "/favicon.ico",
                 "/manifest.json",
