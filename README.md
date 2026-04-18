@@ -188,11 +188,18 @@ Use configuration only when you want to enhance documentation or behavior.
 
 ### Optional Retreever Auth
 
-If you want authentication enforced for Retreever in the host application, set:
+Retreever authentication is optional.
+
+If the host sets both username and password, Retreever protects its private
+tool APIs internally. If the host does not set them, Retreever auth is fully
+disabled and the tool remains publicly accessible inside the host application.
+
+When auth should be enabled, set:
 
 ```properties
 retreever.auth.username=Admin
 retreever.auth.password=Admin@123
+retreever.auth.secret=123e4567-e89b-12d3-a456-426614174000
 ```
 
 Token TTLs default to:
@@ -201,6 +208,22 @@ Token TTLs default to:
 - refresh token: `7 days`
 
 Override token expiration only if you actually need different values.
+
+`retreever.auth.secret` is optional. When set, it must be a valid UUID string.
+Use the same UUID on all service instances that must trust the same Retreever
+cookies. If omitted, Retreever generates a startup-only secret and existing
+cookies become invalid after restart.
+
+`retreever.auth.secure-cookies` defaults to `false`. Set it to `true` when the
+host serves Retreever over HTTPS and you want auth cookies emitted with the
+`Secure` attribute.
+
+If auth is disabled because username and password are not configured, Retreever
+ignores `retreever.auth.secret` and TTL settings entirely.
+
+`retreever.dev.allow-cross-origin` is contributor-only. It exists for developing
+Retreever's React UI against a separate local dev server and should not be set
+by normal consuming applications.
 
 Detailed auth behavior is documented in
 [Documentation/Retreever-Auth-API.md](Documentation/Retreever-Auth-API.md).

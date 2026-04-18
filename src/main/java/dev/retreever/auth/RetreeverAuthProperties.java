@@ -13,6 +13,8 @@ public class RetreeverAuthProperties implements InitializingBean {
 
     private String username;
     private String password;
+    private String secret;
+    private boolean secureCookies;
     private Duration accessTokenTtl = Duration.ofMinutes(30);
     private Duration refreshTokenTtl = Duration.ofDays(7);
 
@@ -30,6 +32,22 @@ public class RetreeverAuthProperties implements InitializingBean {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getSecret() {
+        return secret;
+    }
+
+    public void setSecret(String secret) {
+        this.secret = secret;
+    }
+
+    public boolean isSecureCookies() {
+        return secureCookies;
+    }
+
+    public void setSecureCookies(boolean secureCookies) {
+        this.secureCookies = secureCookies;
     }
 
     public Duration getAccessTokenTtl() {
@@ -57,10 +75,22 @@ public class RetreeverAuthProperties implements InitializingBean {
         boolean hasUsername = StringUtils.hasText(username);
         boolean hasPassword = StringUtils.hasText(password);
 
+        if (!hasUsername && !hasPassword) {
+            return;
+        }
+
         if (hasUsername != hasPassword) {
             throw new IllegalStateException(
                     "Retreever authentication requires both 'retreever.auth.username' and 'retreever.auth.password'."
             );
+        }
+
+        if (StringUtils.hasText(secret)) {
+            try {
+                secret = java.util.UUID.fromString(secret.trim()).toString();
+            } catch (IllegalArgumentException ex) {
+                throw new IllegalStateException("'retreever.auth.secret' must be a valid UUID string.", ex);
+            }
         }
 
         if (isNegative(accessTokenTtl)) {

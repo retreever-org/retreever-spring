@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         properties = {
                 "retreever.auth.username=admin",
                 "retreever.auth.password=secret",
-                "retreever.allow-cross-origin=http://localhost:5173"
+                "retreever.dev.allow-cross-origin=http://localhost:5173"
         }
 )
 @AutoConfigureMockMvc
@@ -92,13 +92,13 @@ class RetreeverAuthenticationIntegrationTest {
     }
 
     @Test
-    void loginIssuesUniqueTokensForSeparateSessions() throws Exception {
-        AuthCookies firstSession = login();
-        AuthCookies secondSession = login();
+    void loginIssuesUniqueTokensForSeparateLogins() throws Exception {
+        AuthCookies firstLogin = login();
+        AuthCookies secondLogin = login();
 
-        assertThat(firstSession.accessToken().getValue()).isNotEqualTo(secondSession.accessToken().getValue());
-        assertThat(firstSession.refreshToken().getValue()).isNotEqualTo(secondSession.refreshToken().getValue());
-        assertThat(firstSession.deviceId().getValue()).isNotEqualTo(secondSession.deviceId().getValue());
+        assertThat(firstLogin.accessToken().getValue()).isNotEqualTo(secondLogin.accessToken().getValue());
+        assertThat(firstLogin.refreshToken().getValue()).isNotEqualTo(secondLogin.refreshToken().getValue());
+        assertThat(firstLogin.deviceId().getValue()).isNotEqualTo(secondLogin.deviceId().getValue());
     }
 
     @Test
@@ -113,7 +113,7 @@ class RetreeverAuthenticationIntegrationTest {
     }
 
     @Test
-    void refreshRotatesTokensAndLogoutRevokesSession() throws Exception {
+    void refreshReissuesTokensAndLogoutClearsBrowserSession() throws Exception {
         AuthCookies authCookies = login();
 
         MvcResult refreshResult = mockMvc.perform(post("/retreever/refresh")
@@ -134,12 +134,29 @@ class RetreeverAuthenticationIntegrationTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(post("/retreever/logout")
+        MvcResult logoutResult = mockMvc.perform(post("/retreever/logout")
                         .cookie(refreshedCookies.accessToken(), refreshedCookies.refreshToken(), refreshedCookies.deviceId()))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isNoContent())
+                .andReturn();
+
+        String clearedAccessCookieHeader = findCookieHeader(
+                logoutResult.getResponse().getHeaders(HttpHeaders.SET_COOKIE),
+                RetreeverAuthSupport.ACCESS_TOKEN_COOKIE_NAME
+        );
+        String clearedRefreshCookieHeader = findCookieHeader(
+                logoutResult.getResponse().getHeaders(HttpHeaders.SET_COOKIE),
+                RetreeverAuthSupport.REFRESH_TOKEN_COOKIE_NAME
+        );
+        String clearedDeviceCookieHeader = findCookieHeader(
+                logoutResult.getResponse().getHeaders(HttpHeaders.SET_COOKIE),
+                RetreeverAuthSupport.DEVICE_ID_COOKIE_NAME
+        );
+
+        assertThat(clearedAccessCookieHeader).contains("Max-Age=0");
+        assertThat(clearedRefreshCookieHeader).contains("Max-Age=0");
+        assertThat(clearedDeviceCookieHeader).contains("Max-Age=0");
 
         mockMvc.perform(get("/retreever/environment")
-                        .cookie(refreshedCookies.accessToken(), refreshedCookies.deviceId())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
@@ -172,6 +189,9 @@ class RetreeverAuthenticationIntegrationTest {
         assertThat(authCookies.accessHeader()).contains("HttpOnly").contains("SameSite=Lax").contains("Path=/retreever");
         assertThat(authCookies.refreshHeader()).contains("HttpOnly").contains("SameSite=Lax").contains("Path=/retreever");
         assertThat(authCookies.deviceHeader()).contains("HttpOnly").contains("SameSite=Lax").contains("Path=/retreever");
+        assertThat(authCookies.accessHeader()).doesNotContain("Secure");
+        assertThat(authCookies.refreshHeader()).doesNotContain("Secure");
+        assertThat(authCookies.deviceHeader()).doesNotContain("Secure");
 
         return authCookies;
     }

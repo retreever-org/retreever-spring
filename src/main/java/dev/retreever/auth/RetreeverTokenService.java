@@ -19,8 +19,6 @@ import java.util.Base64;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 @Component
 public class RetreeverTokenService {
@@ -33,16 +31,15 @@ public class RetreeverTokenService {
     private final RetreeverAuthProperties properties;
     private final ObjectMapper objectMapper;
     private final SecureRandom secureRandom = new SecureRandom();
-    private final ConcurrentMap<String, SessionRecord> sessions = new ConcurrentHashMap<>();
     private final SecretKeySpec secretKey;
 
     public RetreeverTokenService(RetreeverAuthProperties properties, ObjectMapper objectMapper) {
         this.properties = properties;
         this.objectMapper = objectMapper.copy().setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        this.secretKey = new SecretKeySpec(resolveSecretKey(), "AES");
+        this.secretKey = properties.isDisabled() ? null : new SecretKeySpec(resolveSecretKey(properties), "AES");
     }
 
-    public synchronized Optional<TokenPair> login(String username, String password) {
+    public Optional<TokenPair> login(String username, String password) {
         if (properties.isDisabled()) {
             return Optional.empty();
         }
@@ -52,21 +49,8 @@ public class RetreeverTokenService {
         }
 
         Instant issuedAt = Instant.now();
-        String sessionId = UUID.randomUUID().toString();
         String deviceId = UUID.randomUUID().toString();
-        String refreshTokenId = UUID.randomUUID().toString();
-        Instant refreshTokenExpiresAt = issuedAt.plus(properties.getRefreshTokenTtl());
-
-        SessionRecord session = new SessionRecord(
-                sessionId,
-                username,
-                deviceId,
-                refreshTokenId,
-                refreshTokenExpiresAt
-        );
-        sessions.put(sessionId, session);
-
-        return Optional.of(issueTokenPair(session, issuedAt));
+        return Optional.of(issueTokenPair(username, deviceId, issuedAt));
     }
 
     public Optional<AuthenticatedUser> authenticate(String accessToken, String deviceId) {
@@ -74,105 +58,58 @@ public class RetreeverTokenService {
             return Optional.empty();
         }
 
-        Optional<TokenPayload> payload = decryptToken(accessToken, TokenType.ACCESS);
-        if (payload.isEmpty() || !Objects.equals(payload.get().deviceId(), deviceId)) {
-            return Optional.empty();
-        }
-
-        SessionRecord session = sessions.get(payload.get().sessionId());
-        if (session == null) {
-            return Optional.empty();
-        }
-
-        if (!session.matches(payload.get().username(), payload.get().deviceId())) {
-            sessions.remove(session.sessionId(), session);
-            return Optional.empty();
-        }
-
-        return Optional.of(new AuthenticatedUser(
-                session.username(),
-                session.sessionId(),
-                session.deviceId(),
-                payload.get().expiresAt()
-        ));
+        return decryptToken(accessToken, TokenType.ACCESS)
+                .filter(payload -> Objects.equals(payload.deviceId(), deviceId))
+                .map(payload -> new AuthenticatedUser(
+                        payload.username(),
+                        payload.deviceId(),
+                        payload.expiresAt()
+                ));
     }
 
-    public synchronized Optional<TokenPair> refresh(String refreshToken, String deviceId) {
+    public Optional<TokenPair> refresh(String refreshToken, String deviceId) {
         if (properties.isDisabled()) {
             return Optional.empty();
         }
 
-        Optional<TokenPayload> payload = decryptToken(refreshToken, TokenType.REFRESH);
-        if (payload.isEmpty() || !Objects.equals(payload.get().deviceId(), deviceId)) {
-            return Optional.empty();
-        }
-
-        SessionRecord currentSession = sessions.get(payload.get().sessionId());
-        if (currentSession == null) {
-            return Optional.empty();
-        }
-
-        Instant now = Instant.now();
-        if (!currentSession.matches(payload.get().username(), payload.get().deviceId())
-                || !Objects.equals(currentSession.refreshTokenId(), payload.get().refreshTokenId())
-                || !currentSession.refreshTokenExpiresAt().isAfter(now)) {
-            sessions.remove(currentSession.sessionId(), currentSession);
-            return Optional.empty();
-        }
-
-        SessionRecord rotatedSession = currentSession.rotate(
-                UUID.randomUUID().toString(),
-                now.plus(properties.getRefreshTokenTtl())
-        );
-        sessions.put(rotatedSession.sessionId(), rotatedSession);
-
-        return Optional.of(issueTokenPair(rotatedSession, now));
+        return decryptToken(refreshToken, TokenType.REFRESH)
+                .filter(payload -> Objects.equals(payload.deviceId(), deviceId))
+                .map(payload -> issueTokenPair(payload.username(), payload.deviceId(), Instant.now()));
     }
 
-    public synchronized void logout(String accessToken, String refreshToken, String deviceId) {
-        resolveSessionId(accessToken, TokenType.ACCESS, deviceId)
-                .or(() -> resolveSessionId(refreshToken, TokenType.REFRESH, deviceId))
-                .ifPresent(sessions::remove);
+    public void logout() {
+        // Stateless auth cannot revoke previously issued tokens without shared server-side state.
     }
 
-    private Optional<String> resolveSessionId(String token, TokenType tokenType, String deviceId) {
-        Optional<TokenPayload> payload = decryptToken(token, tokenType);
-        if (payload.isEmpty() || !Objects.equals(payload.get().deviceId(), deviceId)) {
-            return Optional.empty();
-        }
-        return Optional.of(payload.get().sessionId());
-    }
-
-    private TokenPair issueTokenPair(SessionRecord session, Instant issuedAt) {
+    private TokenPair issueTokenPair(String username, String deviceId, Instant issuedAt) {
         Instant accessTokenExpiresAt = issuedAt.plus(properties.getAccessTokenTtl());
+        Instant refreshTokenExpiresAt = issuedAt.plus(properties.getRefreshTokenTtl());
 
         TokenPayload accessPayload = new TokenPayload(
                 1,
                 TokenType.ACCESS,
-                session.sessionId(),
-                session.deviceId(),
-                session.username(),
-                null,
+                UUID.randomUUID().toString(),
+                deviceId,
+                username,
                 issuedAt,
                 accessTokenExpiresAt
         );
         TokenPayload refreshPayload = new TokenPayload(
                 1,
                 TokenType.REFRESH,
-                session.sessionId(),
-                session.deviceId(),
-                session.username(),
-                session.refreshTokenId(),
+                UUID.randomUUID().toString(),
+                deviceId,
+                username,
                 issuedAt,
-                session.refreshTokenExpiresAt()
+                refreshTokenExpiresAt
         );
 
         return new TokenPair(
-                session.deviceId(),
+                deviceId,
                 encrypt(accessPayload),
                 accessTokenExpiresAt,
                 encrypt(refreshPayload),
-                session.refreshTokenExpiresAt()
+                refreshTokenExpiresAt
         );
     }
 
@@ -182,6 +119,10 @@ public class RetreeverTokenService {
         }
 
         try {
+            if (secretKey == null) {
+                return Optional.empty();
+            }
+
             String[] parts = token.split("\\.", 2);
             if (parts.length != 2) {
                 return Optional.empty();
@@ -207,6 +148,10 @@ public class RetreeverTokenService {
 
     private String encrypt(TokenPayload payload) {
         try {
+            if (secretKey == null) {
+                throw new IllegalStateException("Retreever auth is not configured.");
+            }
+
             byte[] iv = new byte[IV_LENGTH_BYTES];
             secureRandom.nextBytes(iv);
 
@@ -223,7 +168,11 @@ public class RetreeverTokenService {
         }
     }
 
-    private byte[] resolveSecretKey() {
+    private byte[] resolveSecretKey(RetreeverAuthProperties authProperties) {
+        if (StringUtils.hasText(authProperties.getSecret())) {
+            return sha256(authProperties.getSecret().trim().getBytes(StandardCharsets.UTF_8));
+        }
+
         String startupSecret = UUID.randomUUID().toString();
         log.info("Generated a startup Retreever auth secret. Tokens will be invalidated on application restart.");
         return sha256(startupSecret.getBytes(StandardCharsets.UTF_8));
@@ -239,7 +188,6 @@ public class RetreeverTokenService {
 
     public record AuthenticatedUser(
             String username,
-            String sessionId,
             String deviceId,
             Instant expiresAt
     ) {
@@ -254,30 +202,12 @@ public class RetreeverTokenService {
     ) {
     }
 
-    private record SessionRecord(
-            String sessionId,
-            String username,
-            String deviceId,
-            String refreshTokenId,
-            Instant refreshTokenExpiresAt
-    ) {
-
-        private boolean matches(String username, String deviceId) {
-            return Objects.equals(this.username, username) && Objects.equals(this.deviceId, deviceId);
-        }
-
-        private SessionRecord rotate(String refreshTokenId, Instant refreshTokenExpiresAt) {
-            return new SessionRecord(sessionId, username, deviceId, refreshTokenId, refreshTokenExpiresAt);
-        }
-    }
-
     private record TokenPayload(
             int version,
             TokenType type,
-            String sessionId,
+            String tokenId,
             String deviceId,
             String username,
-            String refreshTokenId,
             Instant issuedAt,
             Instant expiresAt
     ) {

@@ -41,7 +41,12 @@ public class RetreeverAuthenticationController {
 
         return tokenService.login(loginRequest.username(), loginRequest.password())
                 .<ResponseEntity<?>>map(tokenPair -> {
-                    RetreeverAuthSupport.writeAuthenticationCookies(request, response, tokenPair);
+                    RetreeverAuthSupport.writeAuthenticationCookies(
+                            request,
+                            response,
+                            tokenPair,
+                            authProperties.isSecureCookies()
+                    );
                     return ResponseEntity.ok(toResponseBody(tokenPair));
                 })
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
@@ -61,11 +66,20 @@ public class RetreeverAuthenticationController {
                         RetreeverAuthSupport.getDeviceId(request)
                 )
                 .<ResponseEntity<?>>map(tokenPair -> {
-                    RetreeverAuthSupport.writeAuthenticationCookies(request, response, tokenPair);
+                    RetreeverAuthSupport.writeAuthenticationCookies(
+                            request,
+                            response,
+                            tokenPair,
+                            authProperties.isSecureCookies()
+                    );
                     return ResponseEntity.ok(toResponseBody(tokenPair));
                 })
                 .orElseGet(() -> {
-                    RetreeverAuthSupport.clearAuthenticationCookies(request, response);
+                    RetreeverAuthSupport.clearAuthenticationCookies(
+                            request,
+                            response,
+                            authProperties.isSecureCookies()
+                    );
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
                             "error", "invalid_refresh_token",
                             "message", "Refresh token is missing, expired, or invalid."
@@ -79,12 +93,8 @@ public class RetreeverAuthenticationController {
             return ResponseEntity.notFound().build();
         }
 
-        tokenService.logout(
-                RetreeverAuthSupport.getAccessToken(request),
-                RetreeverAuthSupport.getRefreshToken(request),
-                RetreeverAuthSupport.getDeviceId(request)
-        );
-        RetreeverAuthSupport.clearAuthenticationCookies(request, response);
+        tokenService.logout();
+        RetreeverAuthSupport.clearAuthenticationCookies(request, response, authProperties.isSecureCookies());
         return ResponseEntity.noContent().build();
     }
 

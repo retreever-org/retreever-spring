@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-@ConfigurationProperties(prefix = "retreever")
+@ConfigurationProperties(prefix = "retreever.dev")
 public class RetreeverCorsProperties implements InitializingBean {
 
     private List<String> allowCrossOrigin = new ArrayList<>();
@@ -40,7 +40,7 @@ public class RetreeverCorsProperties implements InitializingBean {
 
         if (normalized.stream().anyMatch("*"::equals)) {
             throw new IllegalStateException(
-                    "'retreever.allow-cross-origin' must list explicit origins when credentials are enabled."
+                    "'retreever.dev.allow-cross-origin' must list explicit origins when credentials are enabled."
             );
         }
 

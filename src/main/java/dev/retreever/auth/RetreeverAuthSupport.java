@@ -44,34 +44,41 @@ public final class RetreeverAuthSupport {
     public static void writeAuthenticationCookies(
             HttpServletRequest request,
             HttpServletResponse response,
-            RetreeverTokenService.TokenPair tokenPair) {
+            RetreeverTokenService.TokenPair tokenPair,
+            boolean secureCookies) {
         addCookie(
                 request,
                 response,
                 ACCESS_TOKEN_COOKIE_NAME,
                 tokenPair.accessToken(),
-                tokenPair.accessTokenExpiresAt()
+                tokenPair.accessTokenExpiresAt(),
+                secureCookies
         );
         addCookie(
                 request,
                 response,
                 REFRESH_TOKEN_COOKIE_NAME,
                 tokenPair.refreshToken(),
-                tokenPair.refreshTokenExpiresAt()
+                tokenPair.refreshTokenExpiresAt(),
+                secureCookies
         );
         addCookie(
                 request,
                 response,
                 DEVICE_ID_COOKIE_NAME,
                 tokenPair.deviceId(),
-                tokenPair.refreshTokenExpiresAt()
+                tokenPair.refreshTokenExpiresAt(),
+                secureCookies
         );
     }
 
-    public static void clearAuthenticationCookies(HttpServletRequest request, HttpServletResponse response) {
-        addCookie(request, response, ACCESS_TOKEN_COOKIE_NAME, "", Instant.EPOCH);
-        addCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "", Instant.EPOCH);
-        addCookie(request, response, DEVICE_ID_COOKIE_NAME, "", Instant.EPOCH);
+    public static void clearAuthenticationCookies(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            boolean secureCookies) {
+        addCookie(request, response, ACCESS_TOKEN_COOKIE_NAME, "", Instant.EPOCH, secureCookies);
+        addCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "", Instant.EPOCH, secureCookies);
+        addCookie(request, response, DEVICE_ID_COOKIE_NAME, "", Instant.EPOCH, secureCookies);
     }
 
     private static void addCookie(
@@ -79,13 +86,14 @@ public final class RetreeverAuthSupport {
             HttpServletResponse response,
             String name,
             String value,
-            Instant expiresAt) {
+            Instant expiresAt,
+            boolean secureCookies) {
         Duration maxAge = expiresAt.isAfter(Instant.now()) ? Duration.between(Instant.now(), expiresAt) : Duration.ZERO;
 
         ResponseCookie cookie = ResponseCookie.from(name, value)
                 .httpOnly(true)
                 .sameSite(SAME_SITE_POLICY)
-                .secure(request.isSecure())
+                .secure(secureCookies)
                 .path(resolveCookiePath(request))
                 .maxAge(maxAge)
                 .build();

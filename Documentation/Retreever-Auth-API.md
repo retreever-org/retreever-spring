@@ -9,6 +9,7 @@ It is written for the React UI and covers:
 - cookie behavior
 - expected client flow
 - all known response and error cases
+- stateless deployment behavior across multiple service instances
 
 ## 1. Overview
 
@@ -17,32 +18,61 @@ Retreever authentication is a lightweight, library-level mechanism intended to p
 Current behavior:
 
 - the Retreever UI routes remain public
-- protected Retreever data APIs return `401 Unauthorized` when the session is missing or invalid
+- protected Retreever data APIs return `401 Unauthorized` when auth is missing or invalid
 - the UI is responsible for deciding when to show the login screen
 - authentication state is stored in `HttpOnly` cookies
 - refresh is explicit and must be called by the UI
 - logout is explicit and must be called by the UI
+- the auth model is stateless and does not depend on in-memory session storage
 
 ## 2. Host Configuration
 
 Retreever auth is enabled only when both username and password are configured.
 
+If both are absent, Retreever auth is fully disabled.
+
 ```properties
 retreever.auth.username=admin
 retreever.auth.password=change-me
-retreever.allow-cross-origin=http://localhost:5173
+retreever.auth.secret=123e4567-e89b-12d3-a456-426614174000
 ```
 
 ### Configuration Notes
 
 - `retreever.auth.username` and `retreever.auth.password` enable auth when both are present.
-- Retreever generates an in-memory secret from a startup UUID.
-- All tokens become invalid after application restart.
-- `retreever.allow-cross-origin` allows credentialed CORS only for explicitly listed origins.
-- `retreever.allow-cross-origin` accepts a comma-separated list.
-- Wildcard `*` is rejected because cookies are used for auth.
-- Default access token TTL is `30 minutes`.
-- Default refresh token TTL is `7 days`.
+- if both are absent, Retreever does not protect `/retreever/doc`, `/retreever/ping`, or `/retreever/environment`
+- if auth is disabled, Retreever ignores `retreever.auth.secret` and token TTL settings
+- `retreever.auth.secret` is optional.
+- when set, `retreever.auth.secret` must be a valid UUID string
+- if `retreever.auth.secret` is set, all service instances using the same value can validate the same Retreever cookies
+- if `retreever.auth.secret` is omitted, Retreever generates a startup secret from a UUID
+- when the startup-generated fallback is used, all tokens become invalid after application restart
+- `retreever.auth.secure-cookies` defaults to `false`
+- set `retreever.auth.secure-cookies=true` when the host should emit auth cookies with the `Secure` attribute
+- default access token TTL is `30 minutes`
+- default refresh token TTL is `7 days`
+
+### Multi-Instance Recommendation
+
+For any deployment with multiple application instances behind a load balancer, set `retreever.auth.secret` explicitly and keep it identical across all instances.
+
+Without that shared secret, each instance generates its own startup secret and cookies issued by one instance will fail on another.
+
+### Contributor-Only UI Development
+
+Normal Retreever consumers should run the UI and APIs on the same origin.
+
+If you are developing Retreever's own React UI against a separate local dev server, you can enable temporary cross-origin support with:
+
+```properties
+retreever.dev.allow-cross-origin=http://localhost:5173
+```
+
+Notes:
+
+- this is intended only for Retreever UI development
+- normal consuming applications should not set it
+- wildcard `*` is rejected because cookies are used for auth
 
 ## 3. Route Model
 
@@ -52,6 +82,7 @@ These routes are public and should always load the React app shell:
 
 - `GET /retreever`
 - `GET /retreever/**`
+- `GET /images/**`
 
 Examples:
 
@@ -59,8 +90,9 @@ Examples:
 - `/retreever/login`
 - `/retreever/workspace`
 - `/retreever/some/client-side-route`
+- `/images/retreever-logo.svg`
 
-The backend forwards these to `index.html`.
+The backend forwards the UI routes to `index.html`.
 
 ### 3.2 Public Auth API Routes
 
@@ -70,17 +102,17 @@ These routes are public API endpoints:
 - `POST /retreever/refresh`
 - `POST /retreever/logout`
 
-They are public in the sense that they are not blocked by the auth filter.
+They are public in the sense that the Retreever auth filter does not require an access token before they can be called.
 
 Important:
 
 - `login` validates credentials
-- `refresh` validates the refresh token cookie and device cookie
-- `logout` clears cookies and attempts to revoke the current session
+- `refresh` validates the refresh token cookie and device id cookie
+- `logout` clears the auth cookies
 
 ### 3.3 Protected Retreever Data Routes
 
-These routes are currently protected by the auth filter:
+These routes are currently protected by the Retreever auth filter:
 
 - `GET /retreever/doc`
 - `GET /retreever/ping`
@@ -105,14 +137,14 @@ Retreever uses three cookies.
 | --- | --- | --- | --- | --- | --- |
 | `retreever_at` | Access token | Yes | `Lax` | `/retreever` | access token TTL |
 | `retreever_rt` | Refresh token | Yes | `Lax` | `/retreever` | refresh token TTL |
-| `retreever_did` | Device/session binding id | Yes | `Lax` | `/retreever` | refresh token TTL |
+| `retreever_did` | Device binding id | Yes | `Lax` | `/retreever` | refresh token TTL |
 
 ### Cookie Properties
 
 - all three cookies are `HttpOnly`
 - all three cookies use `SameSite=Lax`
 - all three cookies are scoped to the `/retreever` path
-- the `Secure` attribute is set only when the incoming request is HTTPS
+- the `Secure` attribute is controlled by `retreever.auth.secure-cookies`
 - cookies are written and cleared by the server only
 
 ### UI Implication
@@ -121,47 +153,60 @@ Because the cookies are `HttpOnly`, the React app cannot read token values direc
 
 The browser automatically sends them with requests to `/retreever/*` on the same site.
 
-## 5. Session and Token Model
+## 5. Stateless Token Model
 
-The current implementation is session-based with encrypted tokens.
+The current implementation is stateless and uses encrypted self-contained tokens.
 
 ### What happens on login
 
 On successful login, the server:
 
 1. validates the configured username and password
-2. creates a new server-side session record
-3. creates a unique session id
-4. creates a unique device id
-5. creates a unique refresh-token id
-6. encrypts token payloads using AES-GCM
-7. sends `retreever_at`, `retreever_rt`, and `retreever_did` cookies
+2. creates a new random device id
+3. creates a new random access-token id
+4. creates a new random refresh-token id
+5. encrypts token payloads using AES-GCM
+6. sends `retreever_at`, `retreever_rt`, and `retreever_did` cookies
+
+### Token Payload Characteristics
+
+Each token carries encrypted claims including:
+
+- token version
+- token type
+- token id
+- username
+- device id
+- issue time
+- expiration time
 
 ### Important Characteristics
 
 - multiple developers can log in using the same configured username and password
-- each login gets a different session
-- each login gets different access and refresh tokens
+- each login gets a different access token
+- each login gets a different refresh token
 - each login gets a different device id
-- refresh rotates the refresh token
-- logout revokes the session from the in-memory session store
+- access and refresh tokens are bound to the `retreever_did` cookie value
+- no server-side session store is required to authenticate requests
+- any instance with the same configured secret can validate the same tokens
 
-### Current Security Properties
+### Security Properties
 
 - tokens are encrypted with AES-GCM
 - access token is bound to the device id cookie
 - refresh token is bound to the device id cookie
-- refresh token rotation reduces replay risk
-- logout invalidates the server-side session entry
-- because sessions are stored in memory, this is best suited for a single-instance deployment
+- token contents are not exposed to JavaScript because cookies are `HttpOnly`
+- a copied token cannot be used without the matching device id cookie value
+- a shared secret allows horizontal scaling across instances
 
-### Current Operational Limitations
+### Important Limitation of Stateless Auth
 
-- sessions are in memory only
-- a server restart invalidates active sessions if the in-memory secret changes
-- the startup-generated secret changes on every restart, so restart invalidates sessions
-- this is not a clustered or distributed session system
-- this is not a replacement for a full enterprise identity provider
+Because there is no shared revocation store:
+
+- logout clears cookies for the current browser only
+- previously copied tokens cannot be revoked immediately by the server
+- refresh returns new cookies, but older copied refresh tokens remain cryptographically valid until they expire
+- if immediate revocation is required, a shared persistence or revocation system is needed
 
 ## 6. Client Integration Flow
 
@@ -173,7 +218,7 @@ Recommended UI flow:
 4. If it returns `401`, show the login page in the React UI.
 5. On login success, retry the protected API call.
 6. During normal usage, if a protected API returns `401`, call `POST /retreever/refresh`.
-7. If refresh returns `200`, retry the original protected API request.
+7. If refresh returns `200`, retry the original protected API request once.
 8. If refresh returns `401`, redirect to the React login screen and require login again.
 9. On explicit logout, call `POST /retreever/logout` and transition the UI to the login screen.
 
@@ -183,9 +228,21 @@ Recommended UI flow:
 
 If the React app is served from the same site as Retreever, the browser will normally send cookies automatically.
 
-### 7.2 Fetch Example
+### 7.2 Cross-Origin Development
 
-Use explicit credentials in frontend code for clarity:
+Cross-origin access exists only for contributor development of Retreever's own React UI.
+
+If that UI is served from a different origin during development, that origin must be listed in `retreever.dev.allow-cross-origin`.
+
+Example:
+
+```properties
+retreever.dev.allow-cross-origin=http://localhost:5173
+```
+
+### 7.3 Fetch Example
+
+Use explicit credentials in frontend code:
 
 ```ts
 await fetch("/retreever/doc", {
@@ -194,7 +251,7 @@ await fetch("/retreever/doc", {
 });
 ```
 
-### 7.3 Axios Example
+### 7.4 Axios Example
 
 ```ts
 await axios.get("/retreever/doc", {
@@ -208,8 +265,6 @@ Use `credentials: "include"` or `withCredentials: true` consistently on:
 - refresh
 - logout
 - protected Retreever API calls
-
-If the UI is served from a different origin during development, that origin must be listed in `retreever.allow-cross-origin`.
 
 ## 8. API Reference
 
@@ -245,8 +300,8 @@ Response body:
 ```json
 {
   "authenticated": true,
-  "accessTokenExpiresAt": "2026-04-15T08:30:00Z",
-  "refreshTokenExpiresAt": "2026-04-22T08:00:00Z"
+  "accessTokenExpiresAt": "2026-04-17T08:30:00Z",
+  "refreshTokenExpiresAt": "2026-04-24T08:00:00Z"
 }
 ```
 
@@ -269,7 +324,7 @@ Status: `401 Unauthorized`
 }
 ```
 
-#### Auth disabled in host app
+#### Retreever auth not configured
 
 Status: `404 Not Found`
 
@@ -280,12 +335,12 @@ This happens when `retreever.auth.username` and `retreever.auth.password` are no
 ### Client Notes
 
 - on success, do not attempt to read cookies in JavaScript
-- just rely on the browser cookie jar
+- rely on the browser cookie jar
 - after success, call a protected endpoint such as `/retreever/doc`
 
 ## 8.2 Refresh
 
-Refreshes the session using the refresh token cookie and device id cookie.
+Refreshes auth using the refresh token cookie and device id cookie.
 
 ### Endpoint
 
@@ -309,8 +364,8 @@ Status: `200 OK`
 ```json
 {
   "authenticated": true,
-  "accessTokenExpiresAt": "2026-04-15T09:00:00Z",
-  "refreshTokenExpiresAt": "2026-04-22T08:45:00Z"
+  "accessTokenExpiresAt": "2026-04-17T09:00:00Z",
+  "refreshTokenExpiresAt": "2026-04-24T08:45:00Z"
 }
 ```
 
@@ -318,7 +373,7 @@ Response cookies:
 
 - a new `retreever_at`
 - a new `retreever_rt`
-- `retreever_did` is re-issued and remains the same logical device binding for the session
+- a re-issued `retreever_did` with the same device id value
 
 ### Error Responses
 
@@ -339,7 +394,7 @@ Additional behavior:
 - the server clears `retreever_rt`
 - the server clears `retreever_did`
 
-#### Auth disabled in host app
+#### Retreever auth not configured
 
 Status: `404 Not Found`
 
@@ -355,12 +410,10 @@ Refresh fails when any of the following is true:
 - refresh token has the wrong internal token type
 - refresh token is expired
 - device id does not match the token payload
-- session is no longer present in the server-side in-memory store
-- refresh token id does not match the latest server-side session state
 
 ## 8.3 Logout
 
-Explicitly logs out the current client session.
+Explicitly logs out the current browser by clearing auth cookies.
 
 ### Endpoint
 
@@ -384,14 +437,13 @@ Response body: none
 
 Additional behavior:
 
-- server attempts to revoke the associated session
 - server clears `retreever_at`
 - server clears `retreever_rt`
 - server clears `retreever_did`
 
 ### Error Responses
 
-#### Auth disabled in host app
+#### Retreever auth not configured
 
 Status: `404 Not Found`
 
@@ -406,7 +458,7 @@ If auth is enabled, the endpoint returns `204 No Content` even when:
 - cookies are already missing
 - access token is expired
 - refresh token is expired
-- session was already removed
+- the browser no longer has a usable auth state
 
 The main contract is: clear cookies and move the UI back to login state.
 
@@ -439,8 +491,6 @@ Any of the following:
 - access token has wrong internal type
 - access token is expired
 - access token device id does not match `retreever_did`
-- session does not exist in the server-side in-memory store
-- session exists but does not match the token payload
 
 ### Important Behavior
 
@@ -459,13 +509,13 @@ That is intentional so the UI can:
 | --- | --- | --- | --- | --- |
 | Correct credentials | `POST /retreever/login` | `200` | `authenticated=true` + expiries | set `at`, `rt`, `did` |
 | Wrong credentials | `POST /retreever/login` | `401` | `invalid_credentials` | none guaranteed |
-| Auth disabled | `POST /retreever/login` | `404` | none guaranteed | none |
-| Valid refresh | `POST /retreever/refresh` | `200` | `authenticated=true` + expiries | rotate `at`, `rt`, reissue `did` |
+| Retreever auth not configured | `POST /retreever/login` | `404` | none guaranteed | none |
+| Valid refresh | `POST /retreever/refresh` | `200` | `authenticated=true` + expiries | reissue `at`, `rt`, `did` |
 | Missing/expired/invalid refresh | `POST /retreever/refresh` | `401` | `invalid_refresh_token` | clears `at`, `rt`, `did` |
-| Auth disabled | `POST /retreever/refresh` | `404` | none guaranteed | none |
+| Retreever auth not configured | `POST /retreever/refresh` | `404` | none guaranteed | none |
 | Logout while auth enabled | `POST /retreever/logout` | `204` | none | clears `at`, `rt`, `did` |
-| Auth disabled | `POST /retreever/logout` | `404` | none guaranteed | none |
-| Accessing protected API without valid session | protected API | `401` | `unauthorized` | none |
+| Retreever auth not configured | `POST /retreever/logout` | `404` | none guaranteed | none |
+| Accessing protected API without valid auth | protected API | `401` | `unauthorized` | none |
 
 ## 11. Recommended UI State Machine
 
@@ -529,6 +579,12 @@ Recommended rule:
 ### 12.4 Prevent concurrent refresh storms
 
 If many requests fail at once, use a shared refresh promise or request queue so only one refresh happens at a time.
+
+### 12.5 Treat logout as browser cleanup, not revocation
+
+If you need to fully end the local browser session, `POST /retreever/logout` is sufficient.
+
+If you need hard token revocation after token leakage, the current stateless model cannot provide that by itself.
 
 ## 13. Example Integration Snippets
 
@@ -610,12 +666,13 @@ async function logout() {
 
 ## 14. Backend Contract Summary
 
-This is the simplest reliable UI contract to build against:
+This is the UI contract to build against:
 
 - UI routes under `/retreever/**` are public
 - protected Retreever APIs return `401` when auth is missing or invalid
 - login sets `HttpOnly` cookies
-- refresh rotates cookies
+- refresh reissues cookies
 - logout clears cookies
 - the UI never reads tokens directly
 - the UI responds only to HTTP status codes and normal JSON error payloads
+- auth is stateless and scales across instances when `retreever.auth.secret` is shared

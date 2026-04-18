@@ -67,11 +67,13 @@ public class RetreeverAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = "retreever.dev", name = "allow-cross-origin")
     public RetreeverCorsFilter retreeverCorsFilter(RetreeverCorsProperties corsProperties) {
         return new RetreeverCorsFilter(corsProperties);
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = "retreever.dev", name = "allow-cross-origin")
     public FilterRegistrationBean<RetreeverCorsFilter> retreeverCorsFilterRegistration(
             RetreeverCorsFilter corsFilter) {
         FilterRegistrationBean<RetreeverCorsFilter> registration = new FilterRegistrationBean<>(corsFilter);
