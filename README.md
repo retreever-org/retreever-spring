@@ -221,9 +221,12 @@ host serves Retreever over HTTPS and you want auth cookies emitted with the
 If auth is disabled because username and password are not configured, Retreever
 ignores `retreever.auth.secret` and TTL settings entirely.
 
-`retreever.dev.allow-cross-origin` is contributor-only. It exists for developing
-Retreever's React UI against a separate local dev server and should not be set
-by normal consuming applications.
+`retreever.dev.allow-cross-origin` is contributor-only. It exists for
+developing Retreever's React UI against a separate local dev server and is
+only honored when Retreever itself is running from local exploded classes.
+
+If Retreever is running as a packaged dependency jar inside a consuming
+application, this setting is ignored and Retreever stays same-origin only.
 
 Detailed auth behavior is documented in
 [Documentation/Retreever-Auth-API.md](Documentation/Retreever-Auth-API.md).

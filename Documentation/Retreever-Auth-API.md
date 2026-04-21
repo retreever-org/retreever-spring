@@ -72,6 +72,8 @@ Notes:
 
 - this is intended only for Retreever UI development
 - normal consuming applications should not set it
+- Retreever only honors it when running from local exploded classes during development
+- if Retreever is running from a packaged dependency jar, this setting is ignored
 - wildcard `*` is rejected because cookies are used for auth
 
 ## 3. Route Model

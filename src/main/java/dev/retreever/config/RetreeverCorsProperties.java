@@ -1,5 +1,7 @@
 package dev.retreever.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -12,7 +14,18 @@ import java.util.List;
 @ConfigurationProperties(prefix = "retreever.dev")
 public class RetreeverCorsProperties implements InitializingBean {
 
+    private static final Logger log = LoggerFactory.getLogger(RetreeverCorsProperties.class);
+
+    private final boolean localDevelopmentRuntime;
     private List<String> allowCrossOrigin = new ArrayList<>();
+
+    public RetreeverCorsProperties() {
+        this(new RetreeverRuntimeMode().isLocalDevelopmentRuntime());
+    }
+
+    RetreeverCorsProperties(boolean localDevelopmentRuntime) {
+        this.localDevelopmentRuntime = localDevelopmentRuntime;
+    }
 
     public List<String> getAllowCrossOrigin() {
         return allowCrossOrigin;
@@ -23,7 +36,7 @@ public class RetreeverCorsProperties implements InitializingBean {
     }
 
     public boolean isEnabled() {
-        return !allowCrossOrigin.isEmpty();
+        return localDevelopmentRuntime && !allowCrossOrigin.isEmpty();
     }
 
     public boolean isAllowed(String origin) {
@@ -45,5 +58,11 @@ public class RetreeverCorsProperties implements InitializingBean {
         }
 
         this.allowCrossOrigin = new ArrayList<>(normalized);
+
+        if (!localDevelopmentRuntime && !this.allowCrossOrigin.isEmpty()) {
+            log.info(
+                    "Ignoring 'retreever.dev.allow-cross-origin' because Retreever is running from a packaged dependency."
+            );
+        }
     }
 }

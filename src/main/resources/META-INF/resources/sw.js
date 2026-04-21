@@ -2,14 +2,10 @@
 // Retreever Service Worker
 // ==========================
 
-const STATIC_CACHE = 'retreever-static-v1';
+const STATIC_CACHE = 'retreever-static-v2';
 
 // List of PWA assets that must NEVER hit network again
 const PRECACHE_URLS = [
-  '/images/Icon192.png',
-  '/images/Icon256.png',
-  '/images/Icon512.png',
-  '/images/screenshot.png',
   '/images/retreever-icon.png',
   '/images/retreever-logo.svg'
 ];
