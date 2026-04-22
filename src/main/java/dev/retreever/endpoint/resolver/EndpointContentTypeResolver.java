@@ -8,6 +8,7 @@
 
 package dev.retreever.endpoint.resolver;
 
+import dev.retreever.engine.DocumentationEligibility;
 import dev.retreever.endpoint.model.ApiEndpoint;
 import dev.retreever.schema.model.JsonPropertyType;
 import dev.retreever.schema.resolver.JsonPropertyTypeResolver;
@@ -192,15 +193,15 @@ public class EndpointContentTypeResolver {
         Class<?> controllerClass = method.getDeclaringClass();
         Class<?> returnType = method.getReturnType();
 
-        boolean isRest = controllerClass.isAnnotationPresent(RestController.class);
         boolean isController = controllerClass.isAnnotationPresent(Controller.class);
+        boolean producesResponseBody = DocumentationEligibility.isDocumentedControllerMethod(method);
 
         if (returnType != String.class) {
             produces.add(MediaType.APPLICATION_JSON_VALUE);
             return;
         }
 
-        if (isRest) {
+        if (producesResponseBody) {
             produces.add(MediaType.APPLICATION_JSON_VALUE);
             return;
         }

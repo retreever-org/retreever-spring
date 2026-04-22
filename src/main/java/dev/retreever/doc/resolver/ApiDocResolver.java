@@ -9,7 +9,6 @@
 package dev.retreever.doc.resolver;
 
 import dev.retreever.annotation.ApiDoc;
-import org.springframework.web.bind.annotation.RestController;
 import dev.retreever.endpoint.model.ApiGroup;
 import dev.retreever.group.resolver.ApiGroupResolver;
 
@@ -73,7 +72,7 @@ public class ApiDocResolver {
     }
 
     /**
-     * Converts all {@code @RestController} classes into {@link ApiGroup} entries.
+     * Converts all documented controller classes into {@link ApiGroup} entries.
      * Only groups with at least one endpoint are included.
      */
     private void resolveControllerGroups(dev.retreever.endpoint.model.ApiDoc doc, Set<Class<?>> controllers) {
@@ -81,8 +80,6 @@ public class ApiDocResolver {
         List<ApiGroup> groups = new ArrayList<>();
 
         for (Class<?> controller : controllers) {
-            if (!controller.isAnnotationPresent(RestController.class)) continue;
-
             ApiGroup group = groupResolver.resolve(controller);
             if (group != null && !group.getEndpoints().isEmpty()) {
                 groups.add(group);

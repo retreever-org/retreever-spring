@@ -55,7 +55,7 @@ public class RetreeverBootstrap {
         ApplicationContext context = event.getApplicationContext();
         Class<?> appClass = resolveApplicationClass(context, event);
 
-        // Scan for @RestController-annotated classes
+        // Scan for controllers and advices that produce response-body documentation
         Set<Class<?>> allControllers = ControllerScanner.scanControllers(context);
         Set<Class<?>> allAdvices = ControllerScanner.scanControllerAdvices(context);
 

@@ -54,7 +54,7 @@ public class ApiErrorResolutionOrchestrator {
 
     private List<Method> getExceptionHandlerMethods(Class<?> adviceClass) {
         return Stream.of(adviceClass.getDeclaredMethods())
-                .filter(method -> method.isAnnotationPresent(ExceptionHandler.class))
+                .filter(DocumentationEligibility::isDocumentedExceptionHandlerMethod)
                 .toList();
     }
 

@@ -63,9 +63,10 @@ public class SchemaResolutionOrchestrator {
     private void processControllers(Set<Class<?>> controllers) {
         for (Class<?> controller : controllers) {
             if (isBasePackageClass(controller)) continue;
+            if (!DocumentationEligibility.isDocumentedController(controller)) continue;
 
             for (Method method : controller.getDeclaredMethods()) {
-                if (!isRestEndpoint(method)) continue;
+                if (!DocumentationEligibility.isDocumentedControllerMethod(method)) continue;
 
                 log.debug("Processing endpoint: {}", method.getName());
 
@@ -81,9 +82,10 @@ public class SchemaResolutionOrchestrator {
     private void processControllerAdvices(Set<Class<?>> controllerAdvices) {
         for (Class<?> advice : controllerAdvices) {
             if (isBasePackageClass(advice)) continue;
+            if (!DocumentationEligibility.isDocumentedControllerAdvice(advice)) continue;
 
             for (Method method : advice.getDeclaredMethods()) {
-                if (!method.isAnnotationPresent(ExceptionHandler.class)) continue;
+                if (!DocumentationEligibility.isDocumentedExceptionHandlerMethod(method)) continue;
 
                 // Register exception handler return type
                 processReturnType(method.getGenericReturnType());
@@ -172,14 +174,4 @@ public class SchemaResolutionOrchestrator {
                 .noneMatch(packageName::startsWith);
     }
 
-    // === ENDPOINT DETECTION ===
-
-    private boolean isRestEndpoint(Method method) {
-        return method.isAnnotationPresent(RequestMapping.class) ||
-                method.isAnnotationPresent(GetMapping.class) ||
-                method.isAnnotationPresent(PostMapping.class) ||
-                method.isAnnotationPresent(PutMapping.class) ||
-                method.isAnnotationPresent(DeleteMapping.class) ||
-                method.isAnnotationPresent(PatchMapping.class);
-    }
 }

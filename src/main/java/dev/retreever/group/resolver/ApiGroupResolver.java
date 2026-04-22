@@ -9,7 +9,7 @@
 package dev.retreever.group.resolver;
 
 import dev.retreever.annotation.ApiGroup;
-import org.springframework.web.bind.annotation.RestController;
+import dev.retreever.engine.DocumentationEligibility;
 import dev.retreever.endpoint.model.ApiEndpoint;
 import dev.retreever.endpoint.resolver.ApiEndpointResolver;
 import dev.retreever.endpoint.resolver.EndpointPathAndMethodResolver;
@@ -19,7 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Resolves a Spring {@code @RestController} into an {@link dev.retreever.endpoint.model.ApiGroup}.
+ * Resolves a Spring controller that produces response bodies into an
+ * {@link dev.retreever.endpoint.model.ApiGroup}.
  * Detects controller metadata, resolves its endpoints, and groups them
  * under a common name and description.
  */
@@ -36,19 +37,19 @@ public class ApiGroupResolver {
      * <p>
      * Steps:
      * <ul>
-     *     <li>Verify class is annotated with {@code @RestController}</li>
+     *     <li>Verify the class contributes documented response-body endpoints</li>
      *     <li>Read {@code @ApiGroup} name/description or derive fallback</li>
      *     <li>Mark deprecated groups if needed</li>
      *     <li>Resolve all valid API endpoints within the class</li>
      * </ul>
      *
-     * @param controllerClass Spring REST controller class
+     * @param controllerClass Spring controller class
      * @return resolved ApiGroup or {@code null} if class is not a controller
      */
     public dev.retreever.endpoint.model.ApiGroup resolve(Class<?> controllerClass) {
 
         // Must be a Spring controller
-        if (!controllerClass.isAnnotationPresent(RestController.class)) {
+        if (!DocumentationEligibility.isDocumentedController(controllerClass)) {
             return null;
         }
 
@@ -77,10 +78,11 @@ public class ApiGroupResolver {
 
         for (Method method : controllerClass.getDeclaredMethods()) {
             // Only consider methods with a valid HTTP mapping
-            if (EndpointPathAndMethodResolver.resolveHttpMethod(method) != null) {
-                ApiEndpoint ep = endpointResolver.resolve(method);
-                endpoints.add(ep);
-            }
+            if (EndpointPathAndMethodResolver.resolveHttpMethod(method) == null) continue;
+            if (!DocumentationEligibility.isDocumentedControllerMethod(method)) continue;
+
+            ApiEndpoint ep = endpointResolver.resolve(method);
+            endpoints.add(ep);
         }
 
         group.setEndpoints(endpoints);
