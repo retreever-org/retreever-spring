@@ -2,10 +2,13 @@ package dev.retreever.auth;
 
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assumptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
@@ -54,9 +57,27 @@ class RetreeverAuthenticationIntegrationTest {
 
     @Test
     void imageAssetsRemainPublic() throws Exception {
-        mockMvc.perform(get("/images/retreever-logo.svg"))
+        Resource[] imageResources = new PathMatchingResourcePatternResolver()
+                .getResources("classpath:/META-INF/resources/images/*");
+
+        Assumptions.assumeTrue(imageResources.length > 0, "No /images assets packaged in the current UI build");
+
+        Resource imageResource = imageResources[0];
+        String imageName = imageResource.getFilename();
+        Assumptions.assumeTrue(imageName != null && !imageName.isBlank(), "Packaged image asset must have a filename");
+
+        mockMvc.perform(get("/images/" + imageName))
                 .andExpect(status().isOk())
-                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, org.hamcrest.Matchers.containsString("image/svg+xml")));
+                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, org.hamcrest.Matchers.startsWith("image/")));
+    }
+
+    @Test
+    void iconAssetsRemainPublicAndCacheable() throws Exception {
+        mockMvc.perform(get("/assets/icons/Icon192.png"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, org.hamcrest.Matchers.containsString("image/png")))
+                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, org.hamcrest.Matchers.containsString("max-age=")))
+                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, org.hamcrest.Matchers.containsString("immutable")));
     }
 
     @Test

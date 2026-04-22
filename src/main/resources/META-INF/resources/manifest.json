@@ -24,14 +24,5 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ],
-
-  "screenshots": [
-    {
-      "src": "/assets/icons/screenshot.png",
-      "sizes": "3839x2324",
-      "type": "image/png",
-      "form_factor": "wide"
-    }
   ]
 }
