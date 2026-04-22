@@ -13,8 +13,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -45,7 +47,7 @@ public class ApiErrorResolver {
             }
 
             // Each declared exception type produces one ApiError entry
-            Class<?>[] exceptionTypes = handlerAnn.value();
+            Class<?>[] exceptionTypes = resolveExceptionTypes(method, handlerAnn);
             if (exceptionTypes.length == 0) {
                 continue;
             }
@@ -82,5 +84,17 @@ public class ApiErrorResolver {
         }
 
         return result;
+    }
+
+    private Class<?>[] resolveExceptionTypes(Method method, ExceptionHandler handlerAnn) {
+        Class<?>[] declaredTypes = handlerAnn.value();
+        if (declaredTypes.length > 0) {
+            return declaredTypes;
+        }
+
+        return Arrays.stream(method.getParameters())
+                .map(Parameter::getType)
+                .filter(Throwable.class::isAssignableFrom)
+                .toArray(Class<?>[]::new);
     }
 }

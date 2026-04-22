@@ -35,6 +35,7 @@ class RetreeverResponseBodyDocumentationIntegrationTest {
 
         ApiDocument.Endpoint classLevelEndpoint = findEndpoint(document, "/class-response/api").orElse(null);
         ApiDocument.Endpoint methodLevelEndpoint = findEndpoint(document, "/method-response/api").orElse(null);
+        ApiDocument.Endpoint inferredErrorEndpoint = findEndpoint(document, "/implicit-error/api").orElse(null);
 
         assertThat(classLevelEndpoint).isNotNull();
         assertThat(classLevelEndpoint.errors())
@@ -47,6 +48,11 @@ class RetreeverResponseBodyDocumentationIntegrationTest {
         assertThat(methodLevelEndpoint.errors())
                 .extracting(ApiDocument.Error::statusCode)
                 .containsExactly(HttpStatus.BAD_REQUEST.value());
+
+        assertThat(inferredErrorEndpoint).isNotNull();
+        assertThat(inferredErrorEndpoint.errors())
+                .extracting(ApiDocument.Error::statusCode)
+                .containsExactly(HttpStatus.CONFLICT.value());
 
         assertThat(findEndpoint(document, "/method-response/page")).isEmpty();
     }
@@ -62,8 +68,10 @@ class RetreeverResponseBodyDocumentationIntegrationTest {
     @Import({
             ClassLevelResponseBodyController.class,
             MethodLevelResponseBodyController.class,
+            ImplicitExceptionHandlerController.class,
             ClassLevelResponseBodyAdvice.class,
-            MethodLevelResponseBodyAdvice.class
+            MethodLevelResponseBodyAdvice.class,
+            ImplicitExceptionHandlerAdvice.class
     })
     static class TestApplication {
     }
@@ -97,6 +105,18 @@ class RetreeverResponseBodyDocumentationIntegrationTest {
         }
     }
 
+    @Controller
+    @ResponseBody
+    @RequestMapping("/implicit-error")
+    static class ImplicitExceptionHandlerController {
+
+        @GetMapping("/api")
+        @ApiEndpoint(errors = ImplicitException.class)
+        String api() {
+            return "implicit-error";
+        }
+    }
+
     @ControllerAdvice
     @ResponseBody
     static class ClassLevelResponseBodyAdvice {
@@ -119,6 +139,17 @@ class RetreeverResponseBodyDocumentationIntegrationTest {
         }
     }
 
+    @ControllerAdvice
+    @ResponseBody
+    static class ImplicitExceptionHandlerAdvice {
+
+        @ExceptionHandler
+        @ApiError(status = HttpStatus.CONFLICT, description = "Implicit exception type")
+        ErrorPayload handle(ImplicitException ex) {
+            return new ErrorPayload(ex.getMessage());
+        }
+    }
+
     record ClassLevelPayload(String message) {
     }
 
@@ -134,6 +165,12 @@ class RetreeverResponseBodyDocumentationIntegrationTest {
     static class MethodLevelResponseBodyException extends RuntimeException {
         MethodLevelResponseBodyException() {
             super("method-level");
+        }
+    }
+
+    static class ImplicitException extends RuntimeException {
+        ImplicitException() {
+            super("implicit");
         }
     }
 }
