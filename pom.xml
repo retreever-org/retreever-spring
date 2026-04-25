@@ -55,6 +55,7 @@
         <retreever.ui.repository>https://github.com/retreever-org/retreever-ui.git</retreever.ui.repository>
         <retreever.ui.directory>${project.build.directory}/retreever-ui</retreever.ui.directory>
         <retreever.ui.dist.directory>${retreever.ui.directory}/dist</retreever.ui.dist.directory>
+        <retreever.node.install.directory>${project.build.directory}/node-runtime</retreever.node.install.directory>
         <retreever.ui.skip>false</retreever.ui.skip>
     </properties>
 
@@ -126,6 +127,7 @@
                             <skip>${retreever.ui.skip}</skip>
                             <target>
                                 <delete dir="${retreever.ui.directory}"/>
+                                <mkdir dir="${retreever.node.install.directory}/lib"/>
                             </target>
                         </configuration>
                     </execution>
@@ -177,7 +179,7 @@
                 <artifactId>frontend-maven-plugin</artifactId>
                 <version>${frontend.maven.plugin.version}</version>
                 <configuration>
-                    <installDirectory>${project.build.directory}</installDirectory>
+                    <installDirectory>${retreever.node.install.directory}</installDirectory>
                     <workingDirectory>${retreever.ui.directory}</workingDirectory>
                     <skip>${retreever.ui.skip}</skip>
                 </configuration>
