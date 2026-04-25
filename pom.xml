@@ -127,6 +127,7 @@
                             <skip>${retreever.ui.skip}</skip>
                             <target>
                                 <delete dir="${retreever.ui.directory}"/>
+                                <mkdir dir="${project.build.directory}/lib"/>
                                 <mkdir dir="${retreever.node.install.directory}/lib"/>
                             </target>
                         </configuration>
