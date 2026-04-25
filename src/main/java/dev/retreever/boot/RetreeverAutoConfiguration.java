@@ -8,6 +8,7 @@
 
 package dev.retreever.boot;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.retreever.api.config.RetreeverCorsFilter;
 import dev.retreever.auth.RetreeverAuthenticationFilter;
 import dev.retreever.auth.RetreeverAuthProperties;
@@ -16,6 +17,7 @@ import dev.retreever.auth.RetreeverTokenService;
 import dev.retreever.config.RetreeverCorsProperties;
 import dev.retreever.endpoint.model.ApiHeader;
 import dev.retreever.engine.RetreeverOrchestrator;
+import dev.retreever.schema.resolver.jackson.JsonNameResolver;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -24,6 +26,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.Ordered;
+import org.springframework.beans.factory.ObjectProvider;
 
 import java.util.List;
 import java.util.Map;
@@ -37,7 +40,12 @@ import java.util.Map;
 public class RetreeverAutoConfiguration {
 
     @Bean
-    public RetreeverOrchestrator orchestrator(ApplicationContext context) {
+    public RetreeverOrchestrator orchestrator(
+            ApplicationContext context,
+            ObjectProvider<ObjectMapper> objectMapperProvider
+    ) {
+
+        JsonNameResolver.configure(objectMapperProvider.getIfAvailable());
 
         // Find the @SpringBootApplication class
         String[] appBeans = context.getBeanNamesForAnnotation(SpringBootApplication.class);

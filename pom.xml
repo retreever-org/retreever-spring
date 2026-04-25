@@ -8,7 +8,7 @@
 
     <groupId>dev.retreever</groupId>
     <artifactId>retreever</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <packaging>jar</packaging>
     <name>Retreever</name>
     <description>Lightweight developer-first toolkit for generating and testing API documentation in Spring Boot apps</description>
@@ -47,6 +47,15 @@
         <maven.javadoc.plugin.version>3.12.0</maven.javadoc.plugin.version>
         <maven.gpg.plugin.version>3.2.8</maven.gpg.plugin.version>
         <central.publishing.plugin.version>0.10.0</central.publishing.plugin.version>
+        <exec.maven.plugin.version>3.3.0</exec.maven.plugin.version>
+        <frontend.maven.plugin.version>1.15.0</frontend.maven.plugin.version>
+        <maven.antrun.plugin.version>3.1.0</maven.antrun.plugin.version>
+        <node.version>v20.19.0</node.version>
+        <npm.arguments>ci</npm.arguments>
+        <retreever.ui.repository>https://github.com/retreever-org/retreever-ui.git</retreever.ui.repository>
+        <retreever.ui.directory>${project.build.directory}/retreever-ui</retreever.ui.directory>
+        <retreever.ui.dist.directory>${retreever.ui.directory}/dist</retreever.ui.dist.directory>
+        <retreever.ui.skip>false</retreever.ui.skip>
     </properties>
 
     <!-- Import Spring Boot managed versions -->
@@ -91,6 +100,146 @@
         </dependency>
 
     </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>META-INF/resources/**</exclude>
+                </excludes>
+            </resource>
+        </resources>
+
+        <plugins>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>${maven.antrun.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>prepare-frontend-workspace</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${retreever.ui.skip}</skip>
+                            <target>
+                                <delete dir="${retreever.ui.directory}"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>clear-packaged-frontend</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${retreever.ui.skip}</skip>
+                            <target>
+                                <delete dir="${project.build.outputDirectory}/META-INF/resources"/>
+                                <mkdir dir="${project.build.outputDirectory}/META-INF/resources"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>${exec.maven.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>clone-frontend</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${retreever.ui.skip}</skip>
+                            <executable>git</executable>
+                            <arguments>
+                                <argument>clone</argument>
+                                <argument>--depth</argument>
+                                <argument>1</argument>
+                                <argument>${retreever.ui.repository}</argument>
+                                <argument>${retreever.ui.directory}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>${frontend.maven.plugin.version}</version>
+                <configuration>
+                    <installDirectory>${project.build.directory}</installDirectory>
+                    <workingDirectory>${retreever.ui.directory}</workingDirectory>
+                    <skip>${retreever.ui.skip}</skip>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>install-node-and-npm</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>install-node-and-npm</goal>
+                        </goals>
+                        <configuration>
+                            <nodeVersion>${node.version}</nodeVersion>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>npm-install</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>${npm.arguments}</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>npm-build</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>run build</arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-frontend</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${retreever.ui.skip}</skip>
+                            <outputDirectory>${project.build.outputDirectory}/META-INF/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${retreever.ui.dist.directory}</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
     <profiles>
         <profile>

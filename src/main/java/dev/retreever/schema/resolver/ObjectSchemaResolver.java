@@ -49,7 +49,10 @@ public class ObjectSchemaResolver {
             field.setAccessible(true);
 
             // Skip ignored properties
-            if (ignoredNames.contains(field.getName()) || JsonNameResolver.isJsonIgnored(field)) {
+            String jsonName = JsonNameResolver.resolveJsonPropertyName(field, clazz, field.getName());
+            if (ignoredNames.contains(field.getName()) ||
+                    ignoredNames.contains(jsonName) ||
+                    JsonNameResolver.isJsonIgnored(field)) {
                 continue;
             }
 
