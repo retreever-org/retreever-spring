@@ -50,7 +50,7 @@ public final class SchemaViewRenderer {
     private static Object renderModel(Schema s) {
         if (s == null) return null;
         if (s instanceof Property p) return renderModel(p.getValue());
-        if (s instanceof ValueSchema vs) return vs.getType().displayName();
+        if (s instanceof ValueSchema vs) return generateModelValue(vs.getType());
         if (s instanceof ArraySchema arr) {
             Schema element = arr.getElementSchema();
             Object model = renderModel(element);
@@ -64,7 +64,9 @@ public final class SchemaViewRenderer {
             return out;
         }
         if (s instanceof MapSchema map) {
-            return Map.of(map.getKeyType().displayName(), renderModel(map.getValueSchema()));
+            Map<String, Object> out = new LinkedHashMap<>();
+            out.put(map.getKeyType().displayName(), renderModel(map.getValueSchema()));
+            return out;
         }
         return null;
     }
@@ -106,15 +108,46 @@ public final class SchemaViewRenderer {
         if (s instanceof ValueSchema vs) {
             return switch (vs.getType()) {
                 case STRING -> "hello";
-                case NUMBER -> 123;
-                case BOOLEAN -> true;
+                case NUMBER -> 0;
+                case BOOLEAN -> false;
+                case NULL -> null;
+                case OBJECT -> new LinkedHashMap<>();
+                case ARRAY -> new ArrayList<>();
+                case MAP -> new LinkedHashMap<>();
+                case ENUM -> "VALUE";
                 case UUID -> "550e8400-e29b-41d4-a716-446655440000";
                 case DATE_TIME -> "2025-01-29T10:15:30Z";
                 case DATE -> "2025-01-29";
+                case TIME -> "10:15:30";
+                case BINARY -> "base64-encoded-content";
+                case URI -> "https://example.com";
+                case DURATION -> "PT1H";
+                case PERIOD -> "P1D";
                 default -> null;
             };
         }
         return null;
+    }
+
+    private static Object generateModelValue(JsonPropertyType type) {
+        return switch (type) {
+            case STRING -> "string";
+            case NUMBER -> 0;
+            case BOOLEAN -> false;
+            case NULL -> null;
+            case OBJECT -> new LinkedHashMap<>();
+            case ARRAY -> new ArrayList<>();
+            case MAP -> new LinkedHashMap<>();
+            case ENUM -> "VALUE";
+            case UUID -> "550e8400-e29b-41d4-a716-446655440000";
+            case DATE -> "2025-01-29";
+            case TIME -> "10:15:30";
+            case DATE_TIME -> "2025-01-29T10:15:30Z";
+            case BINARY -> "base64-encoded-content";
+            case URI -> "https://example.com";
+            case DURATION -> "PT1H";
+            case PERIOD -> "P1D";
+        };
     }
 
     private static Object convertExample(Object raw, ValueSchema target) {

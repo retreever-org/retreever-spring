@@ -12,7 +12,8 @@ public record RetreeverPublicPaths(
                 "/manifest.json",
                 "/assets/**",
                 "/images/**",
-                "/sw.js"
+                "/sw.js",
+                "/.well-known/appspecific/com.chrome.devtools.json"
         });
     }
 
