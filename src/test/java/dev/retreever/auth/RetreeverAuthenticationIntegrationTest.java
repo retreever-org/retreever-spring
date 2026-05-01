@@ -73,7 +73,7 @@ class RetreeverAuthenticationIntegrationTest {
 
     @Test
     void iconAssetsRemainPublicAndCacheable() throws Exception {
-        mockMvc.perform(get("/assets/icons/Icon192.png"))
+        mockMvc.perform(get("/assets/icons/icon192v2.png"))
                 .andExpect(status().isOk())
                 .andExpect(header().string(HttpHeaders.CONTENT_TYPE, org.hamcrest.Matchers.containsString("image/png")))
                 .andExpect(header().string(HttpHeaders.CACHE_CONTROL, org.hamcrest.Matchers.containsString("max-age=")))

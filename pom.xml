@@ -8,11 +8,11 @@
 
     <groupId>dev.retreever</groupId>
     <artifactId>retreever</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <packaging>jar</packaging>
     <name>Retreever</name>
     <description>Lightweight developer-first toolkit for generating and testing API documentation in Spring Boot apps</description>
-    <url>https://github.com/Retreever-org/retreever-java</url>
+    <url>https://retreever.dev</url>
 
     <licenses>
         <license>
