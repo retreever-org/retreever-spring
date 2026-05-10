@@ -8,7 +8,10 @@
 
 package dev.retreever.engine;
 
+import dev.retreever.config.RetreeverDocumentationExclusionProperties;
 import dev.retreever.config.SchemaConfig;
+import dev.retreever.endpoint.model.ApiEndpoint;
+import dev.retreever.endpoint.resolver.EndpointPathAndMethodResolver;
 import dev.retreever.repo.SchemaRegistry;
 import dev.retreever.schema.model.JsonPropertyType;
 import dev.retreever.schema.model.Schema;
@@ -35,9 +38,13 @@ public class SchemaResolutionOrchestrator {
     private static final Logger log = LoggerFactory.getLogger(SchemaResolutionOrchestrator.class);
 
     private final SchemaRegistry schemaRegistry;
+    private final RetreeverDocumentationExclusionProperties exclusionProperties;
 
-    public SchemaResolutionOrchestrator(SchemaRegistry schemaRegistry) {
+    public SchemaResolutionOrchestrator(
+            SchemaRegistry schemaRegistry,
+            RetreeverDocumentationExclusionProperties exclusionProperties) {
         this.schemaRegistry = schemaRegistry;
+        this.exclusionProperties = exclusionProperties;
         log.debug("packages allowed for scanning: {}", SchemaConfig.getBasePackages());
     }
 
@@ -67,6 +74,7 @@ public class SchemaResolutionOrchestrator {
 
             for (Method method : controller.getDeclaredMethods()) {
                 if (!DocumentationEligibility.isDocumentedControllerMethod(method)) continue;
+                if (isExcluded(method)) continue;
 
                 log.debug("Processing endpoint: {}", method.getName());
 
@@ -174,4 +182,9 @@ public class SchemaResolutionOrchestrator {
                 .noneMatch(packageName::startsWith);
     }
 
+    private boolean isExcluded(Method method) {
+        ApiEndpoint endpoint = new ApiEndpoint();
+        EndpointPathAndMethodResolver.resolve(endpoint, method);
+        return exclusionProperties.excludes(endpoint.getPath());
+    }
 }

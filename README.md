@@ -65,6 +65,7 @@ names, examples, or error documentation.
 | `@ApiError` | Exception-handler status and description |
 | `@FieldInfo` | Field description and example |
 | `@Description` | Parameter or field description |
+| `@RetreeverSkip` | Excludes a controller or endpoint from Retreever documentation |
 
 ```java
 @ApiGroup(name = "Product APIs")
@@ -97,6 +98,42 @@ retreever.enabled=false
 This is a hard disable. Retreever registers no controllers, filters, resource
 handlers, scanners, UI routes, or documentation endpoints. Requests to
 `/retreever/**` fall through to the host application.
+
+### Exclude Endpoints From Documentation
+
+Use `@RetreeverSkip` on a controller class or method when endpoints must never
+appear in Retreever documentation, even if they also have `@ApiEndpoint`.
+
+```java
+@RetreeverSkip
+@RestController
+@RequestMapping("/internal")
+class InternalController {
+
+    @GetMapping("/reindex")
+    void reindex() {
+    }
+}
+```
+
+Host applications can also exclude paths centrally:
+
+```yaml
+retreever:
+  docs:
+    skip:
+      - /internal/reindex
+      - /users/{userId}
+      - /admin/**
+      - 'regex:^/reports/[{]reportId[}]/export$'
+```
+
+`retreever.docs.skip` accepts exact paths, Spring/Ant-style patterns such as
+`/users/{userId}` and `/admin/**`, and regex entries prefixed with `regex:`.
+Regex entries are evaluated against Retreever's resolved endpoint path template.
+This gives teams a compliance control for keeping sensitive or operational
+endpoints out of generated API documentation without changing the endpoints
+themselves.
 
 ### Retreever Auth
 

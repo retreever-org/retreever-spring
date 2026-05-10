@@ -9,6 +9,7 @@
 package dev.retreever.group.resolver;
 
 import dev.retreever.annotation.ApiGroup;
+import dev.retreever.config.RetreeverDocumentationExclusionProperties;
 import dev.retreever.engine.DocumentationEligibility;
 import dev.retreever.endpoint.model.ApiEndpoint;
 import dev.retreever.endpoint.resolver.ApiEndpointResolver;
@@ -27,9 +28,13 @@ import java.util.List;
 public class ApiGroupResolver {
 
     private final ApiEndpointResolver endpointResolver;
+    private final RetreeverDocumentationExclusionProperties exclusionProperties;
 
-    public ApiGroupResolver(ApiEndpointResolver endpointResolver) {
+    public ApiGroupResolver(
+            ApiEndpointResolver endpointResolver,
+            RetreeverDocumentationExclusionProperties exclusionProperties) {
         this.endpointResolver = endpointResolver;
+        this.exclusionProperties = exclusionProperties;
     }
 
     /**
@@ -82,6 +87,8 @@ public class ApiGroupResolver {
             if (!DocumentationEligibility.isDocumentedControllerMethod(method)) continue;
 
             ApiEndpoint ep = endpointResolver.resolve(method);
+            if (exclusionProperties.excludes(ep.getPath())) continue;
+
             endpoints.add(ep);
         }
 

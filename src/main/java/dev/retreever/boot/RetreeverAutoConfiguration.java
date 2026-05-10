@@ -15,6 +15,7 @@ import dev.retreever.auth.RetreeverAuthProperties;
 import dev.retreever.auth.RetreeverAuthSupport;
 import dev.retreever.auth.RetreeverTokenService;
 import dev.retreever.config.RetreeverCorsProperties;
+import dev.retreever.config.RetreeverDocumentationExclusionProperties;
 import dev.retreever.endpoint.model.ApiHeader;
 import dev.retreever.engine.RetreeverOrchestrator;
 import dev.retreever.schema.resolver.jackson.JsonNameResolver;
@@ -42,7 +43,8 @@ public class RetreeverAutoConfiguration {
     @Bean
     public RetreeverOrchestrator orchestrator(
             ApplicationContext context,
-            ObjectProvider<ObjectMapper> objectMapperProvider
+            ObjectProvider<ObjectMapper> objectMapperProvider,
+            RetreeverDocumentationExclusionProperties exclusionProperties
     ) {
 
         JsonNameResolver.configure(objectMapperProvider.getIfAvailable());
@@ -54,17 +56,17 @@ public class RetreeverAutoConfiguration {
 
         if (appBeans.length == 0) {
             // fallback — but extremely unlikely
-            return new RetreeverOrchestrator(List.of(), headers);
+            return new RetreeverOrchestrator(List.of(), headers, exclusionProperties);
         }
 
         Class<?> appClass = context.getType(appBeans[0]);
         if (appClass == null || appClass.getPackage() == null) {
-            return new RetreeverOrchestrator(List.of(), headers);
+            return new RetreeverOrchestrator(List.of(), headers, exclusionProperties);
         }
 
         String basePackage = appClass.getPackage().getName();
 
-        return new RetreeverOrchestrator(List.of(basePackage, "java.util"), headers);
+        return new RetreeverOrchestrator(List.of(basePackage, "java.util"), headers, exclusionProperties);
     }
 
     @Bean

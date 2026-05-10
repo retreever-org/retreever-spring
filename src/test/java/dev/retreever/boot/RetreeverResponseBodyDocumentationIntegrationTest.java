@@ -2,6 +2,7 @@ package dev.retreever.boot;
 
 import dev.retreever.annotation.ApiEndpoint;
 import dev.retreever.annotation.ApiError;
+import dev.retreever.annotation.RetreeverSkip;
 import dev.retreever.view.dto.ApiDocument;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,15 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = RetreeverResponseBodyDocumentationIntegrationTest.TestApplication.class)
+@SpringBootTest(
+        classes = RetreeverResponseBodyDocumentationIntegrationTest.TestApplication.class,
+        properties = {
+                "retreever.docs.skip[0]=/documentation-exclusions/exact",
+                "retreever.docs.skip[1]=/documentation-exclusions/internal/**",
+                "retreever.docs.skip[2]=/documentation-exclusions/users/{userId}",
+                "retreever.docs.skip[3]=regex:^/documentation-exclusions/reports/[{]reportId[}]/export$"
+        }
+)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class RetreeverResponseBodyDocumentationIntegrationTest {
 
@@ -57,6 +66,20 @@ class RetreeverResponseBodyDocumentationIntegrationTest {
         assertThat(findEndpoint(document, "/method-response/page")).isEmpty();
     }
 
+    @Test
+    void excludesSkippedAndConfiguredEndpointsFromDocumentation() {
+        ApiDocument document = bootstrap.getDocument();
+
+        assertThat(findEndpoint(document, "/documentation-exclusions/public")).isPresent();
+        assertThat(findEndpoint(document, "/documentation-exclusions/skipped")).isEmpty();
+        assertThat(findEndpoint(document, "/documentation-exclusions/controller-skip/public")).isEmpty();
+        assertThat(findEndpoint(document, "/documentation-exclusions/controller-skip/annotated")).isEmpty();
+        assertThat(findEndpoint(document, "/documentation-exclusions/exact")).isEmpty();
+        assertThat(findEndpoint(document, "/documentation-exclusions/internal/report")).isEmpty();
+        assertThat(findEndpoint(document, "/documentation-exclusions/users/{userId}")).isEmpty();
+        assertThat(findEndpoint(document, "/documentation-exclusions/reports/{reportId}/export")).isEmpty();
+    }
+
     private Optional<ApiDocument.Endpoint> findEndpoint(ApiDocument document, String path) {
         return document.groups().stream()
                 .flatMap(group -> group.endpoints().stream())
@@ -69,6 +92,8 @@ class RetreeverResponseBodyDocumentationIntegrationTest {
             ClassLevelResponseBodyController.class,
             MethodLevelResponseBodyController.class,
             ImplicitExceptionHandlerController.class,
+            DocumentationExclusionController.class,
+            ClassLevelSkippedController.class,
             ClassLevelResponseBodyAdvice.class,
             MethodLevelResponseBodyAdvice.class,
             ImplicitExceptionHandlerAdvice.class
@@ -114,6 +139,62 @@ class RetreeverResponseBodyDocumentationIntegrationTest {
         @ApiEndpoint(errors = ImplicitException.class)
         String api() {
             return "implicit-error";
+        }
+    }
+
+    @Controller
+    @ResponseBody
+    @RequestMapping("/documentation-exclusions")
+    static class DocumentationExclusionController {
+
+        @GetMapping("/public")
+        String publicApi() {
+            return "public";
+        }
+
+        @GetMapping("/skipped")
+        @ApiEndpoint(name = "Skipped even with metadata")
+        @RetreeverSkip
+        String skipped() {
+            return "skipped";
+        }
+
+        @GetMapping("/exact")
+        String exactExcluded() {
+            return "exact";
+        }
+
+        @GetMapping("/internal/report")
+        String patternExcluded() {
+            return "internal";
+        }
+
+        @GetMapping("/users/{userId}")
+        String pathVariablePatternExcluded() {
+            return "user";
+        }
+
+        @GetMapping("/reports/{reportId}/export")
+        String regexExcluded() {
+            return "report";
+        }
+    }
+
+    @Controller
+    @ResponseBody
+    @RetreeverSkip
+    @RequestMapping("/documentation-exclusions/controller-skip")
+    static class ClassLevelSkippedController {
+
+        @GetMapping("/public")
+        String publicApi() {
+            return "public";
+        }
+
+        @GetMapping("/annotated")
+        @ApiEndpoint(name = "Skipped controller endpoint")
+        String annotatedApi() {
+            return "annotated";
         }
     }
 

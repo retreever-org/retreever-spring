@@ -8,6 +8,7 @@
 
 package dev.retreever.engine;
 
+import dev.retreever.config.RetreeverDocumentationExclusionProperties;
 import dev.retreever.config.SchemaConfig;
 import dev.retreever.doc.resolver.ApiDocResolver;
 import dev.retreever.endpoint.model.ApiHeader;
@@ -38,7 +39,10 @@ public class RetreeverOrchestrator {
         return basePackages;
     }
 
-    public RetreeverOrchestrator(List<String> basePackages, List<ApiHeader> headers) {
+    public RetreeverOrchestrator(
+            List<String> basePackages,
+            List<ApiHeader> headers,
+            RetreeverDocumentationExclusionProperties exclusionProperties) {
         this.basePackages = basePackages;
 
         // 1. Initialise config
@@ -51,11 +55,11 @@ public class RetreeverOrchestrator {
 
         // 3. Resolver chain (endpoint → group → doc)
         ApiEndpointResolver endpointResolver = new ApiEndpointResolver(headerRegistry);
-        ApiGroupResolver groupResolver = new ApiGroupResolver(endpointResolver);
+        ApiGroupResolver groupResolver = new ApiGroupResolver(endpointResolver, exclusionProperties);
 
         // 4. Orchestrators & Assemblers
         this.apiErrorResolutionOrchestrator = new ApiErrorResolutionOrchestrator(errorRegistry);
-        this.schemaResolutionOrchestrator = new SchemaResolutionOrchestrator(schemaRegistry);
+        this.schemaResolutionOrchestrator = new SchemaResolutionOrchestrator(schemaRegistry, exclusionProperties);
         this.assembler = new ApiDocumentAssembler(schemaRegistry, errorRegistry);
         this.docResolver = new ApiDocResolver(groupResolver);
     }

@@ -8,6 +8,7 @@
 
 package dev.retreever.engine;
 
+import dev.retreever.annotation.RetreeverSkip;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -41,6 +42,10 @@ public final class DocumentationEligibility {
             return false;
         }
 
+        if (hasAnnotation(controllerClass, RetreeverSkip.class)) {
+            return false;
+        }
+
         if (hasAnnotation(controllerClass, RestController.class)) {
             return true;
         }
@@ -58,7 +63,8 @@ public final class DocumentationEligibility {
     }
 
     public static boolean isDocumentedControllerMethod(Method method) {
-        if (method == null || !isRequestMappingMethod(method)) {
+        if (method == null || hasAnnotation(method, RetreeverSkip.class) ||
+                hasAnnotation(method.getDeclaringClass(), RetreeverSkip.class) || !isRequestMappingMethod(method)) {
             return false;
         }
 
@@ -73,6 +79,10 @@ public final class DocumentationEligibility {
 
     public static boolean isDocumentedControllerAdvice(Class<?> adviceClass) {
         if (adviceClass == null) {
+            return false;
+        }
+
+        if (hasAnnotation(adviceClass, RetreeverSkip.class)) {
             return false;
         }
 
@@ -93,7 +103,9 @@ public final class DocumentationEligibility {
     }
 
     public static boolean isDocumentedExceptionHandlerMethod(Method method) {
-        if (method == null || !hasAnnotation(method, ExceptionHandler.class)) {
+        if (method == null || hasAnnotation(method, RetreeverSkip.class) ||
+                hasAnnotation(method.getDeclaringClass(), RetreeverSkip.class) ||
+                !hasAnnotation(method, ExceptionHandler.class)) {
             return false;
         }
 
