@@ -167,11 +167,13 @@ Static values:
 ```yaml
 retreever:
   env:
-    variables:
-      - name: device-id
-        source:
-          value: device-web-001
+    variable:
+      name: device-id
+      value: device-web-001
 ```
+
+Properties form: `retreever.env.variable.name` and
+`retreever.env.variable.value`.
 
 Values resolved from API responses:
 
@@ -180,32 +182,22 @@ retreever:
   env:
     variables:
       - name: access-token
-        source:
-          request:
-            endpoints:
-              - /api/v1/public/login
-              - /api/v1/public/login/refresh
-            method: post
-            response:
-              body-attribute-paths:
-                - data.access_token
-                - accessToken
+        from:
+          endpoints:
+            - '[POST] /api/v1/public/login'
+            - '[GET] /api/v1/public/login/refresh'
+          extract:
+            - '[BODY] data.access_token'
+            - '[BODY] accessToken'
 
       - name: session-id
-        source:
-          request:
-            endpoints:
-              - /api/v1/public/login
-            method: post
-            response:
-              header-attribute-paths:
-                - X-Session-ID
-                - x-session-id
+        from:
+          endpoints:
+            - '[POST] /api/v1/public/login'
+          extract:
+            - '[HEADER] X-Session-ID'
+            - '[HEADER] x-session-id'
 ```
-
-A request-based variable resolves from body paths or header paths, not both.
-`/retreever/environment` exposes response paths as arrays:
-`body_attribute_paths` and `header_attribute_paths`.
 
 ## Compatibility
 

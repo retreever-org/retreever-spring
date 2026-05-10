@@ -9,7 +9,7 @@
 package dev.retreever.api;
 
 import dev.retreever.auth.RetreeverAuthProperties;
-import dev.retreever.config.TestEnvironmentConfig;
+import dev.retreever.config.TestEnvironmentDocumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import dev.retreever.boot.RetreeverBootstrap;
 import dev.retreever.view.dto.ApiDocument;
+import dev.retreever.view.dto.TestEnvironmentDocument;
 
 import java.util.Map;
 
@@ -28,15 +29,15 @@ import java.util.Map;
 public class RetreeverController {
 
     private final RetreeverBootstrap bootstrap;
-    private final TestEnvironmentConfig environmentConfig;
+    private final TestEnvironmentDocumentResolver environmentDocumentResolver;
     private final RetreeverAuthProperties authProperties;
 
     public RetreeverController(
             RetreeverBootstrap bootstrap,
-            TestEnvironmentConfig environmentConfig,
+            TestEnvironmentDocumentResolver environmentDocumentResolver,
             RetreeverAuthProperties authProperties) {
         this.bootstrap = bootstrap;
-        this.environmentConfig = environmentConfig;
+        this.environmentDocumentResolver = environmentDocumentResolver;
         this.authProperties = authProperties;
     }
 
@@ -65,8 +66,8 @@ public class RetreeverController {
     }
 
     @GetMapping("/environment")
-    public ResponseEntity<TestEnvironmentConfig> getEnvironment() {
-        return ResponseEntity.ok(environmentConfig);
+    public ResponseEntity<TestEnvironmentDocument> getEnvironment() {
+        return ResponseEntity.ok(environmentDocumentResolver.resolve());
     }
 
     /**
