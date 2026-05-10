@@ -1,9 +1,12 @@
 package dev.retreever.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Set;
@@ -64,23 +67,27 @@ public class TestEnvironmentConfig implements InitializingBean {
                 );
             }
 
-            boolean hasBodyPath = res.getBodyAttributePath() != null;
-            boolean hasHeaderPath = res.getHeaderAttributePath() != null;
+            boolean hasBodyPaths = hasEntries(res.getBodyAttributePaths());
+            boolean hasHeaderPaths = hasEntries(res.getHeaderAttributePaths());
 
-            if (hasBodyPath && hasHeaderPath) {
+            if (hasBodyPaths && hasHeaderPaths) {
                 throw new IllegalArgumentException(
                         "Environment variable '" + variable.getName() +
-                                "' cannot define both 'body-attribute-path' and 'header-attribute-path'. Only one is permitted."
+                                "' cannot define both body attribute paths and header attribute paths. Only one response source is permitted."
                 );
             }
 
-            if (!hasBodyPath && !hasHeaderPath) {
+            if (!hasBodyPaths && !hasHeaderPaths) {
                 throw new IllegalArgumentException(
                         "Environment variable '" + variable.getName() +
-                                "' must define either 'body-attribute-path' or 'header-attribute-path'."
+                                "' must define either a body attribute path or a header attribute path."
                 );
             }
         }
+    }
+
+    private boolean hasEntries(List<String> values) {
+        return values != null && values.stream().anyMatch(StringUtils::hasText);
     }
 
     // -------------------------------------- DATA MODELS -------------------------------------
@@ -122,16 +129,39 @@ public class TestEnvironmentConfig implements InitializingBean {
         public void setResponse(Response response) { this.response = response; }
     }
 
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     public static class Response {
-        @JsonProperty("body_attribute_path")
         private String bodyAttributePath;
-        @JsonProperty("header_attribute_path")
+        @JsonProperty("body_attribute_paths")
+        private List<String> bodyAttributePaths;
         private String headerAttributePath;
+        @JsonProperty("header_attribute_paths")
+        private List<String> headerAttributePaths;
 
+        @JsonIgnore
         public String getBodyAttributePath() { return bodyAttributePath; }
         public void setBodyAttributePath(String path) { this.bodyAttributePath = path; }
 
+        public List<String> getBodyAttributePaths() { return paths(bodyAttributePath, bodyAttributePaths); }
+        public void setBodyAttributePaths(List<String> paths) { this.bodyAttributePaths = paths; }
+
+        @JsonIgnore
         public String getHeaderAttributePath() { return headerAttributePath; }
         public void setHeaderAttributePath(String path) { this.headerAttributePath = path; }
+
+        public List<String> getHeaderAttributePaths() { return paths(headerAttributePath, headerAttributePaths); }
+        public void setHeaderAttributePaths(List<String> paths) { this.headerAttributePaths = paths; }
+
+        private List<String> paths(String path, List<String> paths) {
+            if (!StringUtils.hasText(path)) {
+                return paths;
+            }
+            if (paths == null || paths.isEmpty()) {
+                return List.of(path);
+            }
+            return java.util.stream.Stream.concat(java.util.stream.Stream.of(path), paths.stream())
+                    .filter(StringUtils::hasText)
+                    .toList();
+        }
     }
 }
