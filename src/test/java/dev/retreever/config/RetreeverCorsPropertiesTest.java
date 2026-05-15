@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class RetreeverCorsPropertiesTest {
 
@@ -32,12 +31,13 @@ class RetreeverCorsPropertiesTest {
     }
 
     @Test
-    void rejectsWildcardOrigins() {
+    void disablesDevCorsForWildcardOrigins() throws Exception {
         RetreeverCorsProperties properties = new RetreeverCorsProperties(true);
         properties.setAllowCrossOrigin(List.of("*"));
 
-        assertThatThrownBy(properties::afterPropertiesSet)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("retreever.dev.allow-cross-origin");
+        properties.afterPropertiesSet();
+
+        assertThat(properties.isEnabled()).isFalse();
+        assertThat(properties.getAllowCrossOrigin()).isEmpty();
     }
 }

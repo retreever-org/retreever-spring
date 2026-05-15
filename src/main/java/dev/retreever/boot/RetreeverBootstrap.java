@@ -8,6 +8,8 @@
 
 package dev.retreever.boot;
 
+import dev.retreever.auth.RetreeverAuthProperties;
+import dev.retreever.config.RetreeverSecurityHintProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -37,11 +39,20 @@ public class RetreeverBootstrap {
 
     private final RetreeverOrchestrator orchestrator;
     private final RetreeverUiLocationResolver uiLocationResolver;
+    private final RetreeverAuthProperties authProperties;
+    private final RetreeverSecurityHintProperties securityHintProperties;
     private ApiDocument cached;
+    private Exception startupFailure;
+    private boolean securityHintLogged;
 
-    public RetreeverBootstrap(RetreeverOrchestrator orchestrator) {
+    public RetreeverBootstrap(
+            RetreeverOrchestrator orchestrator,
+            RetreeverAuthProperties authProperties,
+            RetreeverSecurityHintProperties securityHintProperties) {
         this.orchestrator = orchestrator;
         this.uiLocationResolver = new RetreeverUiLocationResolver();
+        this.authProperties = authProperties;
+        this.securityHintProperties = securityHintProperties;
     }
 
     /**
@@ -50,6 +61,19 @@ public class RetreeverBootstrap {
      */
     @EventListener(ApplicationReadyEvent.class)
     public void init(ApplicationReadyEvent event) {
+        try {
+            initialize(event);
+        } catch (Exception ex) {
+            this.cached = null;
+            this.startupFailure = ex;
+            log.error(
+                    "Retreever failed during startup. The host application will continue running, but Retreever endpoints may be unavailable.",
+                    ex
+            );
+        }
+    }
+
+    private void initialize(ApplicationReadyEvent event) {
         log.debug("Initializing Retreever. Resolving API documentation.");
 
         ApplicationContext context = event.getApplicationContext();
@@ -69,6 +93,8 @@ public class RetreeverBootstrap {
         // Build final documentation snapshot
         this.cached = orchestrator.build(appClass, controllers, controllerAdvices);
 
+        logSpringSecurityHintIfNeeded(context);
+
         log.info("Retreever initialized. Explore APIs at {}", uiLocationResolver.resolve(context));
     }
 
@@ -79,11 +105,19 @@ public class RetreeverBootstrap {
         return cached;
     }
 
+    public boolean isAvailable() {
+        return cached != null;
+    }
+
+    public Exception getStartupFailure() {
+        return startupFailure;
+    }
+
     /**
      * Returns the timestamp when the API document was built.
      */
     public Instant getUptime() {
-        return cached.upTime();
+        return cached == null ? null : cached.upTime();
     }
 
     private Set<Class<?>> filterByBasePackages(Set<Class<?>> classes, List<String> basePackages) {
@@ -113,5 +147,93 @@ public class RetreeverBootstrap {
 
         log.warn("Unable to resolve @SpringBootApplication class. Falling back to RetreeverBootstrap metadata.");
         return RetreeverBootstrap.class;
+    }
+
+    private void logSpringSecurityHintIfNeeded(ApplicationContext context) {
+        if (securityHintLogged || !securityHintProperties.isHintLog() || !isRetreeverAuthOrStudioEnabled()) {
+            return;
+        }
+
+        if (!hasSpringSecurity(context)) {
+            return;
+        }
+
+        securityHintLogged = true;
+        log.warn("""
+                
+                **********************************************************************
+                
+                    HINT:
+                    Retreever detected that Spring Security is enabled in this application.
+                
+                    If Retreever resources are not explicitly allowed in your SecurityFilterChain,
+                    the Retreever Studio and its static resources may fail with 401/403 errors.
+                
+                    Please allow Retreever public paths in your application security config:
+                
+                        @Bean
+                        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+                            http
+                                .csrf(AbstractHttpConfigurer::disable)
+                                .authorizeHttpRequests(auth -> auth
+                                    .requestMatchers(RetreeverPublicPaths.get()).permitAll()
+                                    .anyRequest().authenticated()
+                                );
+                
+                            return http.build();
+                        }
+                
+                    Note:
+                    Retreever public paths must be accessible by the host application security layer.
+                    The Retreever Studio itself can still be protected using Retreever's internal
+                    in-memory authentication.
+                
+                    Example:
+                
+                        retreever.auth.username=${YOUR_USERNAME}
+                        retreever.auth.password=${YOUR_PASSWORD}
+                        retreever.auth.secret=${YOUR_UUID_SECRET}
+                
+                    To silence this hint, set:
+                
+                        retreever.security.hint-log=false
+                
+                **********************************************************************
+                """);
+    }
+
+    private boolean isRetreeverAuthOrStudioEnabled() {
+        return !authProperties.isDisabled() || cached != null;
+    }
+
+    private boolean hasSpringSecurity(ApplicationContext context) {
+        return context.containsBean("springSecurityFilterChain") || hasSpringSecurityConfigurationAnnotation(context);
+    }
+
+    private boolean hasSpringSecurityConfigurationAnnotation(ApplicationContext context) {
+        for (String beanName : context.getBeanDefinitionNames()) {
+            Class<?> beanType = context.getType(beanName);
+            if (beanType != null && hasSpringSecurityAnnotation(beanType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasSpringSecurityAnnotation(Class<?> beanType) {
+        if ("SecurityConfig".equals(beanType.getSimpleName())) {
+            return true;
+        }
+
+        for (java.lang.annotation.Annotation annotation : beanType.getAnnotations()) {
+            String annotationName = annotation.annotationType().getName();
+            if ("org.springframework.security.config.annotation.web.configuration.EnableWebSecurity".equals(annotationName)
+                    || "org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity"
+                    .equals(annotationName)
+                    || "SecurityConfig".equals(annotation.annotationType().getSimpleName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

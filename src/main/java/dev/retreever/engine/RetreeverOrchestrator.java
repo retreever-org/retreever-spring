@@ -9,6 +9,8 @@
 package dev.retreever.engine;
 
 import dev.retreever.config.RetreeverDocumentationExclusionProperties;
+import dev.retreever.auth.RetreeverAuthProperties;
+import dev.retreever.config.RetreeverStudioProperties;
 import dev.retreever.config.SchemaConfig;
 import dev.retreever.doc.resolver.ApiDocResolver;
 import dev.retreever.endpoint.model.ApiHeader;
@@ -42,7 +44,9 @@ public class RetreeverOrchestrator {
     public RetreeverOrchestrator(
             List<String> basePackages,
             List<ApiHeader> headers,
-            RetreeverDocumentationExclusionProperties exclusionProperties) {
+            RetreeverDocumentationExclusionProperties exclusionProperties,
+            RetreeverAuthProperties authProperties,
+            RetreeverStudioProperties studioProperties) {
         this.basePackages = basePackages;
 
         // 1. Initialise config
@@ -60,7 +64,7 @@ public class RetreeverOrchestrator {
         // 4. Orchestrators & Assemblers
         this.apiErrorResolutionOrchestrator = new ApiErrorResolutionOrchestrator(errorRegistry);
         this.schemaResolutionOrchestrator = new SchemaResolutionOrchestrator(schemaRegistry, exclusionProperties);
-        this.assembler = new ApiDocumentAssembler(schemaRegistry, errorRegistry);
+        this.assembler = new ApiDocumentAssembler(schemaRegistry, errorRegistry, authProperties, studioProperties);
         this.docResolver = new ApiDocResolver(groupResolver);
     }
 

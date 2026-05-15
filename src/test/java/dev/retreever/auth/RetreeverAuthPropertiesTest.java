@@ -3,7 +3,6 @@ package dev.retreever.auth;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class RetreeverAuthPropertiesTest {
 
@@ -21,15 +20,16 @@ class RetreeverAuthPropertiesTest {
     }
 
     @Test
-    void rejectsNonUuidSecret() {
+    void ignoresNonUuidSecretAndKeepsAuthEnabled() {
         RetreeverAuthProperties authProperties = new RetreeverAuthProperties();
         authProperties.setUsername("admin");
         authProperties.setPassword("secret");
         authProperties.setSecret("not-a-uuid");
 
-        assertThatThrownBy(authProperties::afterPropertiesSet)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("'retreever.auth.secret' must be a valid UUID string.");
+        authProperties.afterPropertiesSet();
+
+        assertThat(authProperties.isDisabled()).isFalse();
+        assertThat(authProperties.getSecret()).isNull();
     }
 
     @Test
@@ -45,12 +45,12 @@ class RetreeverAuthPropertiesTest {
     }
 
     @Test
-    void rejectsPartialCredentialConfiguration() {
+    void disablesAuthForPartialCredentialConfiguration() {
         RetreeverAuthProperties authProperties = new RetreeverAuthProperties();
         authProperties.setUsername("admin");
 
-        assertThatThrownBy(authProperties::afterPropertiesSet)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Retreever authentication requires both");
+        authProperties.afterPropertiesSet();
+
+        assertThat(authProperties.isDisabled()).isTrue();
     }
 }

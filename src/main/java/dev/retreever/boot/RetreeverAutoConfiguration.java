@@ -16,6 +16,7 @@ import dev.retreever.auth.RetreeverAuthSupport;
 import dev.retreever.auth.RetreeverTokenService;
 import dev.retreever.config.RetreeverCorsProperties;
 import dev.retreever.config.RetreeverDocumentationExclusionProperties;
+import dev.retreever.config.RetreeverStudioProperties;
 import dev.retreever.endpoint.model.ApiHeader;
 import dev.retreever.engine.RetreeverOrchestrator;
 import dev.retreever.schema.resolver.jackson.JsonNameResolver;
@@ -26,8 +27,8 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.core.Ordered;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.core.Ordered;
 
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,9 @@ public class RetreeverAutoConfiguration {
     public RetreeverOrchestrator orchestrator(
             ApplicationContext context,
             ObjectProvider<ObjectMapper> objectMapperProvider,
-            RetreeverDocumentationExclusionProperties exclusionProperties
+            RetreeverDocumentationExclusionProperties exclusionProperties,
+            RetreeverAuthProperties authProperties,
+            RetreeverStudioProperties studioProperties
     ) {
 
         JsonNameResolver.configure(objectMapperProvider.getIfAvailable());
@@ -56,17 +59,35 @@ public class RetreeverAutoConfiguration {
 
         if (appBeans.length == 0) {
             // fallback — but extremely unlikely
-            return new RetreeverOrchestrator(List.of(), headers, exclusionProperties);
+            return new RetreeverOrchestrator(
+                    List.of(),
+                    headers,
+                    exclusionProperties,
+                    authProperties,
+                    studioProperties
+            );
         }
 
         Class<?> appClass = context.getType(appBeans[0]);
         if (appClass == null || appClass.getPackage() == null) {
-            return new RetreeverOrchestrator(List.of(), headers, exclusionProperties);
+            return new RetreeverOrchestrator(
+                    List.of(),
+                    headers,
+                    exclusionProperties,
+                    authProperties,
+                    studioProperties
+            );
         }
 
         String basePackage = appClass.getPackage().getName();
 
-        return new RetreeverOrchestrator(List.of(basePackage, "java.util"), headers, exclusionProperties);
+        return new RetreeverOrchestrator(
+                List.of(basePackage, "java.util"),
+                headers,
+                exclusionProperties,
+                authProperties,
+                studioProperties
+        );
     }
 
     @Bean

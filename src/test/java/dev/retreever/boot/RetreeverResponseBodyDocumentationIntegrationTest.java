@@ -42,6 +42,9 @@ class RetreeverResponseBodyDocumentationIntegrationTest {
     void documentsClassLevelAndMethodLevelResponseBodyControllersAndAdvices() {
         ApiDocument document = bootstrap.getDocument();
 
+        assertThat(document.retreeverAuthEnabled()).isFalse();
+        assertThat(document.studioStorage()).isEqualTo("in-memory");
+
         ApiDocument.Endpoint classLevelEndpoint = findEndpoint(document, "/class-response/api").orElse(null);
         ApiDocument.Endpoint methodLevelEndpoint = findEndpoint(document, "/method-response/api").orElse(null);
         ApiDocument.Endpoint inferredErrorEndpoint = findEndpoint(document, "/implicit-error/api").orElse(null);

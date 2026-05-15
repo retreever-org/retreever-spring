@@ -52,9 +52,14 @@ public class RetreeverCorsProperties implements InitializingBean {
                 .toList();
 
         if (normalized.stream().anyMatch("*"::equals)) {
-            throw new IllegalStateException(
-                    "'retreever.dev.allow-cross-origin' must list explicit origins when credentials are enabled."
+            log.error(
+                    "Invalid Retreever CORS configuration. Retreever development CORS will be disabled.",
+                    new IllegalStateException(
+                            "'retreever.dev.allow-cross-origin' must list explicit origins when credentials are enabled."
+                    )
             );
+            this.allowCrossOrigin = new ArrayList<>();
+            return;
         }
 
         this.allowCrossOrigin = new ArrayList<>(normalized);

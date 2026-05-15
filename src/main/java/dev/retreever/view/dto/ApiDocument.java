@@ -23,6 +23,8 @@ public record ApiDocument(
         @JsonProperty("description") String description,
         @JsonProperty("version") String version,
         @JsonProperty("uri_prefix") String uriPrefix,
+        @JsonProperty("retreever_auth_enabled") boolean retreeverAuthEnabled,
+        @JsonProperty("studio_storage") String studioStorage,
         @JsonProperty("up_time") Instant upTime,
         @JsonProperty("groups") List<ApiGroup> groups
 ) {

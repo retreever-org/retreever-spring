@@ -9,6 +9,8 @@
 package dev.retreever.view;
 
 import dev.retreever.endpoint.model.*;
+import dev.retreever.auth.RetreeverAuthProperties;
+import dev.retreever.config.RetreeverStudioProperties;
 import dev.retreever.repo.ApiErrorRegistry;
 import dev.retreever.repo.SchemaRegistry;
 import dev.retreever.schema.model.Schema;
@@ -37,10 +39,18 @@ public class ApiDocumentAssembler {
 
     private final SchemaRegistry schemaRegistry;
     private final ApiErrorRegistry errorRegistry;
+    private final RetreeverAuthProperties authProperties;
+    private final RetreeverStudioProperties studioProperties;
 
-    public ApiDocumentAssembler(SchemaRegistry schemaRegistry, ApiErrorRegistry errorRegistry) {
+    public ApiDocumentAssembler(
+            SchemaRegistry schemaRegistry,
+            ApiErrorRegistry errorRegistry,
+            RetreeverAuthProperties authProperties,
+            RetreeverStudioProperties studioProperties) {
         this.schemaRegistry = schemaRegistry;
         this.errorRegistry = errorRegistry;
+        this.authProperties = authProperties;
+        this.studioProperties = studioProperties;
         log.debug("ApiDocumentAssembler initialized - SchemaRegistry: {}, ErrorRegistry: {}",
                 schemaRegistry.size(), errorRegistry.size());
     }
@@ -59,6 +69,8 @@ public class ApiDocumentAssembler {
                 apiDoc.getDescription(),
                 apiDoc.getVersion(),
                 apiDoc.getUriPrefix(),
+                !authProperties.isDisabled(),
+                studioProperties.getStorage(),
                 Instant.now(),
                 groups
         );

@@ -10,6 +10,7 @@ package dev.retreever.api;
 
 import dev.retreever.auth.RetreeverAuthProperties;
 import dev.retreever.config.TestEnvironmentDocumentResolver;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,6 +49,13 @@ public class RetreeverController {
      */
     @GetMapping("/ping")
     public ResponseEntity<Map<String, Object>> ping() {
+        if (!bootstrap.isAvailable()) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of(
+                    "status", "UNAVAILABLE",
+                    "message", "Retreever failed during startup. Check the application logs for the full stack trace."
+            ));
+        }
+
         Map<String, Object> response = Map.of(
                 "status", "OK",
                 "uptime", bootstrap.getUptime()
@@ -62,6 +70,10 @@ public class RetreeverController {
      */
     @GetMapping("/doc")
     public ResponseEntity<ApiDocument> getDoc() {
+        if (!bootstrap.isAvailable()) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
+        }
+
         return ResponseEntity.ok(bootstrap.getDocument());
     }
 

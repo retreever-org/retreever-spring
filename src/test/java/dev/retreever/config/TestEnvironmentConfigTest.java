@@ -11,7 +11,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
 class TestEnvironmentConfigTest {
@@ -138,7 +137,7 @@ class TestEnvironmentConfigTest {
     }
 
     @Test
-    void rejectsFromSourceWithoutUsableExtractPath() {
+    void ignoresFromSourceWithoutUsableExtractPath() {
         TestEnvironmentConfig.From from = new TestEnvironmentConfig.From();
         from.setEndpoints(List.of(new TestEnvironmentConfig.Endpoint("POST", "/api/v1/public/login")));
         from.setExtract(List.of(new TestEnvironmentConfig.ResponsePath("BODY", " ")));
@@ -150,9 +149,9 @@ class TestEnvironmentConfigTest {
         TestEnvironmentConfig config = new TestEnvironmentConfig();
         config.setVariables(List.of(variable));
 
-        assertThatThrownBy(config::afterPropertiesSet)
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("must define at least one extract path");
+        config.afterPropertiesSet();
+
+        assertThat(config.getConfiguredVariables()).isEmpty();
     }
 
     private TestEnvironmentDocument resolve(TestEnvironmentConfig config) {

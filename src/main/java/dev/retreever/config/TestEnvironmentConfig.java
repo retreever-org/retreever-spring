@@ -2,6 +2,8 @@ package dev.retreever.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -18,6 +20,7 @@ import java.util.regex.Pattern;
 @Component
 public class TestEnvironmentConfig implements InitializingBean {
 
+    private static final Logger log = LoggerFactory.getLogger(TestEnvironmentConfig.class);
     private static final Pattern PREFIXED_VALUE = Pattern.compile("^\\[([^]]+)]\\s*(.+)$");
 
     private Variable variable;
@@ -47,7 +50,23 @@ public class TestEnvironmentConfig implements InitializingBean {
         if (configuredVariables.isEmpty()) return;
 
         for (Variable var : configuredVariables) {
-            validateVariable(var);
+            try {
+                validateVariable(var);
+            } catch (IllegalArgumentException ex) {
+                log.error("Invalid Retreever environment variable configuration. The invalid variable will be ignored.", ex);
+                removeVariable(var);
+            }
+        }
+    }
+
+    private void removeVariable(Variable invalidVariable) {
+        if (variable == invalidVariable) {
+            variable = null;
+        }
+        if (variables != null) {
+            variables = variables.stream()
+                    .filter(candidate -> candidate != invalidVariable)
+                    .toList();
         }
     }
 

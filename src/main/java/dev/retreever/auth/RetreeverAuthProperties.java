@@ -1,5 +1,7 @@
 package dev.retreever.auth;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -11,12 +13,16 @@ import java.time.Duration;
 @ConfigurationProperties(prefix = "retreever.auth")
 public class RetreeverAuthProperties implements InitializingBean {
 
+    private static final Logger log = LoggerFactory.getLogger(RetreeverAuthProperties.class);
+    private static final Duration DEFAULT_ACCESS_TOKEN_TTL = Duration.ofMinutes(30);
+    private static final Duration DEFAULT_REFRESH_TOKEN_TTL = Duration.ofDays(7);
+
     private String username;
     private String password;
     private String secret;
     private boolean secureCookies;
-    private Duration accessTokenTtl = Duration.ofMinutes(30);
-    private Duration refreshTokenTtl = Duration.ofDays(7);
+    private Duration accessTokenTtl = DEFAULT_ACCESS_TOKEN_TTL;
+    private Duration refreshTokenTtl = DEFAULT_REFRESH_TOKEN_TTL;
 
     public String getUsername() {
         return username;
@@ -80,29 +86,49 @@ public class RetreeverAuthProperties implements InitializingBean {
         }
 
         if (hasUsername != hasPassword) {
-            throw new IllegalStateException(
+            disableAuthBecauseInvalid(new IllegalStateException(
                     "Retreever authentication requires both 'retreever.auth.username' and 'retreever.auth.password'."
+            ));
+            return;
+        }
+
+        if (isNegative(accessTokenTtl)) {
+            log.error(
+                    "Invalid Retreever auth configuration. Falling back to the default access token TTL.",
+                    new IllegalStateException("'retreever.auth.access-token-ttl' must be a positive duration.")
             );
+            accessTokenTtl = DEFAULT_ACCESS_TOKEN_TTL;
+        }
+
+        if (isNegative(refreshTokenTtl)) {
+            log.error(
+                    "Invalid Retreever auth configuration. Falling back to the default refresh token TTL.",
+                    new IllegalStateException("'retreever.auth.refresh-token-ttl' must be a positive duration.")
+            );
+            refreshTokenTtl = DEFAULT_REFRESH_TOKEN_TTL;
         }
 
         if (StringUtils.hasText(secret)) {
             try {
                 secret = java.util.UUID.fromString(secret.trim()).toString();
             } catch (IllegalArgumentException ex) {
-                throw new IllegalStateException("'retreever.auth.secret' must be a valid UUID string.", ex);
+                log.error(
+                        "Invalid Retreever auth secret. Retreever will generate a startup-only secret instead.",
+                        new IllegalStateException("'retreever.auth.secret' must be a valid UUID string.", ex)
+                );
+                secret = null;
             }
-        }
-
-        if (isNegative(accessTokenTtl)) {
-            throw new IllegalStateException("'retreever.auth.access-token-ttl' must be a positive duration.");
-        }
-
-        if (isNegative(refreshTokenTtl)) {
-            throw new IllegalStateException("'retreever.auth.refresh-token-ttl' must be a positive duration.");
         }
     }
 
     private boolean isNegative(Duration duration) {
         return duration == null || duration.compareTo(Duration.ZERO) <= 0;
+    }
+
+    private void disableAuthBecauseInvalid(Exception ex) {
+        log.error("Invalid Retreever auth configuration. Retreever authentication will be disabled.", ex);
+        username = null;
+        password = null;
+        secret = null;
     }
 }
