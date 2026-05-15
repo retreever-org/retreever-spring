@@ -20,7 +20,7 @@ public class RetreeverAuthProperties implements InitializingBean {
     private String username;
     private String password;
     private String secret;
-    private boolean secureCookies;
+    private boolean secure = true;
     private Duration accessTokenTtl = DEFAULT_ACCESS_TOKEN_TTL;
     private Duration refreshTokenTtl = DEFAULT_REFRESH_TOKEN_TTL;
 
@@ -49,11 +49,19 @@ public class RetreeverAuthProperties implements InitializingBean {
     }
 
     public boolean isSecureCookies() {
-        return secureCookies;
+        return secure;
     }
 
     public void setSecureCookies(boolean secureCookies) {
-        this.secureCookies = secureCookies;
+        this.secure = secureCookies;
+    }
+
+    public boolean isSecure() {
+        return secure;
+    }
+
+    public void setSecure(boolean secure) {
+        this.secure = secure;
     }
 
     public Duration getAccessTokenTtl() {

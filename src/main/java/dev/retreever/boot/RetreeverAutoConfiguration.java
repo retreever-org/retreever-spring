@@ -10,6 +10,7 @@ package dev.retreever.boot;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.retreever.api.config.RetreeverCorsFilter;
+import dev.retreever.api.config.RetreeverSecurityHeadersFilter;
 import dev.retreever.auth.RetreeverAuthenticationFilter;
 import dev.retreever.auth.RetreeverAuthProperties;
 import dev.retreever.auth.RetreeverAuthSupport;
@@ -91,6 +92,27 @@ public class RetreeverAutoConfiguration {
     }
 
     @Bean
+    public RetreeverSecurityHeadersFilter retreeverSecurityHeadersFilter() {
+        return new RetreeverSecurityHeadersFilter();
+    }
+
+    @Bean
+    public FilterRegistrationBean<RetreeverSecurityHeadersFilter> retreeverSecurityHeadersFilterRegistration(
+            RetreeverSecurityHeadersFilter securityHeadersFilter) {
+        FilterRegistrationBean<RetreeverSecurityHeadersFilter> registration =
+                new FilterRegistrationBean<>(securityHeadersFilter);
+
+        registration.setName("retreeverSecurityHeadersFilter");
+        registration.addUrlPatterns(
+                "/retreever",
+                "/retreever/*"
+        );
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 10);
+
+        return registration;
+    }
+
+    @Bean
     public RetreeverAuthenticationFilter retreeverAuthenticationFilter(
             RetreeverAuthProperties authProperties,
             RetreeverTokenService tokenService) {
@@ -116,8 +138,6 @@ public class RetreeverAutoConfiguration {
                 "/assets/*",
                 "/images/*",
                 "/index.html",
-                "/manifest.json",
-                "/sw.js",
                 "/favicon.ico"
         );
         registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 5);

@@ -16,6 +16,16 @@ class RetreeverAuthPropertiesTest {
         authProperties.afterPropertiesSet();
 
         assertThat(authProperties.getSecret()).isEqualTo("123e4567-e89b-12d3-a456-426614174000");
+        assertThat(authProperties.isSecureCookies()).isTrue();
+    }
+
+    @Test
+    void allowsSecureCookiesToBeDisabledExplicitly() {
+        RetreeverAuthProperties authProperties = new RetreeverAuthProperties();
+
+        authProperties.setSecure(false);
+
+        assertThat(authProperties.isSecure()).isFalse();
         assertThat(authProperties.isSecureCookies()).isFalse();
     }
 

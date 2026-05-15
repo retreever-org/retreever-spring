@@ -8,10 +8,8 @@
 
 package dev.retreever.api;
 
-import dev.retreever.auth.RetreeverAuthProperties;
 import dev.retreever.config.TestEnvironmentDocumentResolver;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,15 +29,12 @@ public class RetreeverController {
 
     private final RetreeverBootstrap bootstrap;
     private final TestEnvironmentDocumentResolver environmentDocumentResolver;
-    private final RetreeverAuthProperties authProperties;
 
     public RetreeverController(
             RetreeverBootstrap bootstrap,
-            TestEnvironmentDocumentResolver environmentDocumentResolver,
-            RetreeverAuthProperties authProperties) {
+            TestEnvironmentDocumentResolver environmentDocumentResolver) {
         this.bootstrap = bootstrap;
         this.environmentDocumentResolver = environmentDocumentResolver;
-        this.authProperties = authProperties;
     }
 
     /**
@@ -82,13 +77,4 @@ public class RetreeverController {
         return ResponseEntity.ok(environmentDocumentResolver.resolve());
     }
 
-    /**
-     * Indicates whether Retreever's internal auth is enabled.
-     *
-     * @return {@code true} when username and password are configured, otherwise false
-     */
-    @GetMapping(path = "/secured", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Boolean> isProtected() {
-        return ResponseEntity.ok(!authProperties.isDisabled());
-    }
 }

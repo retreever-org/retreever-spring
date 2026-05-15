@@ -48,11 +48,24 @@ class RetreeverAuthenticationIntegrationTest {
     void uiRoutesRemainPublic() throws Exception {
         mockMvc.perform(get("/retreever").accept(MediaType.TEXT_HTML))
                 .andExpect(status().isOk())
-                .andExpect(forwardedUrl("/index.html"));
+                .andExpect(forwardedUrl("/index.html"))
+                .andExpect(header().string(
+                        "Content-Security-Policy",
+                        org.hamcrest.Matchers.containsString("default-src 'self'")
+                ))
+                .andExpect(header().string("X-Content-Type-Options", "nosniff"))
+                .andExpect(header().string("Referrer-Policy", "no-referrer"));
 
         mockMvc.perform(get("/retreever/login").accept(MediaType.TEXT_HTML))
                 .andExpect(status().isOk())
                 .andExpect(forwardedUrl("/index.html"));
+    }
+
+    @Test
+    void retreeverSecurityHeadersDoNotApplyToHostApplicationRoutes() throws Exception {
+        mockMvc.perform(get("/sample"))
+                .andExpect(status().isOk())
+                .andExpect(header().doesNotExist("Content-Security-Policy"));
     }
 
     @Test
@@ -210,9 +223,9 @@ class RetreeverAuthenticationIntegrationTest {
         assertThat(authCookies.accessHeader()).contains("HttpOnly").contains("SameSite=Lax").contains("Path=/retreever");
         assertThat(authCookies.refreshHeader()).contains("HttpOnly").contains("SameSite=Lax").contains("Path=/retreever");
         assertThat(authCookies.deviceHeader()).contains("HttpOnly").contains("SameSite=Lax").contains("Path=/retreever");
-        assertThat(authCookies.accessHeader()).doesNotContain("Secure");
-        assertThat(authCookies.refreshHeader()).doesNotContain("Secure");
-        assertThat(authCookies.deviceHeader()).doesNotContain("Secure");
+        assertThat(authCookies.accessHeader()).contains("Secure");
+        assertThat(authCookies.refreshHeader()).contains("Secure");
+        assertThat(authCookies.deviceHeader()).contains("Secure");
 
         return authCookies;
     }

@@ -15,9 +15,7 @@ public class RetreeverResourceConfig implements WebMvcConfigurer {
         registry
                 .addResourceHandler(
                         "/index.html",
-                        "/manifest.json",
-                        "/favicon.ico",
-                        "/sw.js"
+                        "/favicon.ico"
                 )
                 .addResourceLocations(
                         "classpath:/META-INF/resources/"

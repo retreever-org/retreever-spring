@@ -9,10 +9,8 @@ public record RetreeverPublicPaths(
                 "/retreever/**",
                 "/index.html",
                 "/favicon.ico",
-                "/manifest.json",
                 "/assets/**",
                 "/images/**",
-                "/sw.js",
                 "/.well-known/appspecific/com.chrome.devtools.json"
         });
     }
