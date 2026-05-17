@@ -204,7 +204,94 @@ class RetreeverAuthenticationIntegrationTest {
                                 """)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error").value("invalid_credentials"));
+                .andExpect(jsonPath("$.error").value("invalid_credentials"))
+                .andExpect(jsonPath("$.attemptsLeft").value(4))
+                .andExpect(header().string(HttpHeaders.SET_COOKIE, org.hamcrest.Matchers.containsString(
+                        RetreeverLoginGuardService.LOGIN_GUARD_COOKIE_NAME + "="
+                )));
+    }
+
+    @Test
+    void locksLoginAfterEveryFifthFailedAttemptForTheSameBrowser() throws Exception {
+        Cookie loginGuardCookie = null;
+
+        for (int attempt = 1; attempt <= 4; attempt++) {
+            var loginRequest = post("/retreever/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""
+                            {"username":"admin","password":"wrong"}
+                            """)
+                    .accept(MediaType.APPLICATION_JSON);
+            if (loginGuardCookie != null) {
+                loginRequest.cookie(loginGuardCookie);
+            }
+
+            MvcResult result = mockMvc.perform(loginRequest)
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error").value("invalid_credentials"))
+                    .andExpect(jsonPath("$.attemptsLeft").value(5 - attempt))
+                    .andReturn();
+
+            loginGuardCookie = loginGuardCookie(result);
+        }
+
+        MvcResult lockedResult = mockMvc.perform(post("/retreever/login")
+                        .cookie(loginGuardCookie)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"admin","password":"wrong"}
+                                """)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(header().string(HttpHeaders.RETRY_AFTER, "30"))
+                .andExpect(jsonPath("$.error").value("login_locked"))
+                .andExpect(jsonPath("$.attemptsLeft").value(0))
+                .andExpect(jsonPath("$.retryAfterSeconds").value(30))
+                .andReturn();
+
+        loginGuardCookie = loginGuardCookie(lockedResult);
+
+        mockMvc.perform(post("/retreever/login")
+                        .cookie(loginGuardCookie)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"admin","password":"secret"}
+                                """)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.error").value("login_locked"));
+    }
+
+    @Test
+    void successfulLoginClearsLoginGuardCookie() throws Exception {
+        MvcResult failedResult = mockMvc.perform(post("/retreever/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"admin","password":"wrong"}
+                                """)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+
+        Cookie loginGuardCookie = loginGuardCookie(failedResult);
+
+        MvcResult successfulResult = mockMvc.perform(post("/retreever/login")
+                        .cookie(loginGuardCookie)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"admin","password":"secret"}
+                                """)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.authenticated").value(true))
+                .andReturn();
+
+        String clearedLoginGuardCookieHeader = findCookieHeader(
+                successfulResult.getResponse().getHeaders(HttpHeaders.SET_COOKIE),
+                RetreeverLoginGuardService.LOGIN_GUARD_COOKIE_NAME
+        );
+
+        assertThat(clearedLoginGuardCookieHeader).contains("Max-Age=0");
     }
 
     private AuthCookies login() throws Exception {
@@ -256,6 +343,13 @@ class RetreeverAuthenticationIntegrationTest {
     private Cookie toCookie(String setCookieHeader) {
         String[] nameAndValue = setCookieHeader.split(";", 2)[0].split("=", 2);
         return new Cookie(nameAndValue[0], nameAndValue[1]);
+    }
+
+    private Cookie loginGuardCookie(MvcResult result) {
+        return toCookie(findCookieHeader(
+                result.getResponse().getHeaders(HttpHeaders.SET_COOKIE),
+                RetreeverLoginGuardService.LOGIN_GUARD_COOKIE_NAME
+        ));
     }
 
     private record AuthCookies(

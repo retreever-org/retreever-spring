@@ -101,7 +101,7 @@ public final class RetreeverAuthSupport {
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
-    private static String resolveCookiePath(HttpServletRequest request) {
+    public static String resolveCookiePath(HttpServletRequest request) {
         String contextPath = request.getContextPath();
         if (contextPath == null || contextPath.isBlank()) {
             return RETREEVER_BASE_PATH;
@@ -109,7 +109,7 @@ public final class RetreeverAuthSupport {
         return contextPath + RETREEVER_BASE_PATH;
     }
 
-    private static String getCookieValue(HttpServletRequest request, String cookieName) {
+    public static String getCookieValue(HttpServletRequest request, String cookieName) {
         var cookie = WebUtils.getCookie(request, cookieName);
         return cookie != null ? cookie.getValue() : null;
     }
