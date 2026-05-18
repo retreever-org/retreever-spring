@@ -24,7 +24,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -48,7 +47,8 @@ class RetreeverAuthenticationIntegrationTest {
     void uiRoutesRemainPublic() throws Exception {
         mockMvc.perform(get("/retreever").accept(MediaType.TEXT_HTML))
                 .andExpect(status().isOk())
-                .andExpect(forwardedUrl("/index.html"))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("<div id=\"root\">")))
                 .andExpect(header().string(
                         "Content-Security-Policy",
                         org.hamcrest.Matchers.containsString("default-src 'self'")
@@ -58,7 +58,22 @@ class RetreeverAuthenticationIntegrationTest {
 
         mockMvc.perform(get("/retreever/login").accept(MediaType.TEXT_HTML))
                 .andExpect(status().isOk())
-                .andExpect(forwardedUrl("/index.html"));
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("<div id=\"root\">")));
+
+        mockMvc.perform(get("/retreever/index.html").accept(MediaType.TEXT_HTML))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("<div id=\"root\">")));
+    }
+
+    @Test
+    void retreeverDoesNotPublishRootWelcomePageOrRootAssets() throws Exception {
+        mockMvc.perform(get("/index.html").accept(MediaType.TEXT_HTML))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(get("/assets/icons/icon192v2.png"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -70,23 +85,44 @@ class RetreeverAuthenticationIntegrationTest {
 
     @Test
     void imageAssetsRemainPublic() throws Exception {
-        Resource[] imageResources = new PathMatchingResourcePatternResolver()
-                .getResources("classpath:/META-INF/resources/images/*");
+        Assumptions.assumeTrue(
+                Thread.currentThread().getContextClassLoader()
+                        .getResource("META-INF/resources/retreever/images/") != null,
+                "No /retreever/images assets packaged in the current UI build"
+        );
 
-        Assumptions.assumeTrue(imageResources.length > 0, "No /images assets packaged in the current UI build");
+        Resource[] imageResources = new PathMatchingResourcePatternResolver()
+                .getResources("classpath:/META-INF/resources/retreever/images/*");
+
+        Assumptions.assumeTrue(imageResources.length > 0, "No /retreever/images assets packaged in the current UI build");
 
         Resource imageResource = imageResources[0];
         String imageName = imageResource.getFilename();
         Assumptions.assumeTrue(imageName != null && !imageName.isBlank(), "Packaged image asset must have a filename");
 
-        mockMvc.perform(get("/images/" + imageName))
+        mockMvc.perform(get("/retreever/images/" + imageName))
                 .andExpect(status().isOk())
                 .andExpect(header().string(HttpHeaders.CONTENT_TYPE, org.hamcrest.Matchers.startsWith("image/")));
     }
 
     @Test
     void iconAssetsRemainPublicAndCacheable() throws Exception {
-        mockMvc.perform(get("/assets/icons/icon192v2.png"))
+        Assumptions.assumeTrue(
+                Thread.currentThread().getContextClassLoader()
+                        .getResource("META-INF/resources/retreever/assets/icons/") != null,
+                "No /retreever/assets/icons assets packaged in the current UI build"
+        );
+
+        Resource[] iconResources = new PathMatchingResourcePatternResolver()
+                .getResources("classpath:/META-INF/resources/retreever/assets/icons/*.png");
+
+        Assumptions.assumeTrue(iconResources.length > 0, "No /retreever/assets/icons assets packaged in the current UI build");
+
+        Resource iconResource = iconResources[0];
+        String iconName = iconResource.getFilename();
+        Assumptions.assumeTrue(iconName != null && !iconName.isBlank(), "Packaged icon asset must have a filename");
+
+        mockMvc.perform(get("/retreever/assets/icons/" + iconName))
                 .andExpect(status().isOk())
                 .andExpect(header().string(HttpHeaders.CONTENT_TYPE, org.hamcrest.Matchers.containsString("image/png")))
                 .andExpect(header().string(HttpHeaders.CACHE_CONTROL, org.hamcrest.Matchers.containsString("max-age=")))

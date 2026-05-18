@@ -12,4 +12,15 @@ class RetreeverPublicPathsTest {
                 .contains("/.well-known/appspecific/com.chrome.devtools.json")
                 .doesNotContain("/.well-known/**");
     }
+
+    @Test
+    void doesNotExposeRootUiOrRootAssetPaths() {
+        assertThat(RetreeverPublicPaths.get())
+                .doesNotContain(
+                        "/index.html",
+                        "/favicon.ico",
+                        "/assets/**",
+                        "/images/**"
+                );
+    }
 }

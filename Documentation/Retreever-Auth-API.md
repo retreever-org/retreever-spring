@@ -83,18 +83,23 @@ Notes:
 These routes are public and should always load the React app shell:
 
 - `GET /retreever`
-- `GET /retreever/**`
-- `GET /images/**`
+- `GET /retreever/index.html`
+- `GET /retreever/login`
+- `GET /retreever/workspace`
+- `GET /retreever/device-requirements`
+- `GET /retreever/assets/**`
+- `GET /retreever/images/**`
 
 Examples:
 
 - `/retreever`
+- `/retreever/index.html`
 - `/retreever/login`
 - `/retreever/workspace`
-- `/retreever/some/client-side-route`
-- `/images/retreever-logo.svg`
+- `/retreever/images/retreever-logo.svg`
+- `/retreever/assets/icons/icon192v2.png`
 
-The backend forwards the UI routes to `index.html`.
+The backend forwards `/retreever`, `/retreever/`, and known React routes to the namespaced app shell without changing the browser URL. Retreever does not publish `/index.html`, `/assets/**`, or `/images/**` at the host application's root.
 
 ### 3.2 Public Auth API Routes
 

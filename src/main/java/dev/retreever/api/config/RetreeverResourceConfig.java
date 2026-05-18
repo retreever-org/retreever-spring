@@ -1,5 +1,6 @@
 package dev.retreever.api.config;
 
+import dev.retreever.auth.RetreeverAuthSupport;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.CacheControl;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -10,26 +11,30 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 public class RetreeverResourceConfig implements WebMvcConfigurer {
 
+    private static final String UI_BASE_PATH = RetreeverAuthSupport.RETREEVER_BASE_PATH;
+    private static final String UI_RESOURCE_LOCATION = "classpath:/META-INF/resources/retreever/";
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry
                 .addResourceHandler(
-                        "/index.html",
-                        "/favicon.ico"
+                        UI_BASE_PATH + "/favicon.ico",
+                        UI_BASE_PATH + "/manifest.json",
+                        UI_BASE_PATH + "/sw.js"
                 )
                 .addResourceLocations(
-                        "classpath:/META-INF/resources/"
+                        UI_RESOURCE_LOCATION
                 )
                 .setCacheControl(CacheControl.noCache());
 
         registry
-                .addResourceHandler("/assets/**")
-                .addResourceLocations("classpath:/META-INF/resources/assets/")
+                .addResourceHandler(UI_BASE_PATH + "/assets/**")
+                .addResourceLocations(UI_RESOURCE_LOCATION + "assets/")
                 .setCacheControl(CacheControl.maxAge(365, TimeUnit.DAYS).cachePublic().immutable());
 
         registry
-                .addResourceHandler("/images/**")
-                .addResourceLocations("classpath:/META-INF/resources/images/")
+                .addResourceHandler(UI_BASE_PATH + "/images/**")
+                .addResourceLocations(UI_RESOURCE_LOCATION + "images/")
                 .setCacheControl(CacheControl.maxAge(365, TimeUnit.DAYS).cachePublic().immutable());
     }
 }

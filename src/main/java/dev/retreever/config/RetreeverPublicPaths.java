@@ -7,10 +7,6 @@ public record RetreeverPublicPaths(
         this(new String[]{
                 "/retreever",
                 "/retreever/**",
-                "/index.html",
-                "/favicon.ico",
-                "/assets/**",
-                "/images/**",
                 "/.well-known/appspecific/com.chrome.devtools.json"
         });
     }

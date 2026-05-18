@@ -134,11 +134,7 @@ public class RetreeverAutoConfiguration {
         registration.setName("retreeverCorsFilter");
         registration.addUrlPatterns(
                 "/retreever",
-                "/retreever/*",
-                "/assets/*",
-                "/images/*",
-                "/index.html",
-                "/favicon.ico"
+                "/retreever/*"
         );
         registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 5);
 

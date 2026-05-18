@@ -8,7 +8,7 @@
 
     <groupId>dev.retreever</groupId>
     <artifactId>retreever</artifactId>
-    <version>1.0.5</version>
+    <version>1.0.6</version>
     <packaging>jar</packaging>
     <name>Retreever</name>
     <description>Lightweight developer-first toolkit for generating and testing API documentation in Spring Boot apps</description>
@@ -55,7 +55,9 @@
         <retreever.ui.repository>https://github.com/retreever-org/retreever-ui.git</retreever.ui.repository>
         <retreever.ui.directory>${project.build.directory}/retreever-ui</retreever.ui.directory>
         <retreever.ui.dist.directory>${retreever.ui.directory}/dist</retreever.ui.dist.directory>
+        <retreever.ui.base.path>/retreever/</retreever.ui.base.path>
         <retreever.node.install.directory>${project.build.directory}/node-runtime</retreever.node.install.directory>
+        <retreever.npm.cache.directory>${project.build.directory}/npm-cache</retreever.npm.cache.directory>
         <retreever.ui.skip>false</retreever.ui.skip>
     </properties>
 
@@ -142,7 +144,7 @@
                             <skip>${retreever.ui.skip}</skip>
                             <target>
                                 <delete dir="${project.build.outputDirectory}/META-INF/resources"/>
-                                <mkdir dir="${project.build.outputDirectory}/META-INF/resources"/>
+                                <mkdir dir="${project.build.outputDirectory}/META-INF/resources/retreever"/>
                             </target>
                         </configuration>
                     </execution>
@@ -203,6 +205,9 @@
                         </goals>
                         <configuration>
                             <arguments>${npm.arguments}</arguments>
+                            <environmentVariables>
+                                <NPM_CONFIG_CACHE>${retreever.npm.cache.directory}</NPM_CONFIG_CACHE>
+                            </environmentVariables>
                         </configuration>
                     </execution>
                     <execution>
@@ -212,7 +217,13 @@
                             <goal>npm</goal>
                         </goals>
                         <configuration>
-                            <arguments>run build</arguments>
+                            <arguments>run build -- --base=${retreever.ui.base.path}</arguments>
+                            <environmentVariables>
+                                <NPM_CONFIG_CACHE>${retreever.npm.cache.directory}</NPM_CONFIG_CACHE>
+                                <VITE_ICON_192>/retreever/assets/icons/icon192v2.png</VITE_ICON_192>
+                                <VITE_ICON_256>/retreever/assets/icons/icon256v2.png</VITE_ICON_256>
+                                <VITE_ICON_512>/retreever/assets/icons/icon512v2.png</VITE_ICON_512>
+                            </environmentVariables>
                         </configuration>
                     </execution>
                 </executions>
@@ -230,7 +241,7 @@
                         </goals>
                         <configuration>
                             <skip>${retreever.ui.skip}</skip>
-                            <outputDirectory>${project.build.outputDirectory}/META-INF/resources</outputDirectory>
+                            <outputDirectory>${project.build.outputDirectory}/META-INF/resources/retreever</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${retreever.ui.dist.directory}</directory>
