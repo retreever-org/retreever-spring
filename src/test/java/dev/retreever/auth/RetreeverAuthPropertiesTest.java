@@ -1,6 +1,8 @@
 package dev.retreever.auth;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.context.properties.bind.Binder;
+import org.springframework.mock.env.MockEnvironment;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,6 +23,28 @@ class RetreeverAuthPropertiesTest {
 
     @Test
     void allowsSecureCookiesToBeDisabledExplicitly() {
+        RetreeverAuthProperties authProperties = new RetreeverAuthProperties();
+
+        authProperties.setSecureCookies(false);
+
+        assertThat(authProperties.isSecureCookies()).isFalse();
+    }
+
+    @Test
+    void bindsSecureCookiesPropertyName() {
+        MockEnvironment environment = new MockEnvironment()
+                .withProperty("retreever.auth.secure-cookies", "false");
+
+        RetreeverAuthProperties authProperties = Binder.get(environment)
+                .bind("retreever.auth", RetreeverAuthProperties.class)
+                .orElseThrow(() -> new AssertionError("Expected Retreever auth properties to bind."));
+
+        assertThat(authProperties.isSecureCookies()).isFalse();
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    void keepsSecureAsBackwardCompatibleAlias() {
         RetreeverAuthProperties authProperties = new RetreeverAuthProperties();
 
         authProperties.setSecure(false);

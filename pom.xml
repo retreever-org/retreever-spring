@@ -8,7 +8,7 @@
 
     <groupId>dev.retreever</groupId>
     <artifactId>retreever</artifactId>
-    <version>1.0.6</version>
+    <version>1.1.0</version>
     <packaging>jar</packaging>
     <name>Retreever</name>
     <description>Lightweight developer-first toolkit for generating and testing API documentation in Spring Boot apps</description>
@@ -144,7 +144,8 @@
                             <skip>${retreever.ui.skip}</skip>
                             <target>
                                 <delete dir="${project.build.outputDirectory}/META-INF/resources"/>
-                                <mkdir dir="${project.build.outputDirectory}/META-INF/resources/retreever"/>
+                                <delete dir="${project.build.outputDirectory}/META-INF/retreever-ui"/>
+                                <mkdir dir="${project.build.outputDirectory}/META-INF/retreever-ui/retreever"/>
                             </target>
                         </configuration>
                     </execution>
@@ -241,7 +242,7 @@
                         </goals>
                         <configuration>
                             <skip>${retreever.ui.skip}</skip>
-                            <outputDirectory>${project.build.outputDirectory}/META-INF/resources/retreever</outputDirectory>
+                            <outputDirectory>${project.build.outputDirectory}/META-INF/retreever-ui/retreever</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${retreever.ui.dist.directory}</directory>

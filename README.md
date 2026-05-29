@@ -145,7 +145,6 @@ retreever:
     username: Admin
     password: Admin@123
     secret: 123e4567-e89b-12d3-a456-426614174000
-    secure-cookies: true
 ```
 
 `secret` signs Retreever auth tokens. Set the same UUID on every instance when
@@ -153,8 +152,9 @@ the app runs behind load balancing or across restarts where existing Retreever
 sessions should remain valid. If omitted, Retreever generates a startup-only
 secret and old sessions become invalid after restart.
 
-`secure-cookies` adds the `Secure` attribute to Retreever auth cookies. Enable
-it when Retreever is served over HTTPS.
+Retreever auth cookies use the `Secure` attribute by default. In case a local
+HTTP-only development setup does not retain the Retreever login session, use
+`retreever.auth.secure-cookies=false` temporarily for that local setup only.
 
 If username or password is missing, Retreever auth is disabled. Full auth
 behavior is documented in

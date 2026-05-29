@@ -47,8 +47,8 @@ retreever.auth.secret=123e4567-e89b-12d3-a456-426614174000
 - if `retreever.auth.secret` is set, all service instances using the same value can validate the same Retreever cookies
 - if `retreever.auth.secret` is omitted, Retreever generates a startup secret from a UUID
 - when the startup-generated fallback is used, all tokens become invalid after application restart
-- `retreever.auth.secure-cookies` defaults to `false`
-- set `retreever.auth.secure-cookies=true` when the host should emit auth cookies with the `Secure` attribute
+- `retreever.auth.secure-cookies` defaults to `true`
+- set `retreever.auth.secure-cookies=false` only as a local-development fallback when a local HTTP-only setup does not retain the Retreever login session
 - default access token TTL is `30 minutes`
 - default refresh token TTL is `7 days`
 

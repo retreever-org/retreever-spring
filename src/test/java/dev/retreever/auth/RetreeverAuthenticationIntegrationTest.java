@@ -69,6 +69,9 @@ class RetreeverAuthenticationIntegrationTest {
 
     @Test
     void retreeverDoesNotPublishRootWelcomePageOrRootAssets() throws Exception {
+        mockMvc.perform(get("/").accept(MediaType.TEXT_HTML))
+                .andExpect(status().isNotFound());
+
         mockMvc.perform(get("/index.html").accept(MediaType.TEXT_HTML))
                 .andExpect(status().isNotFound());
 
@@ -87,12 +90,12 @@ class RetreeverAuthenticationIntegrationTest {
     void imageAssetsRemainPublic() throws Exception {
         Assumptions.assumeTrue(
                 Thread.currentThread().getContextClassLoader()
-                        .getResource("META-INF/resources/retreever/images/") != null,
+                        .getResource("META-INF/retreever-ui/retreever/images/") != null,
                 "No /retreever/images assets packaged in the current UI build"
         );
 
         Resource[] imageResources = new PathMatchingResourcePatternResolver()
-                .getResources("classpath:/META-INF/resources/retreever/images/*");
+                .getResources("classpath:/META-INF/retreever-ui/retreever/images/*");
 
         Assumptions.assumeTrue(imageResources.length > 0, "No /retreever/images assets packaged in the current UI build");
 
@@ -109,12 +112,12 @@ class RetreeverAuthenticationIntegrationTest {
     void iconAssetsRemainPublicAndCacheable() throws Exception {
         Assumptions.assumeTrue(
                 Thread.currentThread().getContextClassLoader()
-                        .getResource("META-INF/resources/retreever/assets/icons/") != null,
+                        .getResource("META-INF/retreever-ui/retreever/assets/icons/") != null,
                 "No /retreever/assets/icons assets packaged in the current UI build"
         );
 
         Resource[] iconResources = new PathMatchingResourcePatternResolver()
-                .getResources("classpath:/META-INF/resources/retreever/assets/icons/*.png");
+                .getResources("classpath:/META-INF/retreever-ui/retreever/assets/icons/*.png");
 
         Assumptions.assumeTrue(iconResources.length > 0, "No /retreever/assets/icons assets packaged in the current UI build");
 

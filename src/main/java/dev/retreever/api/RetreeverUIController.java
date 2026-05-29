@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class RetreeverUIController {
 
-    private static final String RETREEVER_INDEX_LOCATION = "META-INF/resources/retreever/index.html";
+    private static final String RETREEVER_INDEX_LOCATION = "META-INF/retreever-ui/retreever/index.html";
 
     @GetMapping({
             RetreeverAuthSupport.RETREEVER_BASE_PATH,

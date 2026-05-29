@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 public class RetreeverResourceConfig implements WebMvcConfigurer {
 
     private static final String UI_BASE_PATH = RetreeverAuthSupport.RETREEVER_BASE_PATH;
-    private static final String UI_RESOURCE_LOCATION = "classpath:/META-INF/resources/retreever/";
+    private static final String UI_RESOURCE_LOCATION = "classpath:/META-INF/retreever-ui/retreever/";
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
