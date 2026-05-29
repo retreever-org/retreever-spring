@@ -47,6 +47,8 @@
         <maven.javadoc.plugin.version>3.12.0</maven.javadoc.plugin.version>
         <maven.gpg.plugin.version>3.2.8</maven.gpg.plugin.version>
         <central.publishing.plugin.version>0.10.0</central.publishing.plugin.version>
+        <cyclonedx.maven.plugin.version>2.9.1</cyclonedx.maven.plugin.version>
+        <build.helper.maven.plugin.version>3.6.0</build.helper.maven.plugin.version>
         <exec.maven.plugin.version>3.3.0</exec.maven.plugin.version>
         <frontend.maven.plugin.version>1.15.0</frontend.maven.plugin.version>
         <maven.antrun.plugin.version>3.1.0</maven.antrun.plugin.version>
@@ -57,8 +59,11 @@
         <retreever.ui.dist.directory>${retreever.ui.directory}/dist</retreever.ui.dist.directory>
         <retreever.ui.base.path>/retreever/</retreever.ui.base.path>
         <retreever.node.install.directory>${project.build.directory}/node-runtime</retreever.node.install.directory>
+        <retreever.node.executable>${retreever.node.install.directory}/node/node</retreever.node.executable>
+        <retreever.npm.cli>${retreever.node.install.directory}/node/node_modules/npm/bin/npm-cli.js</retreever.npm.cli>
         <retreever.npm.cache.directory>${project.build.directory}/npm-cache</retreever.npm.cache.directory>
         <retreever.ui.skip>false</retreever.ui.skip>
+        <retreever.ui.sbom.json>${project.build.directory}/retreever-ui-cyclonedx.json</retreever.ui.sbom.json>
     </properties>
 
     <!-- Import Spring Boot managed versions -->
@@ -258,6 +263,18 @@
 
     <profiles>
         <profile>
+            <id>windows-node-runtime</id>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                </os>
+            </activation>
+            <properties>
+                <retreever.node.executable>${retreever.node.install.directory}/node/node.exe</retreever.node.executable>
+            </properties>
+        </profile>
+
+        <profile>
             <id>central-release</id>
             <build>
                 <plugins>
@@ -290,6 +307,84 @@
                                 <goals>
                                     <goal>jar</goal>
                                 </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.cyclonedx</groupId>
+                        <artifactId>cyclonedx-maven-plugin</artifactId>
+                        <version>${cyclonedx.maven.plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>generate-release-sbom</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>makeBom</goal>
+                                </goals>
+                                <configuration>
+                                    <projectType>library</projectType>
+                                    <schemaVersion>1.6</schemaVersion>
+                                    <includeCompileScope>true</includeCompileScope>
+                                    <includeProvidedScope>true</includeProvidedScope>
+                                    <includeRuntimeScope>true</includeRuntimeScope>
+                                    <includeTestScope>false</includeTestScope>
+                                    <skipNotDeployed>false</skipNotDeployed>
+                                    <outputFormat>all</outputFormat>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>${exec.maven.plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>generate-ui-sbom</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <workingDirectory>${retreever.ui.directory}</workingDirectory>
+                                    <executable>${retreever.node.executable}</executable>
+                                    <arguments>
+                                        <argument>${retreever.npm.cli}</argument>
+                                        <argument>sbom</argument>
+                                        <argument>--omit=dev</argument>
+                                        <argument>--sbom-format=cyclonedx</argument>
+                                    </arguments>
+                                    <environmentVariables>
+                                        <NPM_CONFIG_CACHE>${retreever.npm.cache.directory}</NPM_CONFIG_CACHE>
+                                    </environmentVariables>
+                                    <outputFile>${retreever.ui.sbom.json}</outputFile>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>${build.helper.maven.plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>attach-ui-sbom</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>attach-artifact</goal>
+                                </goals>
+                                <configuration>
+                                    <artifacts>
+                                        <artifact>
+                                            <file>${retreever.ui.sbom.json}</file>
+                                            <type>json</type>
+                                            <classifier>retreever-ui-cyclonedx</classifier>
+                                        </artifact>
+                                    </artifacts>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
