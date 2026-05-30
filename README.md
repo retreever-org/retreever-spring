@@ -15,7 +15,7 @@ DTOs. No separate spec file is required.
 <dependency>
     <groupId>dev.retreever</groupId>
     <artifactId>retreever</artifactId>
-    <version>1.0.6</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 ### Explore
@@ -23,6 +23,8 @@ DTOs. No separate spec file is required.
 ```text
 http://localhost:8080/retreever
 ```
+
+**Read Detailed Docs Here:** https://docs.retreever.dev
 
 ## What It Resolves
 
