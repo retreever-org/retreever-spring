@@ -59,15 +59,15 @@ SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 Retreever works without annotations. Use them when you want cleaner grouping,
 names, examples, or error documentation.
 
-| Annotation | Purpose |
-| --- | --- |
-| `@ApiDoc` | API name, description, and version |
-| `@ApiGroup` | Controller grouping |
-| `@ApiEndpoint` | Endpoint name, description, status, security flag, headers, and mapped errors |
-| `@ApiError` | Exception-handler status and description |
-| `@FieldInfo` | Field description and example |
-| `@Description` | Parameter or field description |
-| `@RetreeverSkip` | Excludes a controller or endpoint from Retreever documentation |
+| Annotation       | Purpose                                                                       |
+|------------------|-------------------------------------------------------------------------------|
+| `@ApiDoc`        | API name, description, and version                                            |
+| `@ApiGroup`      | Controller grouping                                                           |
+| `@ApiEndpoint`   | Endpoint name, description, status, security flag, headers, and mapped errors |
+| `@ApiError`      | Exception-handler status and description                                      |
+| `@FieldInfo`     | Field description and example                                                 |
+| `@Description`   | Parameter or field description                                                |
+| `@RetreeverSkip` | Excludes a controller or endpoint from Retreever documentation                |
 
 ```java
 @ApiGroup(name = "Product APIs")
