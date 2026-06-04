@@ -235,6 +235,10 @@ Recommended UI flow:
 
 If the React app is served from the same site as Retreever, the browser will normally send cookies automatically.
 
+Retreever's packaged HTML also loads its own `/retreever/assets/**` JavaScript
+and CSS as same-origin static assets. That asset loading path should not require
+CORS configuration in the host application.
+
 ### 7.2 Cross-Origin Development
 
 Cross-origin access exists only for contributor development of Retreever's own React UI.
@@ -272,6 +276,28 @@ Use `credentials: "include"` or `withCredentials: true` consistently on:
 - refresh
 - logout
 - protected Retreever API calls
+
+### 7.5 Proxy And Hosting Troubleshooting
+
+If a host API or other browser fetch fails with `403 Invalid CORS request` only
+when an `Origin` header is present, the failure is outside Retreever's same-origin
+static asset loading path. The host application and its proxy chain must allow
+the final browser-visible origin.
+
+Common places to verify:
+
+- Cloud Run direct URLs and custom domains
+- Firebase Hosting rewrites to Cloud Run
+- ingress controllers and load balancers
+- reverse proxies
+- forwarded header handling in Spring Boot
+
+For Spring Boot deployments behind proxies, keep:
+
+```yaml
+server:
+  forward-headers-strategy: framework
+```
 
 ## 8. API Reference
 

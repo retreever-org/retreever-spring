@@ -7,9 +7,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RetreeverPublicPathsTest {
 
     @Test
-    void includesChromeDevToolsProbePathToAvoidBasicAuthPopup() {
+    void onlyIncludesRetreeverOwnedPaths() {
         assertThat(RetreeverPublicPaths.get())
-                .contains("/.well-known/appspecific/com.chrome.devtools.json")
+                .containsExactly("/retreever", "/retreever/**")
+                .doesNotContain("/.well-known/appspecific/com.chrome.devtools.json")
                 .doesNotContain("/.well-known/**");
     }
 

@@ -1,0 +1,30 @@
+package dev.retreever.boot;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.util.StreamUtils;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class RetreeverPackagedUiHtmlTest {
+
+    private static final String PACKAGED_UI_INDEX = "META-INF/retreever-ui/retreever/index.html";
+
+    @Test
+    void packagedUiIndexUsesSameOriginAssetTagsWithoutCrossorigin() throws IOException {
+        ClassPathResource indexHtml = new ClassPathResource(PACKAGED_UI_INDEX);
+
+        assertThat(indexHtml.exists()).isTrue();
+
+        String html = StreamUtils.copyToString(indexHtml.getInputStream(), StandardCharsets.UTF_8);
+
+        assertThat(html).contains("type=\"module\"");
+        assertThat(html).contains("src=\"/retreever/assets/");
+        assertThat(html).contains("rel=\"stylesheet\"");
+        assertThat(html).contains("href=\"/retreever/assets/");
+        assertThat(html).doesNotContain("crossorigin");
+    }
+}

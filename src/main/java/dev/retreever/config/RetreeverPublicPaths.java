@@ -6,8 +6,7 @@ public record RetreeverPublicPaths(
     public RetreeverPublicPaths() {
         this(new String[]{
                 "/retreever",
-                "/retreever/**",
-                "/.well-known/appspecific/com.chrome.devtools.json"
+                "/retreever/**"
         });
     }
 
