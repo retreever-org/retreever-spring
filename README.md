@@ -15,7 +15,7 @@ DTOs. No separate spec file is required.
 <dependency>
     <groupId>dev.retreever</groupId>
     <artifactId>retreever</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
 </dependency>
 ```
 ### Explore
