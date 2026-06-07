@@ -21,8 +21,9 @@ class RetreeverPackagedUiHtmlTest {
 
         String html = StreamUtils.copyToString(indexHtml.getInputStream(), StandardCharsets.UTF_8);
 
-        assertThat(html).contains("type=\"module\"");
-        assertThat(html).contains("src=\"/retreever/assets/");
+        assertThat(html).contains("defer src=\"/retreever/assets/");
+        assertThat(html).doesNotContain("type=\"module\"");
+        assertThat(html).doesNotContain("modulepreload");
         assertThat(html).contains("rel=\"stylesheet\"");
         assertThat(html).contains("href=\"/retreever/assets/");
         assertThat(html).doesNotContain("crossorigin");
