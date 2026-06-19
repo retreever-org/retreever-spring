@@ -20,6 +20,7 @@ import dev.retreever.schema.resolver.SchemaResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringValueResolver;
 import org.springframework.web.bind.annotation.*;
 
 import java.lang.reflect.Method;
@@ -39,12 +40,21 @@ public class SchemaResolutionOrchestrator {
 
     private final SchemaRegistry schemaRegistry;
     private final RetreeverDocumentationExclusionProperties exclusionProperties;
+    private final StringValueResolver valueResolver;
 
     public SchemaResolutionOrchestrator(
             SchemaRegistry schemaRegistry,
             RetreeverDocumentationExclusionProperties exclusionProperties) {
+        this(schemaRegistry, exclusionProperties, null);
+    }
+
+    public SchemaResolutionOrchestrator(
+            SchemaRegistry schemaRegistry,
+            RetreeverDocumentationExclusionProperties exclusionProperties,
+            StringValueResolver valueResolver) {
         this.schemaRegistry = schemaRegistry;
         this.exclusionProperties = exclusionProperties;
+        this.valueResolver = valueResolver;
         log.debug("packages allowed for scanning: {}", SchemaConfig.getBasePackages());
     }
 
@@ -184,7 +194,7 @@ public class SchemaResolutionOrchestrator {
 
     private boolean isExcluded(Method method) {
         ApiEndpoint endpoint = new ApiEndpoint();
-        EndpointPathAndMethodResolver.resolve(endpoint, method);
+        EndpointPathAndMethodResolver.resolve(endpoint, method, valueResolver);
         return exclusionProperties.excludes(endpoint.getPath());
     }
 }

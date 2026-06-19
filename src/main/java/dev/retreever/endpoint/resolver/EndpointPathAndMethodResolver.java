@@ -8,6 +8,8 @@
 
 package dev.retreever.endpoint.resolver;
 
+import org.springframework.util.StringUtils;
+import org.springframework.util.StringValueResolver;
 import org.springframework.web.bind.annotation.*;
 import dev.retreever.endpoint.model.ApiEndpoint;
 
@@ -19,6 +21,8 @@ import java.lang.reflect.Method;
  */
 public class EndpointPathAndMethodResolver {
 
+    private static final StringValueResolver IDENTITY_VALUE_RESOLVER = value -> value;
+
     /**
      * Populates the endpoint path and HTTP method based on Spring mapping annotations.
      *
@@ -26,9 +30,21 @@ public class EndpointPathAndMethodResolver {
      * @param method   the controller method
      */
     public static void resolve(ApiEndpoint endpoint, Method method) {
+        resolve(endpoint, method, IDENTITY_VALUE_RESOLVER);
+    }
 
-        String classPath  = resolveClassPath(method);
-        String methodPath = resolveMethodPath(method);
+    /**
+     * Populates the endpoint path and HTTP method, resolving Spring placeholder
+     * expressions in mapping paths before normalizing the final path.
+     *
+     * @param endpoint      the endpoint model to fill
+     * @param method        the controller method
+     * @param valueResolver Spring value resolver for embedded placeholders
+     */
+    public static void resolve(ApiEndpoint endpoint, Method method, StringValueResolver valueResolver) {
+
+        String classPath = resolveValue(resolveClassPath(method), valueResolver);
+        String methodPath = resolveValue(resolveMethodPath(method), valueResolver);
         String httpMethod = resolveHttpMethod(method);
 
         String fullPath = normalizePath(classPath, methodPath);
@@ -46,8 +62,8 @@ public class EndpointPathAndMethodResolver {
     private static String resolveClassPath(Method method) {
         RequestMapping mapping = method.getDeclaringClass().getAnnotation(RequestMapping.class);
 
-        if (mapping != null && mapping.value().length > 0) {
-            return mapping.value()[0].trim();
+        if (mapping != null) {
+            return firstMappingPath(mapping.value(), mapping.path());
         }
         return "";
     }
@@ -58,33 +74,33 @@ public class EndpointPathAndMethodResolver {
     public static String resolveMethodPath(Method method) {
 
         GetMapping get = method.getAnnotation(GetMapping.class);
-        if (get != null && get.value().length > 0) {
-            return get.value()[0].trim();
+        if (get != null) {
+            return firstMappingPath(get.value(), get.path());
         }
 
         PostMapping post = method.getAnnotation(PostMapping.class);
-        if (post != null && post.value().length > 0) {
-            return post.value()[0].trim();
+        if (post != null) {
+            return firstMappingPath(post.value(), post.path());
         }
 
         PutMapping put = method.getAnnotation(PutMapping.class);
-        if (put != null && put.value().length > 0) {
-            return put.value()[0].trim();
+        if (put != null) {
+            return firstMappingPath(put.value(), put.path());
         }
 
         DeleteMapping delete = method.getAnnotation(DeleteMapping.class);
-        if (delete != null && delete.value().length > 0) {
-            return delete.value()[0].trim();
+        if (delete != null) {
+            return firstMappingPath(delete.value(), delete.path());
         }
 
         PatchMapping patch = method.getAnnotation(PatchMapping.class);
-        if (patch != null && patch.value().length > 0) {
-            return patch.value()[0].trim();
+        if (patch != null) {
+            return firstMappingPath(patch.value(), patch.path());
         }
 
         RequestMapping req = method.getAnnotation(RequestMapping.class);
-        if (req != null && req.value().length > 0) {
-            return req.value()[0].trim();
+        if (req != null) {
+            return firstMappingPath(req.value(), req.path());
         }
 
         return "";
@@ -125,5 +141,39 @@ public class EndpointPathAndMethodResolver {
 
         // collapse "///" into "/"
         return combined.replaceAll("//+", "/");
+    }
+
+    private static String firstMappingPath(String[] valuePaths, String[] pathPaths) {
+        String valuePath = firstText(valuePaths);
+        if (StringUtils.hasText(valuePath)) {
+            return valuePath;
+        }
+        return firstText(pathPaths);
+    }
+
+    private static String firstText(String[] paths) {
+        if (paths == null) {
+            return "";
+        }
+
+        for (String path : paths) {
+            if (StringUtils.hasText(path)) {
+                return path.trim();
+            }
+        }
+        return "";
+    }
+
+    private static String resolveValue(String value, StringValueResolver valueResolver) {
+        if (!StringUtils.hasText(value) || valueResolver == null) {
+            return value;
+        }
+
+        try {
+            String resolved = valueResolver.resolveStringValue(value);
+            return resolved != null ? resolved : value;
+        } catch (IllegalArgumentException ex) {
+            return value;
+        }
     }
 }

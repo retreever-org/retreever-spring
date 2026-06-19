@@ -21,6 +21,7 @@ import dev.retreever.repo.ApiHeaderRegistry;
 import dev.retreever.repo.SchemaRegistry;
 import dev.retreever.view.ApiDocumentAssembler;
 import dev.retreever.view.dto.ApiDocument;
+import org.springframework.util.StringValueResolver;
 
 import java.util.List;
 import java.util.Set;
@@ -47,6 +48,16 @@ public class RetreeverOrchestrator {
             RetreeverDocumentationExclusionProperties exclusionProperties,
             RetreeverAuthProperties authProperties,
             RetreeverStudioProperties studioProperties) {
+        this(basePackages, headers, exclusionProperties, authProperties, studioProperties, null);
+    }
+
+    public RetreeverOrchestrator(
+            List<String> basePackages,
+            List<ApiHeader> headers,
+            RetreeverDocumentationExclusionProperties exclusionProperties,
+            RetreeverAuthProperties authProperties,
+            RetreeverStudioProperties studioProperties,
+            StringValueResolver valueResolver) {
         this.basePackages = basePackages;
 
         // 1. Initialise config
@@ -58,12 +69,16 @@ public class RetreeverOrchestrator {
         SchemaRegistry schemaRegistry = SchemaRegistry.getInstance();
 
         // 3. Resolver chain (endpoint → group → doc)
-        ApiEndpointResolver endpointResolver = new ApiEndpointResolver(headerRegistry);
+        ApiEndpointResolver endpointResolver = new ApiEndpointResolver(headerRegistry, valueResolver);
         ApiGroupResolver groupResolver = new ApiGroupResolver(endpointResolver, exclusionProperties);
 
         // 4. Orchestrators & Assemblers
         this.apiErrorResolutionOrchestrator = new ApiErrorResolutionOrchestrator(errorRegistry);
-        this.schemaResolutionOrchestrator = new SchemaResolutionOrchestrator(schemaRegistry, exclusionProperties);
+        this.schemaResolutionOrchestrator = new SchemaResolutionOrchestrator(
+                schemaRegistry,
+                exclusionProperties,
+                valueResolver
+        );
         this.assembler = new ApiDocumentAssembler(schemaRegistry, errorRegistry, authProperties, studioProperties);
         this.docResolver = new ApiDocResolver(groupResolver);
     }

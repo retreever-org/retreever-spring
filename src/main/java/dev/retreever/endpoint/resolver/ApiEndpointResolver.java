@@ -2,6 +2,7 @@ package dev.retreever.endpoint.resolver;
 
 import dev.retreever.endpoint.model.ApiEndpoint;
 import dev.retreever.repo.ApiHeaderRegistry;
+import org.springframework.util.StringValueResolver;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -15,11 +16,20 @@ import java.util.Arrays;
 public class ApiEndpointResolver {
 
     private final ApiEndpointIOResolver ioResolver;
+    private final StringValueResolver valueResolver;
 
     public ApiEndpointResolver(
             ApiHeaderRegistry headerRegistry
     ) {
+        this(headerRegistry, null);
+    }
+
+    public ApiEndpointResolver(
+            ApiHeaderRegistry headerRegistry,
+            StringValueResolver valueResolver
+    ) {
         this.ioResolver = new ApiEndpointIOResolver(headerRegistry);
+        this.valueResolver = valueResolver;
     }
 
     public ApiEndpoint resolve(Method method) {
@@ -30,7 +40,7 @@ public class ApiEndpointResolver {
         EndpointMetadataResolver.resolve(ep, method);
 
         // 2. Path + HTTP method
-        EndpointPathAndMethodResolver.resolve(ep, method);
+        EndpointPathAndMethodResolver.resolve(ep, method, valueResolver);
 
         // 3. Consumes / Produces
         EndpointContentTypeResolver.resolve(ep, method);

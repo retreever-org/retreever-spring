@@ -31,9 +31,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/Retreever-org/retreever-java.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/Retreever-org/retreever-java.git</developerConnection>
-        <url>https://github.com/Retreever-org/retreever-java</url>
+        <connection>scm:git:git://github.com/retreever-org/retreever-java.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/retreever-org/retreever-java.git</developerConnection>
+        <url>https://github.com/retreever-org/retreever-java</url>
         <tag>HEAD</tag>
     </scm>
 

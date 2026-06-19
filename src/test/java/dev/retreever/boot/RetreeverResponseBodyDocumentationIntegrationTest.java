@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,7 +30,10 @@ import static org.assertj.core.api.Assertions.assertThat;
                 "retreever.docs.skip[0]=/documentation-exclusions/exact",
                 "retreever.docs.skip[1]=/documentation-exclusions/internal/**",
                 "retreever.docs.skip[2]=/documentation-exclusions/users/{userId}",
-                "retreever.docs.skip[3]=regex:^/documentation-exclusions/reports/[{]reportId[}]/export$"
+                "retreever.docs.skip[3]=regex:^/documentation-exclusions/reports/[{]reportId[}]/export$",
+                "retreever.docs.skip[4]=/placeholder-api/excluded",
+                "placeholder.api.base=/placeholder-api",
+                "placeholder.users.path=/users/{user_id}"
         }
 )
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
@@ -83,11 +87,29 @@ class RetreeverResponseBodyDocumentationIntegrationTest {
         assertThat(findEndpoint(document, "/documentation-exclusions/reports/{reportId}/export")).isEmpty();
     }
 
+    @Test
+    void resolvesSpringPlaceholdersInControllerMappingPaths() {
+        ApiDocument document = bootstrap.getDocument();
+
+        assertThat(findEndpoint(document, "/placeholder-api/users/{user_id}")).isPresent();
+        assertThat(findEndpoint(document, "/placeholder-api/defaulted")).isPresent();
+        assertThat(findEndpoint(document, "/${placeholder.api.base}/users/{user_id}")).isEmpty();
+        assertThat(findEndpoint(document, "/placeholder-api/excluded")).isEmpty();
+        assertThat(endpointPaths(document)).allSatisfy(path -> assertThat(path).doesNotContain("${"));
+    }
+
     private Optional<ApiDocument.Endpoint> findEndpoint(ApiDocument document, String path) {
         return document.groups().stream()
                 .flatMap(group -> group.endpoints().stream())
                 .filter(endpoint -> endpoint.path().equals(path))
                 .findFirst();
+    }
+
+    private List<String> endpointPaths(ApiDocument document) {
+        return document.groups().stream()
+                .flatMap(group -> group.endpoints().stream())
+                .map(ApiDocument.Endpoint::path)
+                .toList();
     }
 
     @SpringBootApplication
@@ -97,6 +119,7 @@ class RetreeverResponseBodyDocumentationIntegrationTest {
             ImplicitExceptionHandlerController.class,
             DocumentationExclusionController.class,
             ClassLevelSkippedController.class,
+            PlaceholderMappingController.class,
             ClassLevelResponseBodyAdvice.class,
             MethodLevelResponseBodyAdvice.class,
             ImplicitExceptionHandlerAdvice.class
@@ -198,6 +221,27 @@ class RetreeverResponseBodyDocumentationIntegrationTest {
         @ApiEndpoint(name = "Skipped controller endpoint")
         String annotatedApi() {
             return "annotated";
+        }
+    }
+
+    @Controller
+    @ResponseBody
+    @RequestMapping(path = "${placeholder.api.base:/placeholder-api}")
+    static class PlaceholderMappingController {
+
+        @GetMapping(path = "${placeholder.users.path:/users/{user_id}}")
+        String users() {
+            return "users";
+        }
+
+        @GetMapping("${placeholder.default.path:/defaulted}")
+        String defaulted() {
+            return "defaulted";
+        }
+
+        @GetMapping("/excluded")
+        String excluded() {
+            return "excluded";
         }
     }
 

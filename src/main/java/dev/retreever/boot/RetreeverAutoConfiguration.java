@@ -26,10 +26,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.Ordered;
+import org.springframework.util.StringValueResolver;
 
 import java.util.List;
 import java.util.Map;
@@ -57,6 +59,7 @@ public class RetreeverAutoConfiguration {
         String[] appBeans = context.getBeanNamesForAnnotation(SpringBootApplication.class);
         Map<String, ApiHeader> headerBeans = context.getBeansOfType(ApiHeader.class);
         var headers = headerBeans.values().stream().toList();
+        StringValueResolver valueResolver = mappingValueResolver(context);
 
         if (appBeans.length == 0) {
             // fallback — but extremely unlikely
@@ -65,7 +68,8 @@ public class RetreeverAutoConfiguration {
                     headers,
                     exclusionProperties,
                     authProperties,
-                    studioProperties
+                    studioProperties,
+                    valueResolver
             );
         }
 
@@ -76,7 +80,8 @@ public class RetreeverAutoConfiguration {
                     headers,
                     exclusionProperties,
                     authProperties,
-                    studioProperties
+                    studioProperties,
+                    valueResolver
             );
         }
 
@@ -87,8 +92,29 @@ public class RetreeverAutoConfiguration {
                 headers,
                 exclusionProperties,
                 authProperties,
-                studioProperties
+                studioProperties,
+                valueResolver
         );
+    }
+
+    private StringValueResolver mappingValueResolver(ApplicationContext context) {
+        return value -> {
+            if (value == null) {
+                return null;
+            }
+
+            try {
+                if (context instanceof ConfigurableApplicationContext configurableContext) {
+                    String embedded = configurableContext.getBeanFactory().resolveEmbeddedValue(value);
+                    if (embedded != null) {
+                        return embedded;
+                    }
+                }
+            } catch (IllegalArgumentException ignored) {
+                // Fall through to Environment resolution, which preserves unresolved placeholders.
+            }
+            return context.getEnvironment().resolvePlaceholders(value);
+        };
     }
 
     @Bean
