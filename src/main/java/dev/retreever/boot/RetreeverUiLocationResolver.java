@@ -1,6 +1,5 @@
 package dev.retreever.boot;
 
-import dev.retreever.auth.RetreeverAuthSupport;
 import org.springframework.boot.web.context.WebServerApplicationContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
@@ -11,6 +10,12 @@ import org.springframework.util.StringUtils;
  * Falls back to a relative path when the bound server address is not available.
  */
 final class RetreeverUiLocationResolver {
+
+    private final RetreeverBasePathResolver basePathResolver;
+
+    RetreeverUiLocationResolver(RetreeverBasePathResolver basePathResolver) {
+        this.basePathResolver = basePathResolver;
+    }
 
     String resolve(ApplicationContext context) {
         Integer port = null;
@@ -23,21 +28,13 @@ final class RetreeverUiLocationResolver {
     }
 
     String resolve(Environment environment, Integer port) {
-        String path = resolveRelativePath(environment);
+        String path = basePathResolver.resolve(environment);
 
         if (port == null || port <= 0) {
             return path;
         }
 
         return resolveBaseUrl(environment, port) + path;
-    }
-
-    String resolveRelativePath(Environment environment) {
-        return joinPathSegments(
-                environment.getProperty("server.servlet.context-path"),
-                environment.getProperty("spring.mvc.servlet.path"),
-                RetreeverAuthSupport.RETREEVER_BASE_PATH
-        );
     }
 
     private String resolveBaseUrl(Environment environment, int port) {
@@ -72,37 +69,4 @@ final class RetreeverUiLocationResolver {
         return host;
     }
 
-    private String joinPathSegments(String... segments) {
-        StringBuilder path = new StringBuilder();
-
-        for (String segment : segments) {
-            if (!StringUtils.hasText(segment)) {
-                continue;
-            }
-
-            String normalized = trimSlashes(segment.trim());
-            if (normalized.isEmpty()) {
-                continue;
-            }
-
-            path.append('/').append(normalized);
-        }
-
-        return path.isEmpty() ? "/" : path.toString();
-    }
-
-    private String trimSlashes(String value) {
-        int start = 0;
-        int end = value.length();
-
-        while (start < end && value.charAt(start) == '/') {
-            start++;
-        }
-
-        while (end > start && value.charAt(end - 1) == '/') {
-            end--;
-        }
-
-        return value.substring(start, end);
-    }
 }

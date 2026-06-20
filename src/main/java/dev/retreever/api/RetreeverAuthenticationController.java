@@ -1,5 +1,6 @@
 package dev.retreever.api;
 
+import dev.retreever.boot.RetreeverBasePathResolver;
 import dev.retreever.auth.RetreeverAuthProperties;
 import dev.retreever.auth.RetreeverAuthSupport;
 import dev.retreever.auth.RetreeverLoginGuardService;
@@ -25,14 +26,17 @@ public class RetreeverAuthenticationController {
     private final RetreeverAuthProperties authProperties;
     private final RetreeverTokenService tokenService;
     private final RetreeverLoginGuardService loginGuardService;
+    private final RetreeverBasePathResolver basePathResolver;
 
     public RetreeverAuthenticationController(
             RetreeverAuthProperties authProperties,
             RetreeverTokenService tokenService,
-            RetreeverLoginGuardService loginGuardService) {
+            RetreeverLoginGuardService loginGuardService,
+            RetreeverBasePathResolver basePathResolver) {
         this.authProperties = authProperties;
         this.tokenService = tokenService;
         this.loginGuardService = loginGuardService;
+        this.basePathResolver = basePathResolver;
     }
 
     @PostMapping(path = "/login", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -70,7 +74,8 @@ public class RetreeverAuthenticationController {
                             request,
                             response,
                             tokenPair,
-                            authProperties.isSecureCookies()
+                            authProperties.isSecureCookies(),
+                            basePathResolver.resolveCookiePath(request)
                     );
                     return ResponseEntity.ok(toResponseBody(tokenPair));
                 })
@@ -116,9 +121,10 @@ public class RetreeverAuthenticationController {
                 .<ResponseEntity<?>>map(tokenPair -> {
                     RetreeverAuthSupport.writeAuthenticationCookies(
                             request,
-                            response,
-                            tokenPair,
-                            authProperties.isSecureCookies()
+                        response,
+                        tokenPair,
+                        authProperties.isSecureCookies(),
+                        basePathResolver.resolveCookiePath(request)
                     );
                     return ResponseEntity.ok(toResponseBody(tokenPair));
                 })
@@ -126,7 +132,8 @@ public class RetreeverAuthenticationController {
                     RetreeverAuthSupport.clearAuthenticationCookies(
                             request,
                             response,
-                            authProperties.isSecureCookies()
+                            authProperties.isSecureCookies(),
+                            basePathResolver.resolveCookiePath(request)
                     );
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
                             "error", "invalid_refresh_token",
@@ -142,7 +149,12 @@ public class RetreeverAuthenticationController {
         }
 
         tokenService.logout();
-        RetreeverAuthSupport.clearAuthenticationCookies(request, response, authProperties.isSecureCookies());
+        RetreeverAuthSupport.clearAuthenticationCookies(
+                request,
+                response,
+                authProperties.isSecureCookies(),
+                basePathResolver.resolveCookiePath(request)
+        );
         return ResponseEntity.noContent().build();
     }
 

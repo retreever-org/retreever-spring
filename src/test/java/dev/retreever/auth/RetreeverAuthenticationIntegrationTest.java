@@ -133,6 +133,69 @@ class RetreeverAuthenticationIntegrationTest {
     }
 
     @Test
+    void uiShellRewritesAssetUrlsForContextPathDeployments() throws Exception {
+        mockMvc.perform(get("/user-svc/retreever")
+                        .contextPath("/user-svc")
+                        .accept(MediaType.TEXT_HTML))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/user-svc/retreever/assets/")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("src=\"/retreever/assets/"))));
+    }
+
+    @Test
+    void javascriptAssetRewritesApiUrlsForContextPathDeployments() throws Exception {
+        String jsAssetName = packagedAssetName("classpath:/META-INF/retreever-ui/retreever/assets/*.js");
+
+        mockMvc.perform(get("/user-svc/retreever/assets/" + jsAssetName)
+                        .contextPath("/user-svc")
+                        .accept(MediaType.valueOf("application/javascript")))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.valueOf("application/javascript")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/user-svc/retreever/doc")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/user-svc/retreever/login")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("\"/retreever/doc\""))));
+    }
+
+    @Test
+    void staticAssetsRemainReachableWithContextPath() throws Exception {
+        String cssAssetName = packagedAssetName("classpath:/META-INF/retreever-ui/retreever/assets/*.css");
+
+        mockMvc.perform(get("/user-svc/retreever/assets/" + cssAssetName)
+                        .contextPath("/user-svc"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, org.hamcrest.Matchers.containsString("text/css")));
+    }
+
+    @Test
+    void loginCookiesUseContextPathAwareRetreeverPath() throws Exception {
+        MvcResult loginResult = mockMvc.perform(post("/user-svc/retreever/login")
+                        .contextPath("/user-svc")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"admin","password":"secret"}
+                                """)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        AuthCookies authCookies = extractAuthCookies(loginResult);
+
+        assertThat(authCookies.accessHeader()).contains("Path=/user-svc/retreever");
+        assertThat(authCookies.refreshHeader()).contains("Path=/user-svc/retreever");
+        assertThat(authCookies.deviceHeader()).contains("Path=/user-svc/retreever");
+    }
+
+    @Test
+    void uiShellRewritesAssetUrlsForForwardedPrefixDeployments() throws Exception {
+        mockMvc.perform(get("/retreever")
+                        .header("X-Forwarded-Prefix", "/dist-prod")
+                        .accept(MediaType.TEXT_HTML))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/dist-prod/retreever/assets/")));
+    }
+
+    @Test
     void allowsConfiguredCrossOriginPreflightRequests() throws Exception {
         mockMvc.perform(options("/retreever/login")
                         .header(HttpHeaders.ORIGIN, "http://localhost:5173")
@@ -389,6 +452,17 @@ class RetreeverAuthenticationIntegrationTest {
                 result.getResponse().getHeaders(HttpHeaders.SET_COOKIE),
                 RetreeverLoginGuardService.LOGIN_GUARD_COOKIE_NAME
         ));
+    }
+
+    private String packagedAssetName(String resourcePattern) throws Exception {
+        Resource[] resources = new PathMatchingResourcePatternResolver()
+                .getResources(resourcePattern);
+
+        Assumptions.assumeTrue(resources.length > 0, "No packaged asset found for " + resourcePattern);
+
+        String fileName = resources[0].getFilename();
+        Assumptions.assumeTrue(fileName != null && !fileName.isBlank(), "Packaged asset must have a filename");
+        return fileName;
     }
 
     private record AuthCookies(

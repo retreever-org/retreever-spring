@@ -48,9 +48,10 @@ public class RetreeverBootstrap {
     public RetreeverBootstrap(
             RetreeverOrchestrator orchestrator,
             RetreeverAuthProperties authProperties,
-            RetreeverSecurityHintProperties securityHintProperties) {
+            RetreeverSecurityHintProperties securityHintProperties,
+            RetreeverBasePathResolver basePathResolver) {
         this.orchestrator = orchestrator;
-        this.uiLocationResolver = new RetreeverUiLocationResolver();
+        this.uiLocationResolver = new RetreeverUiLocationResolver(basePathResolver);
         this.authProperties = authProperties;
         this.securityHintProperties = securityHintProperties;
     }

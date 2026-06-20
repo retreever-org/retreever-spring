@@ -35,6 +35,7 @@ import org.springframework.util.StringValueResolver;
 
 import java.util.List;
 import java.util.Map;
+import java.util.LinkedHashSet;
 
 /**
  * Auto-configures all Retreever components using component scanning.
@@ -124,15 +125,13 @@ public class RetreeverAutoConfiguration {
 
     @Bean
     public FilterRegistrationBean<RetreeverSecurityHeadersFilter> retreeverSecurityHeadersFilterRegistration(
-            RetreeverSecurityHeadersFilter securityHeadersFilter) {
+            RetreeverSecurityHeadersFilter securityHeadersFilter,
+            RetreeverBasePathResolver basePathResolver) {
         FilterRegistrationBean<RetreeverSecurityHeadersFilter> registration =
                 new FilterRegistrationBean<>(securityHeadersFilter);
 
         registration.setName("retreeverSecurityHeadersFilter");
-        registration.addUrlPatterns(
-                "/retreever",
-                "/retreever/*"
-        );
+        registration.addUrlPatterns(retreeverFilterPatterns(basePathResolver.resolveFilterBasePath()));
         registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 10);
 
         return registration;
@@ -154,14 +153,12 @@ public class RetreeverAutoConfiguration {
     @Bean
     @ConditionalOnProperty(prefix = "retreever.dev", name = "allow-cross-origin")
     public FilterRegistrationBean<RetreeverCorsFilter> retreeverCorsFilterRegistration(
-            RetreeverCorsFilter corsFilter) {
+            RetreeverCorsFilter corsFilter,
+            RetreeverBasePathResolver basePathResolver) {
         FilterRegistrationBean<RetreeverCorsFilter> registration = new FilterRegistrationBean<>(corsFilter);
 
         registration.setName("retreeverCorsFilter");
-        registration.addUrlPatterns(
-                "/retreever",
-                "/retreever/*"
-        );
+        registration.addUrlPatterns(retreeverFilterPatterns(basePathResolver.resolveFilterBasePath()));
         registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 5);
 
         return registration;
@@ -169,18 +166,35 @@ public class RetreeverAutoConfiguration {
 
     @Bean
     public FilterRegistrationBean<RetreeverAuthenticationFilter> retreeverAuthenticationFilterRegistration(
-            RetreeverAuthenticationFilter authenticationFilter) {
+            RetreeverAuthenticationFilter authenticationFilter,
+            RetreeverBasePathResolver basePathResolver) {
         FilterRegistrationBean<RetreeverAuthenticationFilter> registration =
                 new FilterRegistrationBean<>(authenticationFilter);
 
         registration.setName("retreeverAuthenticationFilter");
-        registration.addUrlPatterns(
-                RetreeverAuthSupport.DOC_PATH,
-                RetreeverAuthSupport.PING_PATH,
-                RetreeverAuthSupport.ENVIRONMENT_PATH
-        );
+        registration.addUrlPatterns(retreeverProtectedApiPatterns(basePathResolver.resolveFilterBasePath()));
         registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 20);
 
         return registration;
+    }
+
+    private String[] retreeverFilterPatterns(String basePath) {
+        LinkedHashSet<String> patterns = new LinkedHashSet<>();
+        patterns.add(RetreeverAuthSupport.RETREEVER_BASE_PATH);
+        patterns.add(RetreeverAuthSupport.RETREEVER_BASE_PATH + "/*");
+        patterns.add(basePath);
+        patterns.add(basePath + "/*");
+        return patterns.toArray(String[]::new);
+    }
+
+    private String[] retreeverProtectedApiPatterns(String basePath) {
+        LinkedHashSet<String> patterns = new LinkedHashSet<>();
+        patterns.add(RetreeverAuthSupport.DOC_PATH);
+        patterns.add(RetreeverAuthSupport.PING_PATH);
+        patterns.add(RetreeverAuthSupport.ENVIRONMENT_PATH);
+        patterns.add(basePath + "/doc");
+        patterns.add(basePath + "/ping");
+        patterns.add(basePath + "/environment");
+        return patterns.toArray(String[]::new);
     }
 }

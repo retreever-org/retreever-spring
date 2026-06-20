@@ -2,6 +2,7 @@ package dev.retreever.auth;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.retreever.boot.RetreeverBasePathResolver;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,16 +42,29 @@ public class RetreeverLoginGuardService {
     private final SecureRandom secureRandom = new SecureRandom();
     private final SecretKeySpec secretKey;
     private final Clock clock;
+    private final RetreeverBasePathResolver basePathResolver;
 
     @Autowired
-    public RetreeverLoginGuardService(RetreeverAuthProperties properties, ObjectMapper objectMapper) {
-        this(properties, objectMapper, Clock.systemUTC());
+    public RetreeverLoginGuardService(
+            RetreeverAuthProperties properties,
+            ObjectMapper objectMapper,
+            RetreeverBasePathResolver basePathResolver) {
+        this(properties, objectMapper, Clock.systemUTC(), basePathResolver);
     }
 
     RetreeverLoginGuardService(RetreeverAuthProperties properties, ObjectMapper objectMapper, Clock clock) {
+        this(properties, objectMapper, clock, null);
+    }
+
+    RetreeverLoginGuardService(
+            RetreeverAuthProperties properties,
+            ObjectMapper objectMapper,
+            Clock clock,
+            RetreeverBasePathResolver basePathResolver) {
         this.objectMapper = objectMapper.copy().setSerializationInclusion(JsonInclude.Include.NON_NULL);
         this.secretKey = properties.isDisabled() ? null : new SecretKeySpec(resolveSecretKey(properties), "AES");
         this.clock = clock;
+        this.basePathResolver = basePathResolver;
     }
 
     public GuardStatus status(HttpServletRequest request) {
@@ -218,7 +232,7 @@ public class RetreeverLoginGuardService {
                 .httpOnly(true)
                 .sameSite(SAME_SITE_POLICY)
                 .secure(secureCookies)
-                .path(RetreeverAuthSupport.resolveCookiePath(request))
+                .path(resolveCookiePath(request))
                 .maxAge(maxAge)
                 .build();
 
@@ -227,6 +241,12 @@ public class RetreeverLoginGuardService {
 
     private Instant now() {
         return Instant.now(clock);
+    }
+
+    private String resolveCookiePath(HttpServletRequest request) {
+        return basePathResolver != null
+                ? basePathResolver.resolveCookiePath(request)
+                : RetreeverAuthSupport.resolveCookiePath(request);
     }
 
     public record GuardStatus(
