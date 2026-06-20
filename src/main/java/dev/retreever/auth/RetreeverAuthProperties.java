@@ -89,7 +89,11 @@ public class RetreeverAuthProperties implements InitializingBean {
     }
 
     public boolean isDisabled() {
-        return !StringUtils.hasText(username) || !StringUtils.hasText(password);
+        return !isStaticAuthenticationConfigured();
+    }
+
+    public boolean isStaticAuthenticationConfigured() {
+        return StringUtils.hasText(username) && StringUtils.hasText(password);
     }
 
     @Override
@@ -97,15 +101,10 @@ public class RetreeverAuthProperties implements InitializingBean {
         boolean hasUsername = StringUtils.hasText(username);
         boolean hasPassword = StringUtils.hasText(password);
 
-        if (!hasUsername && !hasPassword) {
-            return;
-        }
-
         if (hasUsername != hasPassword) {
-            disableAuthBecauseInvalid(new IllegalStateException(
+            disableStaticAuthBecauseInvalid(new IllegalStateException(
                     "Retreever authentication requires both 'retreever.auth.username' and 'retreever.auth.password'."
             ));
-            return;
         }
 
         if (isNegative(accessTokenTtl)) {
@@ -141,10 +140,9 @@ public class RetreeverAuthProperties implements InitializingBean {
         return duration == null || duration.compareTo(Duration.ZERO) <= 0;
     }
 
-    private void disableAuthBecauseInvalid(Exception ex) {
-        log.error("Invalid Retreever auth configuration. Retreever authentication will be disabled.", ex);
+    private void disableStaticAuthBecauseInvalid(Exception ex) {
+        log.error("Invalid Retreever static auth configuration. Retreever static authentication will be disabled.", ex);
         username = null;
         password = null;
-        secret = null;
     }
 }

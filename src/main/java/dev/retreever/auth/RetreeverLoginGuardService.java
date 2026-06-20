@@ -47,22 +47,24 @@ public class RetreeverLoginGuardService {
     @Autowired
     public RetreeverLoginGuardService(
             RetreeverAuthProperties properties,
+            RetreeverAuthenticationService authenticationService,
             ObjectMapper objectMapper,
             RetreeverBasePathResolver basePathResolver) {
-        this(properties, objectMapper, Clock.systemUTC(), basePathResolver);
+        this(properties, authenticationService, objectMapper, Clock.systemUTC(), basePathResolver);
     }
 
     RetreeverLoginGuardService(RetreeverAuthProperties properties, ObjectMapper objectMapper, Clock clock) {
-        this(properties, objectMapper, clock, null);
+        this(properties, new RetreeverAuthenticationService(properties, java.util.List.of()), objectMapper, clock, null);
     }
 
     RetreeverLoginGuardService(
             RetreeverAuthProperties properties,
+            RetreeverAuthenticationService authenticationService,
             ObjectMapper objectMapper,
             Clock clock,
             RetreeverBasePathResolver basePathResolver) {
         this.objectMapper = objectMapper.copy().setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        this.secretKey = properties.isDisabled() ? null : new SecretKeySpec(resolveSecretKey(properties), "AES");
+        this.secretKey = authenticationService.isEnabled() ? new SecretKeySpec(resolveSecretKey(properties), "AES") : null;
         this.clock = clock;
         this.basePathResolver = basePathResolver;
     }

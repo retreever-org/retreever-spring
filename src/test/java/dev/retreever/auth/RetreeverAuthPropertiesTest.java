@@ -67,7 +67,7 @@ class RetreeverAuthPropertiesTest {
     }
 
     @Test
-    void ignoresSecretAndTtlSettingsWhenAuthIsDisabled() {
+    void validatesSecretAndTtlSettingsEvenWhenStaticAuthIsDisabled() {
         RetreeverAuthProperties authProperties = new RetreeverAuthProperties();
         authProperties.setSecret("not-a-uuid");
         authProperties.setAccessTokenTtl(java.time.Duration.ofMinutes(-1));
@@ -76,6 +76,9 @@ class RetreeverAuthPropertiesTest {
         authProperties.afterPropertiesSet();
 
         assertThat(authProperties.isDisabled()).isTrue();
+        assertThat(authProperties.getSecret()).isNull();
+        assertThat(authProperties.getAccessTokenTtl()).isEqualTo(java.time.Duration.ofMinutes(30));
+        assertThat(authProperties.getRefreshTokenTtl()).isEqualTo(java.time.Duration.ofDays(7));
     }
 
     @Test

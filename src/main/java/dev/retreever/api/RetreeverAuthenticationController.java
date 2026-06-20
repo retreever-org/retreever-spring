@@ -1,6 +1,7 @@
 package dev.retreever.api;
 
 import dev.retreever.boot.RetreeverBasePathResolver;
+import dev.retreever.auth.RetreeverAuthenticationService;
 import dev.retreever.auth.RetreeverAuthProperties;
 import dev.retreever.auth.RetreeverAuthSupport;
 import dev.retreever.auth.RetreeverLoginGuardService;
@@ -24,16 +25,19 @@ import java.util.Map;
 public class RetreeverAuthenticationController {
 
     private final RetreeverAuthProperties authProperties;
+    private final RetreeverAuthenticationService authenticationService;
     private final RetreeverTokenService tokenService;
     private final RetreeverLoginGuardService loginGuardService;
     private final RetreeverBasePathResolver basePathResolver;
 
     public RetreeverAuthenticationController(
             RetreeverAuthProperties authProperties,
+            RetreeverAuthenticationService authenticationService,
             RetreeverTokenService tokenService,
             RetreeverLoginGuardService loginGuardService,
             RetreeverBasePathResolver basePathResolver) {
         this.authProperties = authProperties;
+        this.authenticationService = authenticationService;
         this.tokenService = tokenService;
         this.loginGuardService = loginGuardService;
         this.basePathResolver = basePathResolver;
@@ -44,7 +48,7 @@ public class RetreeverAuthenticationController {
             @RequestBody RetreeverLoginRequest loginRequest,
             HttpServletRequest request,
             HttpServletResponse response) {
-        if (authProperties.isDisabled()) {
+        if (!authenticationService.isEnabled()) {
             return ResponseEntity.notFound().build();
         }
 
@@ -110,7 +114,7 @@ public class RetreeverAuthenticationController {
 
     @PostMapping(path = "/refresh", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) {
-        if (authProperties.isDisabled()) {
+        if (!authenticationService.isEnabled()) {
             return ResponseEntity.notFound().build();
         }
 
@@ -144,7 +148,7 @@ public class RetreeverAuthenticationController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
-        if (authProperties.isDisabled()) {
+        if (!authenticationService.isEnabled()) {
             return ResponseEntity.notFound().build();
         }
 

@@ -27,9 +27,12 @@ Current behavior:
 
 ## 2. Host Configuration
 
-Retreever auth is enabled only when both username and password are configured.
+Retreever auth is enabled when either:
 
-If both are absent, Retreever auth is fully disabled.
+- the host application registers a single `RetreeverAuthenticator` bean, or
+- both static `retreever.auth.username` and `retreever.auth.password` are configured.
+
+If neither is present, Retreever auth is fully disabled.
 
 ```properties
 retreever.auth.username=admin
@@ -40,8 +43,11 @@ retreever.auth.secret=123e4567-e89b-12d3-a456-426614174000
 ### Configuration Notes
 
 - `retreever.auth.username` and `retreever.auth.password` enable auth when both are present.
-- if both are absent, Retreever does not protect `/retreever/doc`, `/retreever/ping`, or `/retreever/environment`
-- if auth is disabled, Retreever ignores `retreever.auth.secret` and token TTL settings
+- a host `RetreeverAuthenticator` bean enables auth even when static username and password are absent.
+- if a host `RetreeverAuthenticator` bean exists, it takes precedence and Retreever ignores static username and password for login validation.
+- Retreever allows at most one host `RetreeverAuthenticator` bean.
+- if no host authenticator and no static credentials are present, Retreever does not protect `/retreever/doc`, `/retreever/ping`, or `/retreever/environment`
+- Retreever validates token TTL and secret settings during startup; token TTL and secret settings are used only when auth is enabled.
 - `retreever.auth.secret` is optional.
 - when set, `retreever.auth.secret` must be a valid UUID string
 - if `retreever.auth.secret` is set, all service instances using the same value can validate the same Retreever cookies
@@ -57,6 +63,39 @@ retreever.auth.secret=123e4567-e89b-12d3-a456-426614174000
 For any deployment with multiple application instances behind a load balancer, set `retreever.auth.secret` explicitly and keep it identical across all instances.
 
 Without that shared secret, each instance generates its own startup secret and cookies issued by one instance will fail on another.
+
+### Host-Managed Login Validation
+
+Host applications can authenticate Retreever login requests against their own user base by registering a bean:
+
+```java
+@Bean
+RetreeverAuthenticator retreeverAuthenticator(HostUserService users) {
+    return request -> {
+        boolean valid = users.authenticate(request.principal(), request.credential());
+        if (!valid) {
+            return RetreeverAuthenticationResult.unauthenticated();
+        }
+        return RetreeverAuthenticationResult.authenticated(request.principal());
+    };
+}
+```
+
+The Java port receives a `RetreeverAuthenticationRequest` with:
+
+- `principal`: the login identity supplied by the user, such as username, email, employee ID, or phone number
+- `credential`: the secret supplied by the user, such as password, PIN, or temporary password
+
+The HTTP login body remains unchanged for compatibility:
+
+```json
+{
+  "username": "admin",
+  "password": "change-me"
+}
+```
+
+Retreever maps `username` to `principal` and `password` to `credential` before calling the host authenticator. On success, Retreever stores only the returned username in its own encrypted token payload.
 
 ### Contributor-Only UI Development
 
@@ -168,7 +207,7 @@ The current implementation is stateless and uses encrypted self-contained tokens
 
 On successful login, the server:
 
-1. validates the configured username and password
+1. validates the login through the host authenticator when present, otherwise through the configured static username and password
 2. creates a new random device id
 3. creates a new random access-token id
 4. creates a new random refresh-token id
@@ -189,7 +228,8 @@ Each token carries encrypted claims including:
 
 ### Important Characteristics
 
-- multiple developers can log in using the same configured username and password
+- in static-auth mode, multiple developers can log in using the same configured username and password
+- in host-auth mode, login acceptance is delegated to the host authenticator
 - each login gets a different access token
 - each login gets a different refresh token
 - each login gets a different device id
@@ -303,7 +343,7 @@ server:
 
 ## 8.1 Login
 
-Authenticates a user using the configured shared username and password.
+Authenticates a user using the host authenticator when present, otherwise using the configured shared username and password.
 
 ### Endpoint
 
@@ -363,7 +403,7 @@ Status: `404 Not Found`
 
 No response body is guaranteed.
 
-This happens when `retreever.auth.username` and `retreever.auth.password` are not configured.
+This happens when no host `RetreeverAuthenticator` bean exists and `retreever.auth.username` / `retreever.auth.password` are not configured.
 
 ### Client Notes
 

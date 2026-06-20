@@ -12,19 +12,19 @@ import java.nio.charset.StandardCharsets;
 
 public class RetreeverAuthenticationFilter extends OncePerRequestFilter {
 
-    private final RetreeverAuthProperties authProperties;
+    private final RetreeverAuthenticationService authenticationService;
     private final RetreeverTokenService tokenService;
 
     public RetreeverAuthenticationFilter(
-            RetreeverAuthProperties authProperties,
+            RetreeverAuthenticationService authenticationService,
             RetreeverTokenService tokenService) {
-        this.authProperties = authProperties;
+        this.authenticationService = authenticationService;
         this.tokenService = tokenService;
     }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return authProperties.isDisabled();
+        return !authenticationService.isEnabled();
     }
 
     @Override

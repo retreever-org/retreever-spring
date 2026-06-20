@@ -139,7 +139,8 @@ themselves.
 
 ### Retreever Auth
 
-Set both username and password to protect Retreever's internal APIs:
+Set both username and password to protect Retreever's internal APIs with
+Retreever's built-in static authentication:
 
 ```yaml
 retreever:
@@ -158,9 +159,31 @@ Retreever auth cookies use the `Secure` attribute by default. In case a local
 HTTP-only development setup does not retain the Retreever login session, use
 `retreever.auth.secure-cookies=false` temporarily for that local setup only.
 
-If username or password is missing, Retreever auth is disabled. Full auth
-behavior is documented in
+If username or password is missing and no host authenticator bean exists,
+Retreever auth is disabled. Full auth behavior is documented in
 [Documentation/Retreever-Auth-API.md](Documentation/Retreever-Auth-API.md).
+
+Host applications can also provide their own login validation by registering a
+single `RetreeverAuthenticator` bean. When this bean exists, it takes precedence
+over `retreever.auth.username` and `retreever.auth.password`; Retreever still
+issues and validates its own HttpOnly auth cookies after successful login.
+
+```java
+@Bean
+RetreeverAuthenticator retreeverAuthenticator(HostUserService users) {
+    return request -> {
+        boolean valid = users.authenticate(request.principal(), request.credential());
+        if (!valid) {
+            return RetreeverAuthenticationResult.unauthenticated();
+        }
+        return RetreeverAuthenticationResult.authenticated(request.principal());
+    };
+}
+```
+
+The `/retreever/login` HTTP payload remains `{ "username": "...", "password": "..." }`
+for compatibility. Retreever maps those values to the host-auth request as
+`principal` and `credential`.
 
 ### Environment Variables
 

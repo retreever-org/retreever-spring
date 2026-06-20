@@ -8,7 +8,7 @@
 
 package dev.retreever.boot;
 
-import dev.retreever.auth.RetreeverAuthProperties;
+import dev.retreever.auth.RetreeverAuthenticationService;
 import dev.retreever.config.RetreeverSecurityHintProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +39,7 @@ public class RetreeverBootstrap {
 
     private final RetreeverOrchestrator orchestrator;
     private final RetreeverUiLocationResolver uiLocationResolver;
-    private final RetreeverAuthProperties authProperties;
+    private final RetreeverAuthenticationService authenticationService;
     private final RetreeverSecurityHintProperties securityHintProperties;
     private ApiDocument cached;
     private Exception startupFailure;
@@ -47,12 +47,12 @@ public class RetreeverBootstrap {
 
     public RetreeverBootstrap(
             RetreeverOrchestrator orchestrator,
-            RetreeverAuthProperties authProperties,
+            RetreeverAuthenticationService authenticationService,
             RetreeverSecurityHintProperties securityHintProperties,
             RetreeverBasePathResolver basePathResolver) {
         this.orchestrator = orchestrator;
         this.uiLocationResolver = new RetreeverUiLocationResolver(basePathResolver);
-        this.authProperties = authProperties;
+        this.authenticationService = authenticationService;
         this.securityHintProperties = securityHintProperties;
     }
 
@@ -187,7 +187,7 @@ public class RetreeverBootstrap {
                     Note:
                     Retreever public paths must be accessible by the host application security layer.
                     The Retreever Studio itself can still be protected using Retreever's internal
-                    in-memory authentication.
+                    authentication.
                 
                     Example:
                 
@@ -204,7 +204,7 @@ public class RetreeverBootstrap {
     }
 
     private boolean isRetreeverAuthOrStudioEnabled() {
-        return !authProperties.isDisabled() || cached != null;
+        return authenticationService.isEnabled() || cached != null;
     }
 
     private boolean hasSpringSecurity(ApplicationContext context) {

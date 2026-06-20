@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.retreever.api.config.RetreeverCorsFilter;
 import dev.retreever.api.config.RetreeverSecurityHeadersFilter;
 import dev.retreever.auth.RetreeverAuthenticationFilter;
+import dev.retreever.auth.RetreeverAuthenticationService;
 import dev.retreever.auth.RetreeverAuthProperties;
 import dev.retreever.auth.RetreeverAuthSupport;
 import dev.retreever.auth.RetreeverTokenService;
@@ -51,6 +52,7 @@ public class RetreeverAutoConfiguration {
             ObjectProvider<ObjectMapper> objectMapperProvider,
             RetreeverDocumentationExclusionProperties exclusionProperties,
             RetreeverAuthProperties authProperties,
+            RetreeverAuthenticationService authenticationService,
             RetreeverStudioProperties studioProperties
     ) {
 
@@ -69,6 +71,7 @@ public class RetreeverAutoConfiguration {
                     headers,
                     exclusionProperties,
                     authProperties,
+                    authenticationService,
                     studioProperties,
                     valueResolver
             );
@@ -81,6 +84,7 @@ public class RetreeverAutoConfiguration {
                     headers,
                     exclusionProperties,
                     authProperties,
+                    authenticationService,
                     studioProperties,
                     valueResolver
             );
@@ -93,6 +97,7 @@ public class RetreeverAutoConfiguration {
                 headers,
                 exclusionProperties,
                 authProperties,
+                authenticationService,
                 studioProperties,
                 valueResolver
         );
@@ -139,9 +144,9 @@ public class RetreeverAutoConfiguration {
 
     @Bean
     public RetreeverAuthenticationFilter retreeverAuthenticationFilter(
-            RetreeverAuthProperties authProperties,
+            RetreeverAuthenticationService authenticationService,
             RetreeverTokenService tokenService) {
-        return new RetreeverAuthenticationFilter(authProperties, tokenService);
+        return new RetreeverAuthenticationFilter(authenticationService, tokenService);
     }
 
     @Bean

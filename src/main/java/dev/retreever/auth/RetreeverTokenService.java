@@ -2,6 +2,7 @@ package dev.retreever.auth;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -29,32 +30,41 @@ public class RetreeverTokenService {
     private static final int IV_LENGTH_BYTES = 12;
 
     private final RetreeverAuthProperties properties;
+    private final RetreeverAuthenticationService authenticationService;
     private final ObjectMapper objectMapper;
     private final SecureRandom secureRandom = new SecureRandom();
     private final SecretKeySpec secretKey;
 
-    public RetreeverTokenService(RetreeverAuthProperties properties, ObjectMapper objectMapper) {
+    @Autowired
+    public RetreeverTokenService(
+            RetreeverAuthProperties properties,
+            RetreeverAuthenticationService authenticationService,
+            ObjectMapper objectMapper) {
         this.properties = properties;
+        this.authenticationService = authenticationService;
         this.objectMapper = objectMapper.copy().setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        this.secretKey = properties.isDisabled() ? null : new SecretKeySpec(resolveSecretKey(properties), "AES");
+        this.secretKey = authenticationService.isEnabled() ? new SecretKeySpec(resolveSecretKey(properties), "AES") : null;
+    }
+
+    RetreeverTokenService(RetreeverAuthProperties properties, ObjectMapper objectMapper) {
+        this(properties, new RetreeverAuthenticationService(properties, java.util.List.of()), objectMapper);
     }
 
     public Optional<TokenPair> login(String username, String password) {
-        if (properties.isDisabled()) {
+        if (!authenticationService.isEnabled()) {
             return Optional.empty();
         }
 
-        if (!Objects.equals(properties.getUsername(), username) || !Objects.equals(properties.getPassword(), password)) {
-            return Optional.empty();
-        }
-
-        Instant issuedAt = Instant.now();
-        String deviceId = UUID.randomUUID().toString();
-        return Optional.of(issueTokenPair(username, deviceId, issuedAt));
+        return authenticationService.authenticate(username, password)
+                .map(authenticatedUsername -> issueTokenPair(
+                        authenticatedUsername,
+                        UUID.randomUUID().toString(),
+                        Instant.now()
+                ));
     }
 
     public Optional<AuthenticatedUser> authenticate(String accessToken, String deviceId) {
-        if (properties.isDisabled()) {
+        if (!authenticationService.isEnabled()) {
             return Optional.empty();
         }
 
@@ -68,7 +78,7 @@ public class RetreeverTokenService {
     }
 
     public Optional<TokenPair> refresh(String refreshToken, String deviceId) {
-        if (properties.isDisabled()) {
+        if (!authenticationService.isEnabled()) {
             return Optional.empty();
         }
 

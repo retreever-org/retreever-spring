@@ -10,6 +10,7 @@ package dev.retreever.engine;
 
 import dev.retreever.config.RetreeverDocumentationExclusionProperties;
 import dev.retreever.auth.RetreeverAuthProperties;
+import dev.retreever.auth.RetreeverAuthenticationService;
 import dev.retreever.config.RetreeverStudioProperties;
 import dev.retreever.config.SchemaConfig;
 import dev.retreever.doc.resolver.ApiDocResolver;
@@ -58,6 +59,17 @@ public class RetreeverOrchestrator {
             RetreeverAuthProperties authProperties,
             RetreeverStudioProperties studioProperties,
             StringValueResolver valueResolver) {
+        this(basePackages, headers, exclusionProperties, authProperties, null, studioProperties, valueResolver);
+    }
+
+    public RetreeverOrchestrator(
+            List<String> basePackages,
+            List<ApiHeader> headers,
+            RetreeverDocumentationExclusionProperties exclusionProperties,
+            RetreeverAuthProperties authProperties,
+            RetreeverAuthenticationService authenticationService,
+            RetreeverStudioProperties studioProperties,
+            StringValueResolver valueResolver) {
         this.basePackages = basePackages;
 
         // 1. Initialise config
@@ -79,7 +91,15 @@ public class RetreeverOrchestrator {
                 exclusionProperties,
                 valueResolver
         );
-        this.assembler = new ApiDocumentAssembler(schemaRegistry, errorRegistry, authProperties, studioProperties);
+        RetreeverAuthenticationService resolvedAuthenticationService = authenticationService != null
+                ? authenticationService
+                : new RetreeverAuthenticationService(authProperties, List.of());
+        this.assembler = new ApiDocumentAssembler(
+                schemaRegistry,
+                errorRegistry,
+                resolvedAuthenticationService,
+                studioProperties
+        );
         this.docResolver = new ApiDocResolver(groupResolver);
     }
 
