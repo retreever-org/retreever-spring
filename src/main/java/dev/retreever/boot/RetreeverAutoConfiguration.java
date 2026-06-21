@@ -8,7 +8,6 @@
 
 package dev.retreever.boot;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.retreever.api.config.RetreeverCorsFilter;
 import dev.retreever.api.config.RetreeverSecurityHeadersFilter;
 import dev.retreever.auth.RetreeverAuthenticationFilter;
@@ -21,6 +20,8 @@ import dev.retreever.config.RetreeverDocumentationExclusionProperties;
 import dev.retreever.config.RetreeverStudioProperties;
 import dev.retreever.endpoint.model.ApiHeader;
 import dev.retreever.engine.RetreeverOrchestrator;
+import dev.retreever.json.RetreeverJsonMapper;
+import dev.retreever.json.RetreeverJsonMappers;
 import dev.retreever.schema.resolver.jackson.JsonNameResolver;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -30,7 +31,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.Ordered;
 import org.springframework.util.StringValueResolver;
 
@@ -49,14 +49,14 @@ public class RetreeverAutoConfiguration {
     @Bean
     public RetreeverOrchestrator orchestrator(
             ApplicationContext context,
-            ObjectProvider<ObjectMapper> objectMapperProvider,
+            RetreeverJsonMapper jsonMapper,
             RetreeverDocumentationExclusionProperties exclusionProperties,
             RetreeverAuthProperties authProperties,
             RetreeverAuthenticationService authenticationService,
             RetreeverStudioProperties studioProperties
     ) {
 
-        JsonNameResolver.configure(objectMapperProvider.getIfAvailable());
+        JsonNameResolver.configure(jsonMapper);
 
         // Find the @SpringBootApplication class
         String[] appBeans = context.getBeanNamesForAnnotation(SpringBootApplication.class);
@@ -101,6 +101,11 @@ public class RetreeverAutoConfiguration {
                 studioProperties,
                 valueResolver
         );
+    }
+
+    @Bean
+    public RetreeverJsonMapper retreeverJsonMapper(ApplicationContext context) {
+        return RetreeverJsonMappers.fromApplicationContext(context);
     }
 
     private StringValueResolver mappingValueResolver(ApplicationContext context) {

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(
@@ -37,15 +39,18 @@ class RetreeverBasePathIntegrationTest {
     private MockMvc mockMvc;
 
     @Test
-    void configuredContextPathRewritesStudioHtmlAndJavascript() throws Exception {
+    void configuredContextPathRewritesStudioHtmlAndInjectsRuntimeContextPath() throws Exception {
+        assumePackagedUiPresent();
+
         mockMvc.perform(get("/retreever").accept(MediaType.TEXT_HTML))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("/dist-prod/retreever/assets/")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/dist-prod/retreever/assets/")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("window.__RETREEVER_CONTEXT_PATH__ = \"/dist-prod\"")));
 
         mockMvc.perform(get("/retreever/assets/" + packagedAssetName()).accept(MediaType.valueOf("application/javascript")))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("/dist-prod/retreever/doc")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("/dist-prod/retreever/login")));
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("/dist-prod/retreever/doc"))))
+                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, org.hamcrest.Matchers.containsString("immutable")));
     }
 
     @Test
@@ -67,6 +72,8 @@ class RetreeverBasePathIntegrationTest {
     }
 
     private String packagedAssetName() throws Exception {
+        assumePackagedUiPresent();
+
         Resource[] resources = new PathMatchingResourcePatternResolver()
                 .getResources("classpath:/META-INF/retreever-ui/retreever/assets/*.js");
 
@@ -75,6 +82,13 @@ class RetreeverBasePathIntegrationTest {
         String fileName = resources[0].getFilename();
         Assumptions.assumeTrue(fileName != null && !fileName.isBlank(), "Packaged JavaScript asset must have a filename");
         return fileName;
+    }
+
+    private void assumePackagedUiPresent() {
+        Assumptions.assumeTrue(
+                new ClassPathResource("META-INF/retreever-ui/retreever/index.html").exists(),
+                "Packaged Retreever UI is not available in this test run"
+        );
     }
 
     private String cookieHeader(MvcResult result, String cookieName) {

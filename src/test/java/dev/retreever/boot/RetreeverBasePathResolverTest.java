@@ -13,6 +13,8 @@ class RetreeverBasePathResolverTest {
     void defaultsToRetreeverBasePath() {
         RetreeverBasePathResolver resolver = resolver(new MockEnvironment(), null);
 
+        assertThat(resolver.resolveContextPath(new MockHttpServletRequest())).isEqualTo("");
+        assertThat(resolver.resolveContextPath(new MockEnvironment())).isEqualTo("");
         assertThat(resolver.resolve(new MockHttpServletRequest())).isEqualTo("/retreever");
         assertThat(resolver.resolve(new MockEnvironment())).isEqualTo("/retreever");
     }
@@ -27,6 +29,8 @@ class RetreeverBasePathResolverTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setContextPath("/user-svc");
 
+        assertThat(resolver.resolveContextPath(request)).isEqualTo("/user-svc/api");
+        assertThat(resolver.resolveContextPath(environment)).isEqualTo("/user-svc/api");
         assertThat(resolver.resolve(request)).isEqualTo("/user-svc/api/retreever");
         assertThat(resolver.resolve(environment)).isEqualTo("/user-svc/api/retreever");
     }
@@ -37,6 +41,7 @@ class RetreeverBasePathResolverTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(RetreeverBasePathResolver.FORWARDED_PREFIX_HEADER, "/dist-prod");
 
+        assertThat(resolver.resolveContextPath(request)).isEqualTo("/dist-prod");
         assertThat(resolver.resolve(request)).isEqualTo("/dist-prod/retreever");
     }
 
@@ -49,6 +54,8 @@ class RetreeverBasePathResolverTest {
         request.setContextPath("/user-svc");
         request.addHeader(RetreeverBasePathResolver.FORWARDED_PREFIX_HEADER, "/proxy");
 
+        assertThat(resolver.resolveContextPath(request)).isEqualTo("/dist-prod");
+        assertThat(resolver.resolveContextPath(environment)).isEqualTo("/dist-prod");
         assertThat(resolver.resolve(request)).isEqualTo("/dist-prod/retreever");
         assertThat(resolver.resolve(environment)).isEqualTo("/dist-prod/retreever");
     }
@@ -57,6 +64,7 @@ class RetreeverBasePathResolverTest {
     void configuredContextPathWithRetreeverSegmentIsTreatedAsContextPath() {
         RetreeverBasePathResolver resolver = resolver(new MockEnvironment(), "/dist-prod/retreever/");
 
+        assertThat(resolver.resolveContextPath(new MockHttpServletRequest())).isEqualTo("/dist-prod");
         assertThat(resolver.resolve(new MockHttpServletRequest())).isEqualTo("/dist-prod/retreever");
     }
 
@@ -64,6 +72,7 @@ class RetreeverBasePathResolverTest {
     void rootConfiguredContextPathResolvesToRetreeverMount() {
         RetreeverBasePathResolver resolver = resolver(new MockEnvironment(), "/");
 
+        assertThat(resolver.resolveContextPath(new MockHttpServletRequest())).isEqualTo("");
         assertThat(resolver.resolve(new MockHttpServletRequest())).isEqualTo("/retreever");
     }
 

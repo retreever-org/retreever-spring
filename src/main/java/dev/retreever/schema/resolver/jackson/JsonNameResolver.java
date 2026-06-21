@@ -8,32 +8,54 @@
 
 package dev.retreever.schema.resolver.jackson;
 
-import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
+import dev.retreever.json.RetreeverJsonMapper;
+import dev.retreever.json.RetreeverJsonMappers;
 
-import java.lang.Class;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Locale;
 
 public class JsonNameResolver {
 
-    private static volatile ObjectMapper mapper = new ObjectMapper();
+    private static final List<String> JSON_IGNORE_ANNOTATIONS = List.of(
+            "com.fasterxml.jackson.annotation.JsonIgnore",
+            "tools.jackson.annotation.JsonIgnore"
+    );
+    private static final List<String> JSON_PROPERTY_ANNOTATIONS = List.of(
+            "com.fasterxml.jackson.annotation.JsonProperty",
+            "tools.jackson.annotation.JsonProperty"
+    );
+    private static final List<String> JSON_GETTER_ANNOTATIONS = List.of(
+            "com.fasterxml.jackson.annotation.JsonGetter",
+            "tools.jackson.annotation.JsonGetter"
+    );
+    private static final List<String> JSON_SETTER_ANNOTATIONS = List.of(
+            "com.fasterxml.jackson.annotation.JsonSetter",
+            "tools.jackson.annotation.JsonSetter"
+    );
+    private static final List<String> JSON_NAMING_ANNOTATIONS = List.of(
+            "com.fasterxml.jackson.databind.annotation.JsonNaming",
+            "tools.jackson.databind.annotation.JsonNaming"
+    );
+    private static volatile RetreeverJsonMapper mapper = RetreeverJsonMappers.defaultMapper();
 
-    public static void configure(ObjectMapper objectMapper) {
+    public static void configure(RetreeverJsonMapper objectMapper) {
         if (objectMapper != null) {
             mapper = objectMapper;
         }
     }
 
+    public static void configure(Object objectMapper) {
+        if (objectMapper != null) {
+            mapper = RetreeverJsonMappers.wrap(objectMapper);
+        }
+    }
+
     public static boolean isJsonIgnored(AnnotatedElement elem) {
-        return elem.isAnnotationPresent(JsonIgnore.class);
+        return hasAnnotation(elem, JSON_IGNORE_ANNOTATIONS);
     }
 
     /**
@@ -56,92 +78,61 @@ public class JsonNameResolver {
 
         // 3. If no explicit annotation, apply @JsonNaming
         if (name.equals(defaultName)) {
-            JsonNaming naming = declaringClass.getAnnotation(JsonNaming.class);
-            if (naming != null) {
-                name = applyNamingStrategy(naming.value(), defaultName);
+            Class<?> namingStrategy = resolveNamingStrategyClass(declaringClass);
+            if (namingStrategy != null) {
+                name = applyNamingStrategy(namingStrategy, defaultName);
             }
         }
         return name;
     }
 
     private static String resolveJacksonPropertyName(Field field, Class<?> declaringClass) {
-        ObjectMapper activeMapper = mapper;
-        JavaType javaType = activeMapper.constructType(declaringClass);
-        BeanDescription beanDesc = activeMapper.getSerializationConfig().introspect(javaType);
-
-        for (BeanPropertyDefinition prop : beanDesc.findProperties()) {
-            if (matchesField(prop, field)) {
-                return prop.getName();
-            }
-        }
-
-        return null;
-    }
-
-    private static boolean matchesField(BeanPropertyDefinition prop, Field field) {
-        if (!prop.couldSerialize()) {
-            return false;
-        }
-
-        if (prop.getField() != null && prop.getField().getAnnotated().equals(field)) {
-            return true;
-        }
-
-        if (prop.getInternalName().equals(field.getName())) {
-            return true;
-        }
-
-        if (prop.getGetter() != null && matchesAccessor(prop.getGetter().getName(), field)) {
-            return true;
-        }
-
-        return prop.getSetter() != null && matchesAccessor(prop.getSetter().getName(), field);
-    }
-
-    private static boolean matchesAccessor(String accessorName, Field field) {
-        String fieldName = field.getName();
-        String accessorSuffix = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
-
-        return accessorName.equals(fieldName)
-                || accessorName.equals("get" + fieldName)
-                || accessorName.equals("get" + accessorSuffix)
-                || accessorName.equals("is" + fieldName)
-                || accessorName.equals("is" + accessorSuffix)
-                || accessorName.equals("set" + fieldName)
-                || accessorName.equals("set" + accessorSuffix);
+        return mapper.resolvePropertyName(field, declaringClass);
     }
 
     private static String getJsonPropertyNameOrElseDefault(AnnotatedElement elem, String defaultName) {
-        // Priority: @JsonProperty.value() > default
-        JsonProperty prop = elem.getAnnotation(JsonProperty.class);
-        if (prop != null && !prop.value().isEmpty()) return prop.value();
+        String explicitPropertyName = annotationValue(elem, JSON_PROPERTY_ANNOTATIONS);
+        if (explicitPropertyName != null && !explicitPropertyName.isEmpty()) {
+            return explicitPropertyName;
+        }
+
+        String getterName = annotationValue(elem, JSON_GETTER_ANNOTATIONS);
+        if (getterName != null && !getterName.isEmpty()) {
+            return getterName;
+        }
+
+        String setterName = annotationValue(elem, JSON_SETTER_ANNOTATIONS);
+        if (setterName != null && !setterName.isEmpty()) {
+            return setterName;
+        }
 
         return defaultName;
     }
 
-    private static String applyNamingStrategy(Class<? extends PropertyNamingStrategy> strategyClass, String input) {
+    private static String applyNamingStrategy(Class<?> strategyClass, String input) {
         String lowerInput = input.toLowerCase(Locale.ROOT);
+        String strategyClassName = strategyClass.getName();
 
-        if (strategyClass == PropertyNamingStrategies.SnakeCaseStrategy.class) {
+        if (strategyClassName.endsWith("PropertyNamingStrategies$SnakeCaseStrategy")) {
             return camelToSnakeCase(lowerInput);
         }
-        if (strategyClass == PropertyNamingStrategies.UpperSnakeCaseStrategy.class) {
+        if (strategyClassName.endsWith("PropertyNamingStrategies$UpperSnakeCaseStrategy")) {
             return camelToSnakeCase(lowerInput).toUpperCase(Locale.ROOT);
         }
-        if (strategyClass == PropertyNamingStrategies.KebabCaseStrategy.class) {
+        if (strategyClassName.endsWith("PropertyNamingStrategies$KebabCaseStrategy")) {
             return camelToKebabCase(lowerInput);
         }
-        if (strategyClass == PropertyNamingStrategies.UpperCamelCaseStrategy.class) {
+        if (strategyClassName.endsWith("PropertyNamingStrategies$UpperCamelCaseStrategy")) {
             return Character.toUpperCase(lowerInput.charAt(0)) + lowerInput.substring(1);
         }
-        if (strategyClass == PropertyNamingStrategies.LowerCamelCaseStrategy.class) {
-            return lowerInput;  // Already lower
+        if (strategyClassName.endsWith("PropertyNamingStrategies$LowerCamelCaseStrategy")) {
+            return lowerInput;
         }
-        if (strategyClass == PropertyNamingStrategies.LowerDotCaseStrategy.class) {
+        if (strategyClassName.endsWith("PropertyNamingStrategies$LowerDotCaseStrategy")) {
             return camelToSnakeCase(lowerInput).replace('_', '.');
         }
 
-        return input;  // Default/unknown
+        return input;
     }
 
     private static String camelToSnakeCase(String camel) {
@@ -160,6 +151,50 @@ public class JsonNameResolver {
 
     private static String camelToKebabCase(String camel) {
         return camelToSnakeCase(camel).replace('_', '-');
+    }
+
+    private static boolean hasAnnotation(AnnotatedElement element, List<String> annotationNames) {
+        for (Annotation annotation : element.getAnnotations()) {
+            if (annotationNames.contains(annotation.annotationType().getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String annotationValue(AnnotatedElement element, List<String> annotationNames) {
+        for (Annotation annotation : element.getAnnotations()) {
+            if (!annotationNames.contains(annotation.annotationType().getName())) {
+                continue;
+            }
+
+            try {
+                Method valueMethod = annotation.annotationType().getMethod("value");
+                Object value = valueMethod.invoke(annotation);
+                return value instanceof String stringValue ? stringValue : null;
+            } catch (ReflectiveOperationException ignored) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    private static Class<?> resolveNamingStrategyClass(Class<?> declaringClass) {
+        for (Annotation annotation : declaringClass.getAnnotations()) {
+            if (!JSON_NAMING_ANNOTATIONS.contains(annotation.annotationType().getName())) {
+                continue;
+            }
+
+            try {
+                Method valueMethod = annotation.annotationType().getMethod("value");
+                Object value = valueMethod.invoke(annotation);
+                return value instanceof Class<?> strategyClass ? strategyClass : null;
+            } catch (ReflectiveOperationException ignored) {
+                return null;
+            }
+        }
+
+        return null;
     }
 
 }

@@ -10,7 +10,7 @@ import org.springframework.util.StringUtils;
 @Component
 public class RetreeverBasePathResolver {
 
-    static final String FORWARDED_PREFIX_HEADER = "X-Forwarded-Prefix";
+    public static final String FORWARDED_PREFIX_HEADER = "X-Forwarded-Prefix";
 
     private final RetreeverContextPathProperties properties;
     private final Environment environment;
@@ -20,29 +20,43 @@ public class RetreeverBasePathResolver {
         this.environment = environment;
     }
 
-    public String resolve(HttpServletRequest request) {
+    public String resolveContextPath(HttpServletRequest request) {
         if (StringUtils.hasText(properties.getContextPath())) {
-            return joinPathSegments(properties.getContextPath(), RetreeverAuthSupport.RETREEVER_BASE_PATH);
+            return normalizeContextPath(properties.getContextPath());
         }
 
-        return joinPathSegments(
+        return normalizeContextPath(joinPathSegments(
                 request.getHeader(FORWARDED_PREFIX_HEADER),
                 request.getContextPath(),
-                environment.getProperty("spring.mvc.servlet.path"),
-                RetreeverAuthSupport.RETREEVER_BASE_PATH
-        );
+                environment.getProperty("spring.mvc.servlet.path")
+        ));
+    }
+
+    public String resolve(HttpServletRequest request) {
+        return resolveRetreeverUiPath(request);
+    }
+
+    public String resolveContextPath(Environment environment) {
+        if (StringUtils.hasText(properties.getContextPath())) {
+            return normalizeContextPath(properties.getContextPath());
+        }
+
+        return normalizeContextPath(joinPathSegments(
+                environment.getProperty("server.servlet.context-path"),
+                environment.getProperty("spring.mvc.servlet.path")
+        ));
     }
 
     public String resolve(Environment environment) {
-        if (StringUtils.hasText(properties.getContextPath())) {
-            return joinPathSegments(properties.getContextPath(), RetreeverAuthSupport.RETREEVER_BASE_PATH);
-        }
+        return resolveRetreeverUiPath(environment);
+    }
 
-        return joinPathSegments(
-                environment.getProperty("server.servlet.context-path"),
-                environment.getProperty("spring.mvc.servlet.path"),
-                RetreeverAuthSupport.RETREEVER_BASE_PATH
-        );
+    public String resolveRetreeverUiPath(HttpServletRequest request) {
+        return joinPathSegments(resolveContextPath(request), RetreeverAuthSupport.RETREEVER_BASE_PATH);
+    }
+
+    public String resolveRetreeverUiPath(Environment environment) {
+        return joinPathSegments(resolveContextPath(environment), RetreeverAuthSupport.RETREEVER_BASE_PATH);
     }
 
     String resolveFilterBasePath() {
@@ -53,7 +67,7 @@ public class RetreeverBasePathResolver {
     }
 
     public String resolveCookiePath(HttpServletRequest request) {
-        return resolve(request);
+        return resolveRetreeverUiPath(request);
     }
 
     static String joinPathSegments(String... segments) {
@@ -88,5 +102,9 @@ public class RetreeverBasePathResolver {
         }
 
         return value.substring(start, end);
+    }
+
+    private static String normalizeContextPath(String path) {
+        return "/".equals(path) ? "" : path;
     }
 }

@@ -1,8 +1,9 @@
 package dev.retreever.auth;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.retreever.boot.RetreeverBasePathResolver;
+import dev.retreever.json.RetreeverJsonMapper;
+import dev.retreever.json.RetreeverJsonMappers;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,7 @@ public class RetreeverLoginGuardService {
     private static final Duration GUARD_COOKIE_TTL = Duration.ofDays(7);
     private static final String SAME_SITE_POLICY = "Lax";
 
-    private final ObjectMapper objectMapper;
+    private final RetreeverJsonMapper jsonMapper;
     private final SecureRandom secureRandom = new SecureRandom();
     private final SecretKeySpec secretKey;
     private final Clock clock;
@@ -48,22 +49,26 @@ public class RetreeverLoginGuardService {
     public RetreeverLoginGuardService(
             RetreeverAuthProperties properties,
             RetreeverAuthenticationService authenticationService,
-            ObjectMapper objectMapper,
+            RetreeverJsonMapper jsonMapper,
             RetreeverBasePathResolver basePathResolver) {
-        this(properties, authenticationService, objectMapper, Clock.systemUTC(), basePathResolver);
+        this(properties, authenticationService, jsonMapper, Clock.systemUTC(), basePathResolver);
     }
 
-    RetreeverLoginGuardService(RetreeverAuthProperties properties, ObjectMapper objectMapper, Clock clock) {
-        this(properties, new RetreeverAuthenticationService(properties, java.util.List.of()), objectMapper, clock, null);
+    RetreeverLoginGuardService(RetreeverAuthProperties properties, RetreeverJsonMapper jsonMapper, Clock clock) {
+        this(properties, new RetreeverAuthenticationService(properties, java.util.List.of()), jsonMapper, clock, null);
+    }
+
+    RetreeverLoginGuardService(RetreeverAuthProperties properties, Object mapper, Clock clock) {
+        this(properties, RetreeverJsonMappers.wrap(mapper), clock);
     }
 
     RetreeverLoginGuardService(
             RetreeverAuthProperties properties,
             RetreeverAuthenticationService authenticationService,
-            ObjectMapper objectMapper,
+            RetreeverJsonMapper jsonMapper,
             Clock clock,
             RetreeverBasePathResolver basePathResolver) {
-        this.objectMapper = objectMapper.copy().setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        this.jsonMapper = jsonMapper.copyWithNonNullInclusion();
         this.secretKey = authenticationService.isEnabled() ? new SecretKeySpec(resolveSecretKey(properties), "AES") : null;
         this.clock = clock;
         this.basePathResolver = basePathResolver;
@@ -136,7 +141,7 @@ public class RetreeverLoginGuardService {
             Cipher cipher = Cipher.getInstance(CIPHER_TRANSFORMATION);
             cipher.init(Cipher.DECRYPT_MODE, secretKey, new GCMParameterSpec(GCM_TAG_LENGTH_BITS, iv));
             byte[] jsonBytes = cipher.doFinal(encrypted);
-            LoginGuardState state = objectMapper.readValue(jsonBytes, LoginGuardState.class);
+            LoginGuardState state = jsonMapper.readValue(jsonBytes, LoginGuardState.class);
 
             if (state.version() != CURRENT_VERSION || !StringUtils.hasText(state.guardId())) {
                 return Optional.empty();
@@ -195,7 +200,7 @@ public class RetreeverLoginGuardService {
             Cipher cipher = Cipher.getInstance(CIPHER_TRANSFORMATION);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, new GCMParameterSpec(GCM_TAG_LENGTH_BITS, iv));
 
-            byte[] encrypted = cipher.doFinal(objectMapper.writeValueAsBytes(state));
+            byte[] encrypted = cipher.doFinal(jsonMapper.writeValueAsBytes(state));
 
             return Base64.getUrlEncoder().withoutPadding().encodeToString(iv)
                     + "."

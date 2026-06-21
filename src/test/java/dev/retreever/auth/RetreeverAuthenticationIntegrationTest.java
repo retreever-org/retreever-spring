@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.http.HttpHeaders;
@@ -45,6 +46,8 @@ class RetreeverAuthenticationIntegrationTest {
 
     @Test
     void uiRoutesRemainPublic() throws Exception {
+        assumePackagedUiPresent();
+
         mockMvc.perform(get("/retreever").accept(MediaType.TEXT_HTML))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
@@ -88,6 +91,8 @@ class RetreeverAuthenticationIntegrationTest {
 
     @Test
     void imageAssetsRemainPublic() throws Exception {
+        assumePackagedUiPresent();
+
         Assumptions.assumeTrue(
                 Thread.currentThread().getContextClassLoader()
                         .getResource("META-INF/retreever-ui/retreever/images/") != null,
@@ -110,6 +115,8 @@ class RetreeverAuthenticationIntegrationTest {
 
     @Test
     void iconAssetsRemainPublicAndCacheable() throws Exception {
+        assumePackagedUiPresent();
+
         Assumptions.assumeTrue(
                 Thread.currentThread().getContextClassLoader()
                         .getResource("META-INF/retreever-ui/retreever/assets/icons/") != null,
@@ -134,31 +141,37 @@ class RetreeverAuthenticationIntegrationTest {
 
     @Test
     void uiShellRewritesAssetUrlsForContextPathDeployments() throws Exception {
+        assumePackagedUiPresent();
+
         mockMvc.perform(get("/user-svc/retreever")
                         .contextPath("/user-svc")
                         .accept(MediaType.TEXT_HTML))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("/user-svc/retreever/assets/")))
-                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("src=\"/retreever/assets/"))));
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("src=\"/retreever/assets/"))))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("window.__RETREEVER_CONTEXT_PATH__ = \"/user-svc\"")));
     }
 
     @Test
-    void javascriptAssetRewritesApiUrlsForContextPathDeployments() throws Exception {
+    void javascriptAssetRemainsCacheableForContextPathDeployments() throws Exception {
+        assumePackagedUiPresent();
+
         String jsAssetName = packagedAssetName("classpath:/META-INF/retreever-ui/retreever/assets/*.js");
 
         mockMvc.perform(get("/user-svc/retreever/assets/" + jsAssetName)
                         .contextPath("/user-svc")
                         .accept(MediaType.valueOf("application/javascript")))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.valueOf("application/javascript")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("/user-svc/retreever/doc")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("/user-svc/retreever/login")))
-                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("\"/retreever/doc\""))));
+                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, org.hamcrest.Matchers.containsString("javascript")))
+                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, org.hamcrest.Matchers.containsString("max-age=")))
+                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, org.hamcrest.Matchers.containsString("immutable")));
     }
 
     @Test
     void staticAssetsRemainReachableWithContextPath() throws Exception {
+        assumePackagedUiPresent();
+
         String cssAssetName = packagedAssetName("classpath:/META-INF/retreever-ui/retreever/assets/*.css");
 
         mockMvc.perform(get("/user-svc/retreever/assets/" + cssAssetName)
@@ -188,11 +201,15 @@ class RetreeverAuthenticationIntegrationTest {
 
     @Test
     void uiShellRewritesAssetUrlsForForwardedPrefixDeployments() throws Exception {
+        assumePackagedUiPresent();
+
         mockMvc.perform(get("/retreever")
                         .header("X-Forwarded-Prefix", "/dist-prod")
                         .accept(MediaType.TEXT_HTML))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("/dist-prod/retreever/assets/")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/dist-prod/retreever/assets/")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("window.__RETREEVER_CONTEXT_PATH__ = \"/dist-prod\"")))
+                .andExpect(header().string(HttpHeaders.VARY, org.hamcrest.Matchers.containsString("X-Forwarded-Prefix")));
     }
 
     @Test
@@ -455,6 +472,8 @@ class RetreeverAuthenticationIntegrationTest {
     }
 
     private String packagedAssetName(String resourcePattern) throws Exception {
+        assumePackagedUiPresent();
+
         Resource[] resources = new PathMatchingResourcePatternResolver()
                 .getResources(resourcePattern);
 
@@ -463,6 +482,13 @@ class RetreeverAuthenticationIntegrationTest {
         String fileName = resources[0].getFilename();
         Assumptions.assumeTrue(fileName != null && !fileName.isBlank(), "Packaged asset must have a filename");
         return fileName;
+    }
+
+    private void assumePackagedUiPresent() {
+        Assumptions.assumeTrue(
+                new ClassPathResource("META-INF/retreever-ui/retreever/index.html").exists(),
+                "Packaged Retreever UI is not available in this test run"
+        );
     }
 
     private record AuthCookies(

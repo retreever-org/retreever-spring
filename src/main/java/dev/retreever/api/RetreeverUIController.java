@@ -10,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.util.StreamUtils;
 
 import java.io.IOException;
@@ -20,7 +19,12 @@ import java.nio.charset.StandardCharsets;
 public class RetreeverUIController {
 
     private static final String RETREEVER_INDEX_LOCATION = "META-INF/retreever-ui/retreever/index.html";
-    private static final String RETREEVER_ASSET_LOCATION = "META-INF/retreever-ui/retreever/assets/";
+    private static final String ROOT_DIV_MARKER = "<div id=\"root\"></div>";
+    private static final String CONTEXT_PATH_BOOTSTRAP_TEMPLATE = """
+            <script>
+              window.__RETREEVER_CONTEXT_PATH__ = "%s";
+            </script>
+            """;
 
     private final RetreeverBasePathResolver basePathResolver;
 
@@ -37,41 +41,27 @@ public class RetreeverUIController {
             RetreeverAuthSupport.RETREEVER_BASE_PATH + "/device-requirements"
     })
     public ResponseEntity<String> appShell(HttpServletRequest request) throws IOException {
-        return transformedTextResource(
-                new ClassPathResource(RETREEVER_INDEX_LOCATION),
-                request,
-                MediaType.TEXT_HTML
-        );
-    }
-
-    @GetMapping(
-            path = RetreeverAuthSupport.RETREEVER_BASE_PATH + "/assets/{fileName:.+\\.js}",
-            produces = "application/javascript"
-    )
-    public ResponseEntity<String> javascriptAsset(
-            @PathVariable("fileName") String fileName,
-            HttpServletRequest request) throws IOException {
-        return transformedTextResource(
-                new ClassPathResource(RETREEVER_ASSET_LOCATION + fileName),
-                request,
-                MediaType.valueOf("application/javascript")
-        );
-    }
-
-    private ResponseEntity<String> transformedTextResource(
-            Resource resource,
-            HttpServletRequest request,
-            MediaType mediaType) throws IOException {
+        Resource resource = new ClassPathResource(RETREEVER_INDEX_LOCATION);
         if (!resource.exists()) {
             return ResponseEntity.notFound().build();
         }
 
+        String uiPath = basePathResolver.resolveRetreeverUiPath(request);
+        String contextPath = escapeForJavaScript(basePathResolver.resolveContextPath(request));
         String content = StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8)
-                .replace(RetreeverAuthSupport.RETREEVER_BASE_PATH, basePathResolver.resolve(request));
+                .replace(RetreeverAuthSupport.RETREEVER_BASE_PATH, uiPath)
+                .replace(ROOT_DIV_MARKER, ROOT_DIV_MARKER + "\n" + CONTEXT_PATH_BOOTSTRAP_TEMPLATE.formatted(contextPath));
 
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noCache())
-                .contentType(mediaType)
+                .header("Vary", RetreeverBasePathResolver.FORWARDED_PREFIX_HEADER)
+                .contentType(MediaType.TEXT_HTML)
                 .body(content);
+    }
+
+    private String escapeForJavaScript(String value) {
+        return value
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"");
     }
 }

@@ -1,9 +1,10 @@
 package dev.retreever.boot;
 
-import org.springframework.boot.web.context.WebServerApplicationContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
+
+import java.lang.reflect.Method;
 
 /**
  * Resolves the most useful location to show in startup logs for the Retreever UI.
@@ -18,13 +19,7 @@ final class RetreeverUiLocationResolver {
     }
 
     String resolve(ApplicationContext context) {
-        Integer port = null;
-
-        if (context instanceof WebServerApplicationContext webContext && webContext.getWebServer() != null) {
-            port = webContext.getWebServer().getPort();
-        }
-
-        return resolve(context.getEnvironment(), port);
+        return resolve(context.getEnvironment(), resolveWebServerPort(context));
     }
 
     String resolve(Environment environment, Integer port) {
@@ -67,6 +62,22 @@ final class RetreeverUiLocationResolver {
         }
 
         return host;
+    }
+
+    private Integer resolveWebServerPort(ApplicationContext context) {
+        try {
+            Method getWebServer = context.getClass().getMethod("getWebServer");
+            Object webServer = getWebServer.invoke(context);
+            if (webServer == null) {
+                return null;
+            }
+
+            Method getPort = webServer.getClass().getMethod("getPort");
+            Object port = getPort.invoke(webServer);
+            return port instanceof Integer value ? value : null;
+        } catch (ReflectiveOperationException ex) {
+            return null;
+        }
     }
 
 }

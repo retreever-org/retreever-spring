@@ -1,7 +1,8 @@
 package dev.retreever.auth;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.retreever.json.RetreeverJsonMapper;
+import dev.retreever.json.RetreeverJsonMappers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,7 @@ public class RetreeverTokenService {
 
     private final RetreeverAuthProperties properties;
     private final RetreeverAuthenticationService authenticationService;
-    private final ObjectMapper objectMapper;
+    private final RetreeverJsonMapper jsonMapper;
     private final SecureRandom secureRandom = new SecureRandom();
     private final SecretKeySpec secretKey;
 
@@ -39,15 +40,19 @@ public class RetreeverTokenService {
     public RetreeverTokenService(
             RetreeverAuthProperties properties,
             RetreeverAuthenticationService authenticationService,
-            ObjectMapper objectMapper) {
+            RetreeverJsonMapper jsonMapper) {
         this.properties = properties;
         this.authenticationService = authenticationService;
-        this.objectMapper = objectMapper.copy().setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        this.jsonMapper = jsonMapper.copyWithNonNullInclusion();
         this.secretKey = authenticationService.isEnabled() ? new SecretKeySpec(resolveSecretKey(properties), "AES") : null;
     }
 
-    RetreeverTokenService(RetreeverAuthProperties properties, ObjectMapper objectMapper) {
-        this(properties, new RetreeverAuthenticationService(properties, java.util.List.of()), objectMapper);
+    RetreeverTokenService(RetreeverAuthProperties properties, RetreeverJsonMapper jsonMapper) {
+        this(properties, new RetreeverAuthenticationService(properties, java.util.List.of()), jsonMapper);
+    }
+
+    RetreeverTokenService(RetreeverAuthProperties properties, Object mapper) {
+        this(properties, RetreeverJsonMappers.wrap(mapper));
     }
 
     public Optional<TokenPair> login(String username, String password) {
@@ -144,7 +149,7 @@ public class RetreeverTokenService {
             Cipher cipher = Cipher.getInstance(CIPHER_TRANSFORMATION);
             cipher.init(Cipher.DECRYPT_MODE, secretKey, new GCMParameterSpec(GCM_TAG_LENGTH_BITS, iv));
             byte[] jsonBytes = cipher.doFinal(encrypted);
-            TokenPayload payload = objectMapper.readValue(jsonBytes, TokenPayload.class);
+            TokenPayload payload = jsonMapper.readValue(jsonBytes, TokenPayload.class);
 
             if (payload.version() != 1 || payload.type() != expectedType || !payload.expiresAt().isAfter(Instant.now())) {
                 return Optional.empty();
@@ -168,7 +173,7 @@ public class RetreeverTokenService {
             Cipher cipher = Cipher.getInstance(CIPHER_TRANSFORMATION);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, new GCMParameterSpec(GCM_TAG_LENGTH_BITS, iv));
 
-            byte[] encrypted = cipher.doFinal(objectMapper.writeValueAsBytes(payload));
+            byte[] encrypted = cipher.doFinal(jsonMapper.writeValueAsBytes(payload));
 
             return Base64.getUrlEncoder().withoutPadding().encodeToString(iv)
                     + "."
