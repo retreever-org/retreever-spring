@@ -133,14 +133,41 @@ public class EndpointPathAndMethodResolver {
         if (base == null) base = "";
         if (sub == null) sub = "";
 
-        // ensure leading slash
+        if (!StringUtils.hasText(base) && !StringUtils.hasText(sub)) {
+            return "/";
+        }
+
+        if (!StringUtils.hasText(sub)) {
+            return normalizeSinglePath(base);
+        }
+
+        if (!StringUtils.hasText(base)) {
+            return normalizeSinglePath(sub);
+        }
+
         if (!base.startsWith("/")) base = "/" + base;
+        if (base.endsWith("/")) base = base.replaceAll("/+$", "");
         if (!sub.startsWith("/")) sub = "/" + sub;
 
-        String combined = base + sub;
+        return (base + sub).replaceAll("//+", "/");
+    }
 
-        // collapse "///" into "/"
-        return combined.replaceAll("//+", "/");
+    private static String normalizeSinglePath(String path) {
+        if (path == null || !StringUtils.hasText(path)) {
+            return "/";
+        }
+
+        String normalized = path.trim();
+        if (!normalized.startsWith("/")) {
+            normalized = "/" + normalized;
+        }
+        normalized = normalized.replaceAll("//+", "/");
+
+        if (normalized.length() > 1) {
+            normalized = normalized.replaceAll("/+$", "");
+        }
+
+        return normalized;
     }
 
     private static String firstMappingPath(String[] valuePaths, String[] pathPaths) {

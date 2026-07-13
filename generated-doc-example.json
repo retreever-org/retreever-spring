@@ -1,0 +1,4926 @@
+{
+  "name": "E-Commerce API",
+  "description": "A Demo Application to demonstrate the working of Retreever",
+  "version": "v1",
+  "uri_prefix": null,
+  "retreever_auth_enabled": false,
+  "studio_storage": "indexed-db",
+  "up_time": "2026-06-30T16:08:51.461986160Z",
+  "groups": [
+    {
+      "name": "Category Thumbnail APIs",
+      "description": "",
+      "deprecated": false,
+      "endpoints": [
+        {
+          "name": "Presign Thumbnail Upload",
+          "deprecated": true,
+          "description": null,
+          "secured": true,
+          "method": "POST",
+          "path": "/api/v1/categories/thumbnail/presign-upload",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": {
+            "model": {
+              "content_type": "string"
+            },
+            "example_model": {
+              "content_type": "hello"
+            },
+            "metadata": {
+              "content_type": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              }
+            }
+          },
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": {
+                "object_key": "string",
+                "url": "string",
+                "upload_window": 0
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": {
+                "object_key": "hello",
+                "url": "hello",
+                "upload_window": 0
+              }
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Confirm Thumbnail Upload",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "POST",
+          "path": "/api/v1/categories/{categoryId}/thumbnail/confirm-upload",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "categoryId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [
+            {
+              "name": "objectKey",
+              "description": null,
+              "type": "string",
+              "required": true,
+              "default_value": null,
+              "constraints": []
+            }
+          ],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "additional_info": "string"
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "additional_info": "hello"
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Download Thumbnail",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/categories/thumbnail",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [
+            {
+              "name": "id",
+              "description": null,
+              "type": "number",
+              "required": true,
+              "default_value": null,
+              "constraints": []
+            }
+          ],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "name": "Order APIs",
+      "description": "",
+      "deprecated": false,
+      "endpoints": [
+        {
+          "name": "Get Order",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "GET",
+          "path": "/api/v1/orders/{orderId}",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "orderId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": {
+                "order_id": "550e8400-e29b-41d4-a716-446655440000",
+                "order_date": "2025-01-29T10:15:30Z",
+                "total_amount": 0,
+                "order_status": "VALUE",
+                "payment_status": "VALUE",
+                "items": [
+                  {
+                    "item_id": "550e8400-e29b-41d4-a716-446655440000",
+                    "quantity": 0,
+                    "product_snapshot": {
+                      "product_id": "550e8400-e29b-41d4-a716-446655440000",
+                      "variant_id": "550e8400-e29b-41d4-a716-446655440000",
+                      "product_title": "string",
+                      "variant_title": "string",
+                      "price_per_unit": 0,
+                      "thumbnail": "string"
+                    },
+                    "seller_info": {
+                      "store_id": "550e8400-e29b-41d4-a716-446655440000",
+                      "name": "string",
+                      "location": "string",
+                      "contact_number": "string",
+                      "contact_email": "string",
+                      "owner_id": "550e8400-e29b-41d4-a716-446655440000"
+                    }
+                  }
+                ]
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": {
+                "order_id": "550e8400-e29b-41d4-a716-446655440000",
+                "order_date": "2025-01-29T10:15:30Z",
+                "total_amount": 0,
+                "order_status": "VALUE",
+                "payment_status": "VALUE",
+                "items": [
+                  {
+                    "item_id": "550e8400-e29b-41d4-a716-446655440000",
+                    "quantity": 0,
+                    "product_snapshot": {
+                      "product_id": "550e8400-e29b-41d4-a716-446655440000",
+                      "variant_id": "550e8400-e29b-41d4-a716-446655440000",
+                      "product_title": "hello",
+                      "variant_title": "hello",
+                      "price_per_unit": 0,
+                      "thumbnail": "hello"
+                    },
+                    "seller_info": {
+                      "store_id": "550e8400-e29b-41d4-a716-446655440000",
+                      "name": "hello",
+                      "location": "hello",
+                      "contact_number": "hello",
+                      "contact_email": "hello",
+                      "owner_id": "550e8400-e29b-41d4-a716-446655440000"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Ship Order",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "POST",
+          "path": "/api/v1/orders/{orderId}/ship",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "orderId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "additional_info": "string"
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "additional_info": "hello"
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Create Order",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "POST",
+          "path": "/api/v1/carts/{cartId}/orders",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "cartId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": {
+            "model": {
+              "shipping_address": "string"
+            },
+            "example_model": {
+              "shipping_address": "hello"
+            },
+            "metadata": {
+              "shipping_address": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              }
+            }
+          },
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "additional_info": "string"
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "additional_info": "hello"
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Confirm Order",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "POST",
+          "path": "/api/v1/orders/{orderId}/confirm",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "orderId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "additional_info": "string"
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "additional_info": "hello"
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Complete Order Delivery",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "POST",
+          "path": "/api/v1/orders/{orderId}/complete",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "orderId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "additional_info": "string"
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "additional_info": "hello"
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Cancel Order",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "DELETE",
+          "path": "/api/v1/orders/{orderId}/cancel",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "orderId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "additional_info": "string"
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "additional_info": "hello"
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Get Orders For Seller",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "GET",
+          "path": "/api/v1/orders/seller/{storeId}",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "storeId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [
+            {
+              "name": "page",
+              "description": null,
+              "type": "number",
+              "required": true,
+              "default_value": "0",
+              "constraints": []
+            },
+            {
+              "name": "size",
+              "description": null,
+              "type": "number",
+              "required": true,
+              "default_value": "20",
+              "constraints": []
+            }
+          ],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "page": {
+                "page": 0,
+                "size": 0,
+                "total_elements": 0,
+                "total_pages": 0,
+                "content": [
+                  {
+                    "item_id": "550e8400-e29b-41d4-a716-446655440000",
+                    "quantity": 0,
+                    "created_date": "2025-01-29T10:15:30Z",
+                    "product_snapshot": {
+                      "product_id": "550e8400-e29b-41d4-a716-446655440000",
+                      "variant_id": "550e8400-e29b-41d4-a716-446655440000",
+                      "product_title": "string",
+                      "variant_title": "string",
+                      "price_per_unit": 0,
+                      "thumbnail": "string"
+                    },
+                    "user_info": {
+                      "user_id": "550e8400-e29b-41d4-a716-446655440000",
+                      "first_name": "string",
+                      "last_name": "string",
+                      "email": "string"
+                    }
+                  }
+                ]
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "page": {
+                "page": 0,
+                "size": 0,
+                "total_elements": 0,
+                "total_pages": 0,
+                "content": [
+                  {
+                    "item_id": "550e8400-e29b-41d4-a716-446655440000",
+                    "quantity": 0,
+                    "created_date": "2025-01-29T10:15:30Z",
+                    "product_snapshot": {
+                      "product_id": "550e8400-e29b-41d4-a716-446655440000",
+                      "variant_id": "550e8400-e29b-41d4-a716-446655440000",
+                      "product_title": "hello",
+                      "variant_title": "hello",
+                      "price_per_unit": 0,
+                      "thumbnail": "hello"
+                    },
+                    "user_info": {
+                      "user_id": "550e8400-e29b-41d4-a716-446655440000",
+                      "first_name": "hello",
+                      "last_name": "hello",
+                      "email": "hello"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Get My Orders",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "GET",
+          "path": "/api/v1/orders",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [
+            {
+              "name": "page",
+              "description": null,
+              "type": "number",
+              "required": true,
+              "default_value": "0",
+              "constraints": []
+            },
+            {
+              "name": "size",
+              "description": null,
+              "type": "number",
+              "required": true,
+              "default_value": "20",
+              "constraints": []
+            }
+          ],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "page": {
+                "page": 0,
+                "size": 0,
+                "total_elements": 0,
+                "total_pages": 0,
+                "content": [
+                  {
+                    "order_id": "550e8400-e29b-41d4-a716-446655440000",
+                    "order_date": "2025-01-29T10:15:30Z",
+                    "total_amount": 0,
+                    "order_status": "VALUE",
+                    "payment_status": "VALUE",
+                    "items": [
+                      {
+                        "item_id": "550e8400-e29b-41d4-a716-446655440000",
+                        "quantity": 0,
+                        "product_snapshot": {
+                          "product_id": "550e8400-e29b-41d4-a716-446655440000",
+                          "variant_id": "550e8400-e29b-41d4-a716-446655440000",
+                          "product_title": "string",
+                          "variant_title": "string",
+                          "price_per_unit": 0,
+                          "thumbnail": "string"
+                        },
+                        "seller_info": {
+                          "store_id": "550e8400-e29b-41d4-a716-446655440000",
+                          "name": "string",
+                          "location": "string",
+                          "contact_number": "string",
+                          "contact_email": "string",
+                          "owner_id": "550e8400-e29b-41d4-a716-446655440000"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "page": {
+                "page": 0,
+                "size": 0,
+                "total_elements": 0,
+                "total_pages": 0,
+                "content": [
+                  {
+                    "order_id": "550e8400-e29b-41d4-a716-446655440000",
+                    "order_date": "2025-01-29T10:15:30Z",
+                    "total_amount": 0,
+                    "order_status": "VALUE",
+                    "payment_status": "VALUE",
+                    "items": [
+                      {
+                        "item_id": "550e8400-e29b-41d4-a716-446655440000",
+                        "quantity": 0,
+                        "product_snapshot": {
+                          "product_id": "550e8400-e29b-41d4-a716-446655440000",
+                          "variant_id": "550e8400-e29b-41d4-a716-446655440000",
+                          "product_title": "hello",
+                          "variant_title": "hello",
+                          "price_per_unit": 0,
+                          "thumbnail": "hello"
+                        },
+                        "seller_info": {
+                          "store_id": "550e8400-e29b-41d4-a716-446655440000",
+                          "name": "hello",
+                          "location": "hello",
+                          "contact_number": "hello",
+                          "contact_email": "hello",
+                          "owner_id": "550e8400-e29b-41d4-a716-446655440000"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "errors": []
+        }
+      ]
+    },
+    {
+      "name": "Auth APIs",
+      "description": "",
+      "deprecated": false,
+      "endpoints": [
+        {
+          "name": "Refresh Login",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "POST",
+          "path": "/api/v1/public/login/refresh",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": {
+            "model": {
+              "refresh_token": "string"
+            },
+            "example_model": {
+              "refresh_token": "hello"
+            },
+            "metadata": {
+              "refresh_token": {
+                "description": "Refresh Token",
+                "required": true,
+                "constraints": [
+                  "REGEX:^[A-Za-z0-9_-]+\\.([A-Za-z0-9_-]+)\\.[A-Za-z0-9_-]+$",
+                  "NOT_BLANK",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": {
+                "access_token": "string",
+                "access_expires_in": 0,
+                "refresh_token": "string",
+                "refresh_expires_in": 0,
+                "token_type": "string"
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": {
+                "access_token": "hello",
+                "access_expires_in": 0,
+                "refresh_token": "hello",
+                "refresh_expires_in": 0,
+                "token_type": "hello"
+              }
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Logout User",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "POST",
+          "path": "/api/v1/public/logout",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [
+            {
+              "name": "Authorization",
+              "type": "string",
+              "required": false,
+              "description": null
+            }
+          ],
+          "request": {
+            "model": {
+              "access_token": "string",
+              "refresh_token": "string"
+            },
+            "example_model": {
+              "access_token": "hello",
+              "refresh_token": "hello"
+            },
+            "metadata": {
+              "access_token": {
+                "description": "Access Token (optional)",
+                "required": false,
+                "constraints": [
+                  "REGEX:^[A-Za-z0-9_-]+\\.([A-Za-z0-9_-]+)\\.[A-Za-z0-9_-]+$"
+                ]
+              },
+              "refresh_token": {
+                "description": "Refresh Token",
+                "required": true,
+                "constraints": [
+                  "REGEX:^[A-Za-z0-9_-]+\\.([A-Za-z0-9_-]+)\\.[A-Za-z0-9_-]+$",
+                  "NOT_BLANK",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "additional_info": "string"
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "additional_info": "hello"
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Get User Roles",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "GET",
+          "path": "/api/v1/users/roles",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": [
+                "string"
+              ]
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": [
+                "hello"
+              ]
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Login User",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "POST",
+          "path": "/api/v1/public/login",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [
+            "application/x-www-form-urlencoded"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": {
+            "model": {
+              "email": "string",
+              "password": "string"
+            },
+            "example_model": {
+              "email": "hello",
+              "password": "hello"
+            },
+            "metadata": {
+              "email": {
+                "description": "",
+                "required": true,
+                "constraints": [
+                  "NOT_BLANK"
+                ]
+              },
+              "password": {
+                "description": "",
+                "required": true,
+                "constraints": [
+                  "NOT_BLANK",
+                  "MIN_LENGTH:8"
+                ]
+              }
+            }
+          },
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": {
+                "access_token": "string",
+                "access_expires_in": 0,
+                "refresh_token": "string",
+                "refresh_expires_in": 0,
+                "token_type": "string"
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": {
+                "access_token": "hello",
+                "access_expires_in": 0,
+                "refresh_token": "hello",
+                "refresh_expires_in": 0,
+                "token_type": "hello"
+              }
+            }
+          },
+          "errors": []
+        }
+      ]
+    },
+    {
+      "name": "Product Gallery APIs",
+      "description": "",
+      "deprecated": false,
+      "endpoints": [
+        {
+          "name": "Presign Image Uploads",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "POST",
+          "path": "/api/v1/products/variants/{variantId}/images/presign",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "variantId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [
+            {
+              "name": "upload_count",
+              "description": null,
+              "type": "number",
+              "required": true,
+              "default_value": null,
+              "constraints": []
+            }
+          ],
+          "headers": [],
+          "request": {
+            "model": {
+              "content_type": "string"
+            },
+            "example_model": {
+              "content_type": "hello"
+            },
+            "metadata": {
+              "content_type": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              }
+            }
+          },
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": [
+                {
+                  "object_key": "string",
+                  "url": "string",
+                  "upload_window": 0
+                }
+              ]
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": [
+                {
+                  "object_key": "hello",
+                  "url": "hello",
+                  "upload_window": 0
+                }
+              ]
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Confirm Image Uploads",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "POST",
+          "path": "/api/v1/products/variants/{variantId}/images/confirm-upload",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "variantId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [
+            {
+              "name": "objectKeys",
+              "description": null,
+              "type": "array",
+              "required": true,
+              "default_value": null,
+              "constraints": []
+            }
+          ],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "additional_info": "string"
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "additional_info": "hello"
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Get Image Uploads",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/products/variants/images/{imageId}",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "imageId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        },
+        {
+          "name": "Delete Image Uploads",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "DELETE",
+          "path": "/api/v1/variants/images/{imageId}",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "imageId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "additional_info": "string"
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "additional_info": "hello"
+            }
+          },
+          "errors": []
+        }
+      ]
+    },
+    {
+      "name": "Category APIs",
+      "description": "",
+      "deprecated": false,
+      "endpoints": [
+        {
+          "name": "Create Category",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "POST",
+          "path": "/api/v1/categories",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [
+            {
+              "name": "parentId",
+              "description": null,
+              "type": "number",
+              "required": false,
+              "default_value": null,
+              "constraints": []
+            }
+          ],
+          "headers": [],
+          "request": {
+            "model": {
+              "name": "string"
+            },
+            "example_model": {
+              "name": "hello"
+            },
+            "metadata": {
+              "name": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              }
+            }
+          },
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "additional_info": "string"
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "additional_info": "hello"
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Get Category",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "GET",
+          "path": "/api/v1/categories/{categoryId}",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "categoryId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": {
+                "category_id": "550e8400-e29b-41d4-a716-446655440000",
+                "name": "string",
+                "status": "VALUE",
+                "category_level": 0,
+                "thumbnail": "string"
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": {
+                "category_id": "550e8400-e29b-41d4-a716-446655440000",
+                "name": "hello",
+                "status": "VALUE",
+                "category_level": 0,
+                "thumbnail": "hello"
+              }
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Get Category Catalogue",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/categories",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": [
+                {
+                  "category_id": "550e8400-e29b-41d4-a716-446655440000",
+                  "name": "string",
+                  "status": "VALUE",
+                  "category_level": 0,
+                  "thumbnail": "string",
+                  "child_category": [
+                    {}
+                  ]
+                }
+              ]
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": [
+                {
+                  "category_id": "550e8400-e29b-41d4-a716-446655440000",
+                  "name": "hello",
+                  "status": "VALUE",
+                  "category_level": 0,
+                  "thumbnail": "hello",
+                  "child_category": [
+                    {}
+                  ]
+                }
+              ]
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Get Categories Of All Status",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "GET",
+          "path": "/api/v1/categories",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": [
+                {
+                  "category_id": "550e8400-e29b-41d4-a716-446655440000",
+                  "name": "string",
+                  "status": "VALUE",
+                  "category_level": 0,
+                  "thumbnail": "string",
+                  "child_category": [
+                    {}
+                  ]
+                }
+              ]
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": [
+                {
+                  "category_id": "550e8400-e29b-41d4-a716-446655440000",
+                  "name": "hello",
+                  "status": "VALUE",
+                  "category_level": 0,
+                  "thumbnail": "hello",
+                  "child_category": [
+                    {}
+                  ]
+                }
+              ]
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Update Category",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "PUT",
+          "path": "/api/v1/categories/{categoryId}",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "categoryId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": {
+            "model": {
+              "name": "string",
+              "status": "VALUE"
+            },
+            "example_model": {
+              "name": "hello",
+              "status": "VALUE"
+            },
+            "metadata": {
+              "name": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              },
+              "status": {
+                "description": "",
+                "required": false,
+                "constraints": [
+                  "ALLOWED_VALUES:[DRAFT, ACTIVE, ARCHIVE]"
+                ]
+              }
+            }
+          },
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": {
+                "category_id": "550e8400-e29b-41d4-a716-446655440000",
+                "name": "string",
+                "status": "VALUE",
+                "category_level": 0,
+                "thumbnail": "string"
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": {
+                "category_id": "550e8400-e29b-41d4-a716-446655440000",
+                "name": "hello",
+                "status": "VALUE",
+                "category_level": 0,
+                "thumbnail": "hello"
+              }
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Update Category Status",
+          "deprecated": true,
+          "description": null,
+          "secured": true,
+          "method": "PATCH",
+          "path": "/api/v1/categories/{categoryId}/status",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "categoryId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [
+            {
+              "name": "value",
+              "description": null,
+              "type": "enum",
+              "required": true,
+              "default_value": null,
+              "constraints": []
+            }
+          ],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": {
+                "category_id": "550e8400-e29b-41d4-a716-446655440000",
+                "name": "string",
+                "status": "VALUE",
+                "category_level": 0,
+                "thumbnail": "string"
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": {
+                "category_id": "550e8400-e29b-41d4-a716-446655440000",
+                "name": "hello",
+                "status": "VALUE",
+                "category_level": 0,
+                "thumbnail": "hello"
+              }
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Update Category Parent",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "PATCH",
+          "path": "/api/v1/categories/{categoryId}/parent",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "categoryId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [
+            {
+              "name": "parent_id",
+              "description": null,
+              "type": "number",
+              "required": true,
+              "default_value": null,
+              "constraints": []
+            }
+          ],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": {
+                "category_id": "550e8400-e29b-41d4-a716-446655440000",
+                "name": "string",
+                "status": "VALUE",
+                "category_level": 0,
+                "thumbnail": "string"
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": {
+                "category_id": "550e8400-e29b-41d4-a716-446655440000",
+                "name": "hello",
+                "status": "VALUE",
+                "category_level": 0,
+                "thumbnail": "hello"
+              }
+            }
+          },
+          "errors": []
+        }
+      ]
+    },
+    {
+      "name": "Test APIs",
+      "description": "",
+      "deprecated": false,
+      "endpoints": [
+        {
+          "name": "Test404",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/test/404",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "name": "Product Variant APIs",
+      "description": "APIs for managing product variants",
+      "deprecated": false,
+      "endpoints": [
+        {
+          "name": "Get Product Variant",
+          "deprecated": false,
+          "description": "Get a product variant by its ID",
+          "secured": true,
+          "method": "GET",
+          "path": "/api/v1/variants/{variantId}",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "variantId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": {
+                "variant_id": "550e8400-e29b-41d4-a716-446655440000",
+                "title": "string",
+                "price": 0,
+                "quantity": 0,
+                "description": "string",
+                "created_date": "2025-01-29T10:15:30Z",
+                "last_modified_date": "2025-01-29T10:15:30Z",
+                "attributes": {
+                  "string": "string"
+                },
+                "image_uris": [
+                  "string"
+                ],
+                "is_active": false,
+                "is_deleted": false
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": {
+                "variant_id": "78e3c4a1-0f2b-4d9e-8c7a-51f6920d3b4f",
+                "title": "Blue T-Shirt - Large",
+                "price": 19.99,
+                "quantity": 150.0,
+                "description": "A comfortable cotton t-shirt in deep blue.",
+                "created_date": "2023-10-27T10:00:00Z",
+                "last_modified_date": "2023-10-27T10:30:00Z",
+                "attributes": {
+                  "string": "hello"
+                },
+                "image_uris": [
+                  "hello"
+                ],
+                "is_active": true,
+                "is_deleted": false
+              }
+            }
+          },
+          "errors": [
+            {
+              "status": "Not Found",
+              "status_code": 404,
+              "description": "Product Variant Not Found",
+              "error_code": null,
+              "response": {
+                "model": {
+                  "success": false,
+                  "message": "string",
+                  "cause": "string"
+                },
+                "example_model": {
+                  "success": false,
+                  "message": "hello",
+                  "cause": "hello"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Product Variant",
+          "deprecated": false,
+          "description": "Create a new product variant",
+          "secured": true,
+          "method": "POST",
+          "path": "/api/v1/products/{productId}/variants",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "productId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": "ID/Primary Key of the product to which the variant should belong."
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": {
+            "model": {
+              "title": "string",
+              "price": 0,
+              "quantity": 0,
+              "description": "string",
+              "attributes": {
+                "string": "string"
+              }
+            },
+            "example_model": {
+              "title": "Red Mug - Ceramic",
+              "price": 12.5,
+              "quantity": 50.0,
+              "description": "This mug is made of high-quality ceramic, perfect for coffee.",
+              "attributes": {
+                "string": "hello"
+              }
+            },
+            "metadata": {
+              "title": {
+                "description": "User-friendly name of the product variant. Required.",
+                "required": true,
+                "constraints": [
+                  "MIN_LENGTH:1",
+                  "NOT_BLANK",
+                  "MAX_LENGTH:255"
+                ]
+              },
+              "price": {
+                "description": "The selling price of the variant. Must be greater than 0.",
+                "required": true,
+                "constraints": [
+                  "NOT_NULL"
+                ]
+              },
+              "quantity": {
+                "description": "Current stock quantity to be set for this variant. Must be non-negative.",
+                "required": true,
+                "constraints": [
+                  "MIN_VALUE:0.0",
+                  "NOT_NULL"
+                ]
+              },
+              "description": {
+                "description": "Detailed description of the product variant. Optional, max 2000 characters.",
+                "required": false,
+                "constraints": [
+                  "MAX_LENGTH:2000"
+                ]
+              },
+              "attributes": {
+                "description": "Key-value pair map of variant characteristics like color, size, etc. Required.",
+                "required": true,
+                "constraints": [
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": {
+                "variant_id": "550e8400-e29b-41d4-a716-446655440000",
+                "title": "string",
+                "price": 0,
+                "quantity": 0,
+                "description": "string",
+                "created_date": "2025-01-29T10:15:30Z",
+                "last_modified_date": "2025-01-29T10:15:30Z",
+                "attributes": {
+                  "string": "string"
+                },
+                "image_uris": [
+                  "string"
+                ],
+                "is_active": false,
+                "is_deleted": false
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": {
+                "variant_id": "78e3c4a1-0f2b-4d9e-8c7a-51f6920d3b4f",
+                "title": "Blue T-Shirt - Large",
+                "price": 19.99,
+                "quantity": 150.0,
+                "description": "A comfortable cotton t-shirt in deep blue.",
+                "created_date": "2023-10-27T10:00:00Z",
+                "last_modified_date": "2023-10-27T10:30:00Z",
+                "attributes": {
+                  "string": "hello"
+                },
+                "image_uris": [
+                  "hello"
+                ],
+                "is_active": true,
+                "is_deleted": false
+              }
+            }
+          },
+          "errors": [
+            {
+              "status": "Forbidden",
+              "status_code": 403,
+              "description": "Access Denied",
+              "error_code": null,
+              "response": {
+                "model": {
+                  "success": false,
+                  "message": "string",
+                  "cause": "string"
+                },
+                "example_model": {
+                  "success": false,
+                  "message": "hello",
+                  "cause": "hello"
+                }
+              }
+            },
+            {
+              "status": "Not Found",
+              "status_code": 404,
+              "description": "Product Not Found",
+              "error_code": null,
+              "response": {
+                "model": {
+                  "success": false,
+                  "message": "string",
+                  "cause": "string"
+                },
+                "example_model": {
+                  "success": false,
+                  "message": "hello",
+                  "cause": "hello"
+                }
+              }
+            },
+            {
+              "status": "Bad Request",
+              "status_code": 400,
+              "description": "Request Validation Failed",
+              "error_code": null,
+              "response": {
+                "model": {
+                  "success": false,
+                  "message": "string",
+                  "errors": [
+                    {
+                      "field": "string",
+                      "rejectedValue": {},
+                      "message": "string"
+                    }
+                  ]
+                },
+                "example_model": {
+                  "success": false,
+                  "message": "hello",
+                  "errors": [
+                    {
+                      "field": "hello",
+                      "rejectedValue": {},
+                      "message": "hello"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Product Variant",
+          "deprecated": false,
+          "description": "Update an existing product variant by ID",
+          "secured": true,
+          "method": "PUT",
+          "path": "/api/v1/variants/{variantId}",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "variantId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": {
+            "model": {
+              "title": "string",
+              "price": 0,
+              "quantity": 0,
+              "description": "string",
+              "attributes": {
+                "string": "string"
+              }
+            },
+            "example_model": {
+              "title": "Red Mug - Ceramic",
+              "price": 12.5,
+              "quantity": 50.0,
+              "description": "This mug is made of high-quality ceramic, perfect for coffee.",
+              "attributes": {
+                "string": "hello"
+              }
+            },
+            "metadata": {
+              "title": {
+                "description": "User-friendly name of the product variant. Required.",
+                "required": true,
+                "constraints": [
+                  "MIN_LENGTH:1",
+                  "NOT_BLANK",
+                  "MAX_LENGTH:255"
+                ]
+              },
+              "price": {
+                "description": "The selling price of the variant. Must be greater than 0.",
+                "required": true,
+                "constraints": [
+                  "NOT_NULL"
+                ]
+              },
+              "quantity": {
+                "description": "Current stock quantity to be set for this variant. Must be non-negative.",
+                "required": true,
+                "constraints": [
+                  "MIN_VALUE:0.0",
+                  "NOT_NULL"
+                ]
+              },
+              "description": {
+                "description": "Detailed description of the product variant. Optional, max 2000 characters.",
+                "required": false,
+                "constraints": [
+                  "MAX_LENGTH:2000"
+                ]
+              },
+              "attributes": {
+                "description": "Key-value pair map of variant characteristics like color, size, etc. Required.",
+                "required": true,
+                "constraints": [
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": {
+                "variant_id": "550e8400-e29b-41d4-a716-446655440000",
+                "title": "string",
+                "price": 0,
+                "quantity": 0,
+                "description": "string",
+                "created_date": "2025-01-29T10:15:30Z",
+                "last_modified_date": "2025-01-29T10:15:30Z",
+                "attributes": {
+                  "string": "string"
+                },
+                "image_uris": [
+                  "string"
+                ],
+                "is_active": false,
+                "is_deleted": false
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": {
+                "variant_id": "78e3c4a1-0f2b-4d9e-8c7a-51f6920d3b4f",
+                "title": "Blue T-Shirt - Large",
+                "price": 19.99,
+                "quantity": 150.0,
+                "description": "A comfortable cotton t-shirt in deep blue.",
+                "created_date": "2023-10-27T10:00:00Z",
+                "last_modified_date": "2023-10-27T10:30:00Z",
+                "attributes": {
+                  "string": "hello"
+                },
+                "image_uris": [
+                  "hello"
+                ],
+                "is_active": true,
+                "is_deleted": false
+              }
+            }
+          },
+          "errors": [
+            {
+              "status": "Forbidden",
+              "status_code": 403,
+              "description": "Access Denied",
+              "error_code": null,
+              "response": {
+                "model": {
+                  "success": false,
+                  "message": "string",
+                  "cause": "string"
+                },
+                "example_model": {
+                  "success": false,
+                  "message": "hello",
+                  "cause": "hello"
+                }
+              }
+            },
+            {
+              "status": "Not Found",
+              "status_code": 404,
+              "description": "Product Variant Not Found",
+              "error_code": null,
+              "response": {
+                "model": {
+                  "success": false,
+                  "message": "string",
+                  "cause": "string"
+                },
+                "example_model": {
+                  "success": false,
+                  "message": "hello",
+                  "cause": "hello"
+                }
+              }
+            },
+            {
+              "status": "Bad Request",
+              "status_code": 400,
+              "description": "Request Validation Failed",
+              "error_code": null,
+              "response": {
+                "model": {
+                  "success": false,
+                  "message": "string",
+                  "errors": [
+                    {
+                      "field": "string",
+                      "rejectedValue": {},
+                      "message": "string"
+                    }
+                  ]
+                },
+                "example_model": {
+                  "success": false,
+                  "message": "hello",
+                  "errors": [
+                    {
+                      "field": "hello",
+                      "rejectedValue": {},
+                      "message": "hello"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Product Variant",
+          "deprecated": false,
+          "description": "Delete an existing product variant by ID",
+          "secured": true,
+          "method": "DELETE",
+          "path": "/api/v1/variants/{variantId}",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "variantId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "additional_info": "string"
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "additional_info": "hello"
+            }
+          },
+          "errors": [
+            {
+              "status": "Forbidden",
+              "status_code": 403,
+              "description": "Access Denied",
+              "error_code": null,
+              "response": {
+                "model": {
+                  "success": false,
+                  "message": "string",
+                  "cause": "string"
+                },
+                "example_model": {
+                  "success": false,
+                  "message": "hello",
+                  "cause": "hello"
+                }
+              }
+            },
+            {
+              "status": "Not Found",
+              "status_code": 404,
+              "description": "Product Variant Not Found",
+              "error_code": null,
+              "response": {
+                "model": {
+                  "success": false,
+                  "message": "string",
+                  "cause": "string"
+                },
+                "example_model": {
+                  "success": false,
+                  "message": "hello",
+                  "cause": "hello"
+                }
+              }
+            },
+            {
+              "status": "Not Found",
+              "status_code": 404,
+              "description": "Product Not Found",
+              "error_code": null,
+              "response": {
+                "model": {
+                  "success": false,
+                  "message": "string",
+                  "cause": "string"
+                },
+                "example_model": {
+                  "success": false,
+                  "message": "hello",
+                  "cause": "hello"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User Profile APIs",
+      "description": "",
+      "deprecated": false,
+      "endpoints": [
+        {
+          "name": "Update Profile",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "PUT",
+          "path": "/api/v1/users/profile",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [
+            "multipart/form-data",
+            "multipart/form-data"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": {
+                "user_id": "550e8400-e29b-41d4-a716-446655440000",
+                "first_name": "string",
+                "last_name": "string",
+                "email": "string",
+                "created_at": "2025-01-29T10:15:30Z",
+                "updated_at": "2025-01-29T10:15:30Z",
+                "profiles": [
+                  {}
+                ]
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": {
+                "user_id": "550e8400-e29b-41d4-a716-446655440000",
+                "first_name": "hello",
+                "last_name": "hello",
+                "email": "hello",
+                "created_at": "2025-01-29T10:15:30Z",
+                "updated_at": "2025-01-29T10:15:30Z",
+                "profiles": [
+                  {}
+                ]
+              }
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Create Seller Profile",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "POST",
+          "path": "/api/v1/sellers/profile",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [
+            "multipart/form-data"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": {
+                "user_id": "550e8400-e29b-41d4-a716-446655440000",
+                "first_name": "string",
+                "last_name": "string",
+                "email": "string",
+                "created_at": "2025-01-29T10:15:30Z",
+                "updated_at": "2025-01-29T10:15:30Z",
+                "profiles": [
+                  {}
+                ]
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": {
+                "user_id": "550e8400-e29b-41d4-a716-446655440000",
+                "first_name": "hello",
+                "last_name": "hello",
+                "email": "hello",
+                "created_at": "2025-01-29T10:15:30Z",
+                "updated_at": "2025-01-29T10:15:30Z",
+                "profiles": [
+                  {}
+                ]
+              }
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Update Seller Profile",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "PUT",
+          "path": "/api/v1/sellers/profile",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [
+            "multipart/form-data",
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": {
+                "user_id": "550e8400-e29b-41d4-a716-446655440000",
+                "first_name": "string",
+                "last_name": "string",
+                "email": "string",
+                "created_at": "2025-01-29T10:15:30Z",
+                "updated_at": "2025-01-29T10:15:30Z",
+                "profiles": [
+                  {}
+                ]
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": {
+                "user_id": "550e8400-e29b-41d4-a716-446655440000",
+                "first_name": "hello",
+                "last_name": "hello",
+                "email": "hello",
+                "created_at": "2025-01-29T10:15:30Z",
+                "updated_at": "2025-01-29T10:15:30Z",
+                "profiles": [
+                  {}
+                ]
+              }
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Register Admin",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "POST",
+          "path": "/api/v1/admins/register",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": {
+            "model": {
+              "email": "string",
+              "password": "string"
+            },
+            "example_model": {
+              "email": "hello",
+              "password": "hello"
+            },
+            "metadata": {
+              "email": {
+                "description": "",
+                "required": true,
+                "constraints": [
+                  "NOT_BLANK"
+                ]
+              },
+              "password": {
+                "description": "",
+                "required": true,
+                "constraints": [
+                  "NOT_BLANK",
+                  "MIN_LENGTH:8"
+                ]
+              }
+            }
+          },
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "additional_info": "string"
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "additional_info": "hello"
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Register User",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "POST",
+          "path": "/api/v1/public/users/register",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [
+            "multipart/form-data"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": {
+            "model": {
+              "email": "string",
+              "password": "string"
+            },
+            "example_model": {
+              "email": "hello",
+              "password": "hello"
+            },
+            "metadata": {
+              "email": {
+                "description": "",
+                "required": true,
+                "constraints": [
+                  "NOT_BLANK"
+                ]
+              },
+              "password": {
+                "description": "",
+                "required": true,
+                "constraints": [
+                  "NOT_BLANK",
+                  "MIN_LENGTH:8"
+                ]
+              }
+            }
+          },
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "additional_info": "string"
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "additional_info": "hello"
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Get Current Profile",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "GET",
+          "path": "/api/v1/users/profile",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": {
+                "user_id": "550e8400-e29b-41d4-a716-446655440000",
+                "first_name": "string",
+                "last_name": "string",
+                "email": "string",
+                "created_at": "2025-01-29T10:15:30Z",
+                "updated_at": "2025-01-29T10:15:30Z",
+                "profiles": [
+                  {}
+                ]
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": {
+                "user_id": "550e8400-e29b-41d4-a716-446655440000",
+                "first_name": "hello",
+                "last_name": "hello",
+                "email": "hello",
+                "created_at": "2025-01-29T10:15:30Z",
+                "updated_at": "2025-01-29T10:15:30Z",
+                "profiles": [
+                  {}
+                ]
+              }
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Health",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/health",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "additional_info": "string"
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "additional_info": "hello"
+            }
+          },
+          "errors": []
+        }
+      ]
+    },
+    {
+      "name": "Cart APIs",
+      "description": "",
+      "deprecated": false,
+      "endpoints": [
+        {
+          "name": "Create Cart",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "POST",
+          "path": "/api/v1/carts",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "additional_info": "string"
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "additional_info": "hello"
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Get Cart",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "GET",
+          "path": "/api/v1/carts/{cartId}",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "cartId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": {
+                "cart_id": "550e8400-e29b-41d4-a716-446655440000",
+                "items": [
+                  {
+                    "item_id": "550e8400-e29b-41d4-a716-446655440000",
+                    "quantity": 0,
+                    "product_snapshot": {
+                      "product_id": "550e8400-e29b-41d4-a716-446655440000",
+                      "variant_id": "550e8400-e29b-41d4-a716-446655440000",
+                      "product_title": "string",
+                      "variant_title": "string",
+                      "price_per_unit": 0,
+                      "thumbnail": "string"
+                    }
+                  }
+                ]
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": {
+                "cart_id": "550e8400-e29b-41d4-a716-446655440000",
+                "items": [
+                  {
+                    "item_id": "550e8400-e29b-41d4-a716-446655440000",
+                    "quantity": 0,
+                    "product_snapshot": {
+                      "product_id": "550e8400-e29b-41d4-a716-446655440000",
+                      "variant_id": "550e8400-e29b-41d4-a716-446655440000",
+                      "product_title": "hello",
+                      "variant_title": "hello",
+                      "price_per_unit": 0,
+                      "thumbnail": "hello"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Add Item To Cart",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "POST",
+          "path": "/api/v1/carts/{cartId}/items",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "cartId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": {
+            "model": {
+              "product_variant_id": 0,
+              "store_id": 0,
+              "quantity": 0
+            },
+            "example_model": {
+              "product_variant_id": 0,
+              "store_id": 0,
+              "quantity": 0
+            },
+            "metadata": {
+              "product_variant_id": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              },
+              "store_id": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              },
+              "quantity": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              }
+            }
+          },
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "additional_info": "string"
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "additional_info": "hello"
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Remove Cart Item",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "DELETE",
+          "path": "/api/v1/cart-items/{itemId}",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "itemId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "additional_info": "string"
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "additional_info": "hello"
+            }
+          },
+          "errors": []
+        }
+      ]
+    },
+    {
+      "name": "File Render Test APIs",
+      "description": "",
+      "deprecated": false,
+      "endpoints": [
+        {
+          "name": "Issue Csv",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/test/files/csv",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "text/csv"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        },
+        {
+          "name": "Issue Pdf",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/test/files/pdf",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/pdf"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        },
+        {
+          "name": "Issue Mp3",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/test/files/mp3",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "audio/mpeg"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        },
+        {
+          "name": "Issue Mp4",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/test/files/mp4",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "video/mp4"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        },
+        {
+          "name": "Issue Doc",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/test/files/doc",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/msword"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        },
+        {
+          "name": "Issue Docx",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/test/files/docx",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        },
+        {
+          "name": "Issue Ppt",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/test/files/ppt",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/vnd.ms-powerpoint"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        },
+        {
+          "name": "Issue Xls",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/test/files/xls",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/vnd.ms-excel"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        },
+        {
+          "name": "Issue Xlsx",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/test/files/xlsx",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        },
+        {
+          "name": "Issue Zip",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/test/files/zip",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/zip"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "name": "Dev Test APIs",
+      "description": "",
+      "deprecated": false,
+      "endpoints": [
+        {
+          "name": "Issue Http Only Cookie",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/test/cookie/http-only",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        },
+        {
+          "name": "Issue Regular Cookie",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/test/cookie/regular",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        },
+        {
+          "name": "Issue Png",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/test/image/png",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "image/png"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        },
+        {
+          "name": "Issue Jpeg",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/test/image/jpeg",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "image/jpeg"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        },
+        {
+          "name": "Issue Gif",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/test/image/gif",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "image/gif"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        },
+        {
+          "name": "Issue Bmp",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/test/image/bmp",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "image/bmp"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        },
+        {
+          "name": "Issue Svg",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/test/image/svg",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "image/svg+xml"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        },
+        {
+          "name": "Issue Webp",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/test/image/webp",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "image/webp"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        },
+        {
+          "name": "Issue Avif",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/test/image/avif",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "image/avif"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        },
+        {
+          "name": "Issue Ico",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/test/image/ico",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "image/x-icon"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        },
+        {
+          "name": "Issue Favicon",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/test/image/favicon",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "image/x-icon"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "name": "Product APIs",
+      "description": "",
+      "deprecated": false,
+      "endpoints": [
+        {
+          "name": "Get Product",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "GET",
+          "path": "/api/v1/products/{productId}",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "productId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": {
+                "product_id": "550e8400-e29b-41d4-a716-446655440000",
+                "title": "string",
+                "description": "string",
+                "brand": "string",
+                "category_path": "string",
+                "avg_rating": 0,
+                "rating_count": 0,
+                "created_date": "2025-01-29T10:15:30Z",
+                "last_modified_date": "2025-01-29T10:15:30Z",
+                "variants": [
+                  {
+                    "variant_id": "550e8400-e29b-41d4-a716-446655440000",
+                    "title": "string",
+                    "price": 0,
+                    "quantity": 0,
+                    "description": "string",
+                    "created_date": "2025-01-29T10:15:30Z",
+                    "last_modified_date": "2025-01-29T10:15:30Z",
+                    "attributes": {
+                      "string": "string"
+                    },
+                    "image_uris": [
+                      "string"
+                    ],
+                    "is_active": false,
+                    "is_deleted": false
+                  }
+                ],
+                "is_active": false,
+                "is_deleted": false
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": {
+                "product_id": "550e8400-e29b-41d4-a716-446655440000",
+                "title": "hello",
+                "description": "hello",
+                "brand": "hello",
+                "category_path": "hello",
+                "avg_rating": 0,
+                "rating_count": 0,
+                "created_date": "2025-01-29T10:15:30Z",
+                "last_modified_date": "2025-01-29T10:15:30Z",
+                "variants": [
+                  {
+                    "variant_id": "78e3c4a1-0f2b-4d9e-8c7a-51f6920d3b4f",
+                    "title": "Blue T-Shirt - Large",
+                    "price": 19.99,
+                    "quantity": 150.0,
+                    "description": "A comfortable cotton t-shirt in deep blue.",
+                    "created_date": "2023-10-27T10:00:00Z",
+                    "last_modified_date": "2023-10-27T10:30:00Z",
+                    "attributes": {
+                      "string": "hello"
+                    },
+                    "image_uris": [
+                      "hello"
+                    ],
+                    "is_active": true,
+                    "is_deleted": false
+                  }
+                ],
+                "is_active": false,
+                "is_deleted": false
+              }
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Create Product",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "POST",
+          "path": "/api/v1/stores/{storeId}/categories/{categoryId}/products",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "storeId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            },
+            {
+              "name": "categoryId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": {
+            "model": {
+              "title": "string",
+              "description": "string",
+              "brand": "string"
+            },
+            "example_model": {
+              "title": "hello",
+              "description": "hello",
+              "brand": "hello"
+            },
+            "metadata": {
+              "title": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              },
+              "description": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              },
+              "brand": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              }
+            }
+          },
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "additional_info": "string"
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "additional_info": "hello"
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Publish Product",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "POST",
+          "path": "/api/v1/products/{productId}/publish",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "productId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "additional_info": "string"
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "additional_info": "hello"
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Get Products By Filter",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/products/filter",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [
+            {
+              "name": "page",
+              "description": null,
+              "type": "number",
+              "required": true,
+              "default_value": "0",
+              "constraints": []
+            },
+            {
+              "name": "size",
+              "description": null,
+              "type": "number",
+              "required": true,
+              "default_value": "25",
+              "constraints": []
+            }
+          ],
+          "headers": [],
+          "request": {
+            "model": {
+              "brand": "string",
+              "categories": [
+                "string"
+              ],
+              "rating": 0,
+              "min_price": 0,
+              "max_price": 0
+            },
+            "example_model": {
+              "brand": "hello",
+              "categories": [
+                "hello"
+              ],
+              "rating": 0,
+              "min_price": 0,
+              "max_price": 0
+            },
+            "metadata": {
+              "brand": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              },
+              "categories": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              },
+              "rating": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              },
+              "min_price": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              },
+              "max_price": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              }
+            }
+          },
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": [
+                {
+                  "product_id": "550e8400-e29b-41d4-a716-446655440000",
+                  "title": "string",
+                  "description": "string",
+                  "brand": "string",
+                  "category_path": "string",
+                  "avg_rating": 0,
+                  "rating_count": 0,
+                  "created_date": "2025-01-29T10:15:30Z",
+                  "last_modified_date": "2025-01-29T10:15:30Z",
+                  "variants": [
+                    {
+                      "variant_id": "550e8400-e29b-41d4-a716-446655440000",
+                      "title": "string",
+                      "price": 0,
+                      "quantity": 0,
+                      "description": "string",
+                      "created_date": "2025-01-29T10:15:30Z",
+                      "last_modified_date": "2025-01-29T10:15:30Z",
+                      "attributes": {
+                        "string": "string"
+                      },
+                      "image_uris": [
+                        "string"
+                      ],
+                      "is_active": false,
+                      "is_deleted": false
+                    }
+                  ],
+                  "is_active": false,
+                  "is_deleted": false
+                }
+              ]
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": [
+                {
+                  "product_id": "550e8400-e29b-41d4-a716-446655440000",
+                  "title": "hello",
+                  "description": "hello",
+                  "brand": "hello",
+                  "category_path": "hello",
+                  "avg_rating": 0,
+                  "rating_count": 0,
+                  "created_date": "2025-01-29T10:15:30Z",
+                  "last_modified_date": "2025-01-29T10:15:30Z",
+                  "variants": [
+                    {
+                      "variant_id": "78e3c4a1-0f2b-4d9e-8c7a-51f6920d3b4f",
+                      "title": "Blue T-Shirt - Large",
+                      "price": 19.99,
+                      "quantity": 150.0,
+                      "description": "A comfortable cotton t-shirt in deep blue.",
+                      "created_date": "2023-10-27T10:00:00Z",
+                      "last_modified_date": "2023-10-27T10:30:00Z",
+                      "attributes": {
+                        "string": "hello"
+                      },
+                      "image_uris": [
+                        "hello"
+                      ],
+                      "is_active": true,
+                      "is_deleted": false
+                    }
+                  ],
+                  "is_active": false,
+                  "is_deleted": false
+                }
+              ]
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Get Brands",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/brands",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": [
+                "string"
+              ]
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": [
+                "hello"
+              ]
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Update Product",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "PUT",
+          "path": "/api/v1/products/{productId}",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "productId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": {
+            "model": {
+              "title": "string",
+              "description": "string",
+              "brand": "string"
+            },
+            "example_model": {
+              "title": "hello",
+              "description": "hello",
+              "brand": "hello"
+            },
+            "metadata": {
+              "title": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              },
+              "description": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              },
+              "brand": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              }
+            }
+          },
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": {
+                "product_id": "550e8400-e29b-41d4-a716-446655440000",
+                "title": "string",
+                "description": "string",
+                "brand": "string",
+                "category_path": "string",
+                "avg_rating": 0,
+                "rating_count": 0,
+                "created_date": "2025-01-29T10:15:30Z",
+                "last_modified_date": "2025-01-29T10:15:30Z",
+                "variants": [
+                  {
+                    "variant_id": "550e8400-e29b-41d4-a716-446655440000",
+                    "title": "string",
+                    "price": 0,
+                    "quantity": 0,
+                    "description": "string",
+                    "created_date": "2025-01-29T10:15:30Z",
+                    "last_modified_date": "2025-01-29T10:15:30Z",
+                    "attributes": {
+                      "string": "string"
+                    },
+                    "image_uris": [
+                      "string"
+                    ],
+                    "is_active": false,
+                    "is_deleted": false
+                  }
+                ],
+                "is_active": false,
+                "is_deleted": false
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": {
+                "product_id": "550e8400-e29b-41d4-a716-446655440000",
+                "title": "hello",
+                "description": "hello",
+                "brand": "hello",
+                "category_path": "hello",
+                "avg_rating": 0,
+                "rating_count": 0,
+                "created_date": "2025-01-29T10:15:30Z",
+                "last_modified_date": "2025-01-29T10:15:30Z",
+                "variants": [
+                  {
+                    "variant_id": "78e3c4a1-0f2b-4d9e-8c7a-51f6920d3b4f",
+                    "title": "Blue T-Shirt - Large",
+                    "price": 19.99,
+                    "quantity": 150.0,
+                    "description": "A comfortable cotton t-shirt in deep blue.",
+                    "created_date": "2023-10-27T10:00:00Z",
+                    "last_modified_date": "2023-10-27T10:30:00Z",
+                    "attributes": {
+                      "string": "hello"
+                    },
+                    "image_uris": [
+                      "hello"
+                    ],
+                    "is_active": true,
+                    "is_deleted": false
+                  }
+                ],
+                "is_active": false,
+                "is_deleted": false
+              }
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Delete Product",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "DELETE",
+          "path": "/api/v1/products/{productId}",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "productId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "additional_info": "string"
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "additional_info": "hello"
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Get Products By Store",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "GET",
+          "path": "/api/v1/stores/{storeId}/products",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "storeId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [
+            {
+              "name": "page",
+              "description": null,
+              "type": "number",
+              "required": true,
+              "default_value": "0",
+              "constraints": []
+            },
+            {
+              "name": "size",
+              "description": null,
+              "type": "number",
+              "required": true,
+              "default_value": "15",
+              "constraints": []
+            }
+          ],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "page": {
+                "page": 0,
+                "size": 0,
+                "total_elements": 0,
+                "total_pages": 0,
+                "content": [
+                  {
+                    "product_id": "550e8400-e29b-41d4-a716-446655440000",
+                    "title": "string",
+                    "description": "string",
+                    "brand": "string",
+                    "category_path": "string",
+                    "avg_rating": 0,
+                    "rating_count": 0,
+                    "created_date": "2025-01-29T10:15:30Z",
+                    "last_modified_date": "2025-01-29T10:15:30Z",
+                    "variants": [
+                      {
+                        "variant_id": "550e8400-e29b-41d4-a716-446655440000",
+                        "title": "string",
+                        "price": 0,
+                        "quantity": 0,
+                        "description": "string",
+                        "created_date": "2025-01-29T10:15:30Z",
+                        "last_modified_date": "2025-01-29T10:15:30Z",
+                        "attributes": {
+                          "string": "string"
+                        },
+                        "image_uris": [
+                          "string"
+                        ],
+                        "is_active": false,
+                        "is_deleted": false
+                      }
+                    ],
+                    "is_active": false,
+                    "is_deleted": false
+                  }
+                ]
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "page": {
+                "page": 0,
+                "size": 0,
+                "total_elements": 0,
+                "total_pages": 0,
+                "content": [
+                  {
+                    "product_id": "550e8400-e29b-41d4-a716-446655440000",
+                    "title": "hello",
+                    "description": "hello",
+                    "brand": "hello",
+                    "category_path": "hello",
+                    "avg_rating": 0,
+                    "rating_count": 0,
+                    "created_date": "2025-01-29T10:15:30Z",
+                    "last_modified_date": "2025-01-29T10:15:30Z",
+                    "variants": [
+                      {
+                        "variant_id": "78e3c4a1-0f2b-4d9e-8c7a-51f6920d3b4f",
+                        "title": "Blue T-Shirt - Large",
+                        "price": 19.99,
+                        "quantity": 150.0,
+                        "description": "A comfortable cotton t-shirt in deep blue.",
+                        "created_date": "2023-10-27T10:00:00Z",
+                        "last_modified_date": "2023-10-27T10:30:00Z",
+                        "attributes": {
+                          "string": "hello"
+                        },
+                        "image_uris": [
+                          "hello"
+                        ],
+                        "is_active": true,
+                        "is_deleted": false
+                      }
+                    ],
+                    "is_active": false,
+                    "is_deleted": false
+                  }
+                ]
+              }
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Get Product For Public",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/products/{productId}",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "productId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": {
+                "product_id": "550e8400-e29b-41d4-a716-446655440000",
+                "title": "string",
+                "description": "string",
+                "brand": "string",
+                "category_path": "string",
+                "avg_rating": 0,
+                "rating_count": 0,
+                "created_date": "2025-01-29T10:15:30Z",
+                "last_modified_date": "2025-01-29T10:15:30Z",
+                "variants": [
+                  {
+                    "variant_id": "550e8400-e29b-41d4-a716-446655440000",
+                    "title": "string",
+                    "price": 0,
+                    "quantity": 0,
+                    "description": "string",
+                    "created_date": "2025-01-29T10:15:30Z",
+                    "last_modified_date": "2025-01-29T10:15:30Z",
+                    "attributes": {
+                      "string": "string"
+                    },
+                    "image_uris": [
+                      "string"
+                    ],
+                    "is_active": false,
+                    "is_deleted": false
+                  }
+                ],
+                "is_active": false,
+                "is_deleted": false
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": {
+                "product_id": "550e8400-e29b-41d4-a716-446655440000",
+                "title": "hello",
+                "description": "hello",
+                "brand": "hello",
+                "category_path": "hello",
+                "avg_rating": 0,
+                "rating_count": 0,
+                "created_date": "2025-01-29T10:15:30Z",
+                "last_modified_date": "2025-01-29T10:15:30Z",
+                "variants": [
+                  {
+                    "variant_id": "78e3c4a1-0f2b-4d9e-8c7a-51f6920d3b4f",
+                    "title": "Blue T-Shirt - Large",
+                    "price": 19.99,
+                    "quantity": 150.0,
+                    "description": "A comfortable cotton t-shirt in deep blue.",
+                    "created_date": "2023-10-27T10:00:00Z",
+                    "last_modified_date": "2023-10-27T10:30:00Z",
+                    "attributes": {
+                      "string": "hello"
+                    },
+                    "image_uris": [
+                      "hello"
+                    ],
+                    "is_active": true,
+                    "is_deleted": false
+                  }
+                ],
+                "is_active": false,
+                "is_deleted": false
+              }
+            }
+          },
+          "errors": []
+        }
+      ]
+    },
+    {
+      "name": "Store APIs",
+      "description": "",
+      "deprecated": false,
+      "endpoints": [
+        {
+          "name": "Create Store",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "POST",
+          "path": "/api/v1/stores",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": {
+            "model": {
+              "name": "string",
+              "location": "string",
+              "contact_number": "string",
+              "email": "string",
+              "about": "string"
+            },
+            "example_model": {
+              "name": "hello",
+              "location": "hello",
+              "contact_number": "hello",
+              "email": "hello",
+              "about": "hello"
+            },
+            "metadata": {
+              "name": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              },
+              "location": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              },
+              "contact_number": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              },
+              "email": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              },
+              "about": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              }
+            }
+          },
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "additional_info": "string"
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "additional_info": "hello"
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Get All Stores",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "GET",
+          "path": "/api/v1/stores",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": [
+                {
+                  "store_id": "550e8400-e29b-41d4-a716-446655440000",
+                  "name": "string",
+                  "location": "string",
+                  "contact_number": "string",
+                  "email": "string",
+                  "about": "string",
+                  "created_date": "2025-01-29T10:15:30Z",
+                  "last_modified_date": "2025-01-29T10:15:30Z"
+                }
+              ]
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": [
+                {
+                  "store_id": "550e8400-e29b-41d4-a716-446655440000",
+                  "name": "hello",
+                  "location": "hello",
+                  "contact_number": "hello",
+                  "email": "hello",
+                  "about": "hello",
+                  "created_date": "2025-01-29T10:15:30Z",
+                  "last_modified_date": "2025-01-29T10:15:30Z"
+                }
+              ]
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Update Store",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "PUT",
+          "path": "/api/v1/stores/{storeId}",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "storeId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": {
+            "model": {
+              "name": "string",
+              "location": "string",
+              "contact_number": "string",
+              "email": "string",
+              "about": "string"
+            },
+            "example_model": {
+              "name": "hello",
+              "location": "hello",
+              "contact_number": "hello",
+              "email": "hello",
+              "about": "hello"
+            },
+            "metadata": {
+              "name": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              },
+              "location": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              },
+              "contact_number": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              },
+              "email": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              },
+              "about": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              }
+            }
+          },
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": {
+                "store_id": "550e8400-e29b-41d4-a716-446655440000",
+                "name": "string",
+                "location": "string",
+                "contact_number": "string",
+                "email": "string",
+                "about": "string",
+                "created_date": "2025-01-29T10:15:30Z",
+                "last_modified_date": "2025-01-29T10:15:30Z"
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": {
+                "store_id": "550e8400-e29b-41d4-a716-446655440000",
+                "name": "hello",
+                "location": "hello",
+                "contact_number": "hello",
+                "email": "hello",
+                "about": "hello",
+                "created_date": "2025-01-29T10:15:30Z",
+                "last_modified_date": "2025-01-29T10:15:30Z"
+              }
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Delete Store",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "DELETE",
+          "path": "/api/v1/stores/{storeId}",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "storeId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "additional_info": "string"
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "additional_info": "hello"
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Get Store By IDFor Public",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/public/stores/{storeId}",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "storeId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": {
+                "store_id": "550e8400-e29b-41d4-a716-446655440000",
+                "name": "string",
+                "location": "string",
+                "contact_number": "string",
+                "email": "string",
+                "about": "string",
+                "created_date": "2025-01-29T10:15:30Z",
+                "last_modified_date": "2025-01-29T10:15:30Z"
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": {
+                "store_id": "550e8400-e29b-41d4-a716-446655440000",
+                "name": "hello",
+                "location": "hello",
+                "contact_number": "hello",
+                "email": "hello",
+                "about": "hello",
+                "created_date": "2025-01-29T10:15:30Z",
+                "last_modified_date": "2025-01-29T10:15:30Z"
+              }
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Get Store By ID",
+          "deprecated": false,
+          "description": null,
+          "secured": true,
+          "method": "GET",
+          "path": "/api/v1/stores/{storeId}",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [
+            {
+              "name": "storeId",
+              "type": "number",
+              "required": true,
+              "constraints": [],
+              "description": null
+            }
+          ],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "success": false,
+              "message": "string",
+              "data": {
+                "store_id": "550e8400-e29b-41d4-a716-446655440000",
+                "name": "string",
+                "location": "string",
+                "contact_number": "string",
+                "email": "string",
+                "about": "string",
+                "created_date": "2025-01-29T10:15:30Z",
+                "last_modified_date": "2025-01-29T10:15:30Z"
+              }
+            },
+            "example_model": {
+              "success": false,
+              "message": "hello",
+              "data": {
+                "store_id": "550e8400-e29b-41d4-a716-446655440000",
+                "name": "hello",
+                "location": "hello",
+                "contact_number": "hello",
+                "email": "hello",
+                "about": "hello",
+                "created_date": "2025-01-29T10:15:30Z",
+                "last_modified_date": "2025-01-29T10:15:30Z"
+              }
+            }
+          },
+          "errors": []
+        }
+      ]
+    },
+    {
+      "name": "Response Lab APIs",
+      "description": "Dedicated endpoints for exercising varied status codes, payload shapes, and security outcomes.",
+      "deprecated": false,
+      "endpoints": [
+        {
+          "name": "Synthetic Success",
+          "deprecated": false,
+          "description": "Returns a standard 200 JSON payload for baseline success-path verification.",
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/scenarios/public/ok",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "trace_id": "550e8400-e29b-41d4-a716-446655440000",
+              "generated_at": "2025-01-29T10:15:30Z",
+              "state": "VALUE",
+              "message": "string",
+              "items": [
+                {
+                  "sku": "string",
+                  "score": 0,
+                  "labels": {
+                    "string": "string"
+                  }
+                }
+              ],
+              "metrics": {
+                "string": 0
+              }
+            },
+            "example_model": {
+              "trace_id": "550e8400-e29b-41d4-a716-446655440000",
+              "generated_at": "2025-01-29T10:15:30Z",
+              "state": "VALUE",
+              "message": "hello",
+              "items": [
+                {
+                  "sku": "hello",
+                  "score": 0,
+                  "labels": {
+                    "string": "hello"
+                  }
+                }
+              ],
+              "metrics": {
+                "string": 0
+              }
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Synthetic Created",
+          "deprecated": false,
+          "description": "Returns a 201 JSON payload with a Location header for resource-creation testing.",
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/scenarios/public/created",
+          "status": "Created",
+          "status_code": 201,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "resource_id": "550e8400-e29b-41d4-a716-446655440000",
+              "location": "string",
+              "state": "VALUE",
+              "expires_at": "2025-01-29T10:15:30Z"
+            },
+            "example_model": {
+              "resource_id": "550e8400-e29b-41d4-a716-446655440000",
+              "location": "hello",
+              "state": "VALUE",
+              "expires_at": "2025-01-29T10:15:30Z"
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Synthetic Accepted",
+          "deprecated": false,
+          "description": "Returns a 202 JSON payload that simulates async job acceptance.",
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/scenarios/public/accepted",
+          "status": "Accepted",
+          "status_code": 202,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "job_id": "550e8400-e29b-41d4-a716-446655440000",
+              "estimated_wait_seconds": 0,
+              "state": "VALUE",
+              "checks": [
+                "string"
+              ]
+            },
+            "example_model": {
+              "job_id": "550e8400-e29b-41d4-a716-446655440000",
+              "estimated_wait_seconds": 0,
+              "state": "VALUE",
+              "checks": [
+                "hello"
+              ]
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Synthetic Redirect",
+          "deprecated": false,
+          "description": "Returns a 302 payload with a Location header for redirect-handling tests.",
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/scenarios/public/redirect",
+          "status": "Found",
+          "status_code": 302,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "target_uri": "string",
+              "reason": "string",
+              "cooldown_seconds": 0,
+              "state": "VALUE"
+            },
+            "example_model": {
+              "target_uri": "hello",
+              "reason": "hello",
+              "cooldown_seconds": 0,
+              "state": "VALUE"
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "HTML Showcase",
+          "deprecated": false,
+          "description": "Returns a browser-friendly HTML document with inline CSS so non-JSON response rendering can be tested.",
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/scenarios/public/html-showcase",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "text/html"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        },
+        {
+          "name": "XML Showcase",
+          "deprecated": false,
+          "description": "Returns an application/xml document so XML parsers and content negotiation paths can be verified.",
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/scenarios/public/xml-showcase",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/xml"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": []
+        },
+        {
+          "name": "Synthetic Bad Request",
+          "deprecated": false,
+          "description": "Returns a typed 400 payload with field-level violations.",
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/scenarios/public/bad-request",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": [
+            {
+              "status": "Bad Request",
+              "status_code": 400,
+              "description": "Synthetic validation error",
+              "error_code": null,
+              "response": {
+                "model": {
+                  "error_code": "string",
+                  "message": "string",
+                  "violations": [
+                    {
+                      "field": "string",
+                      "rule": "string",
+                      "rejected_value": "string"
+                    }
+                  ],
+                  "occurred_at": "2025-01-29T10:15:30Z"
+                },
+                "example_model": {
+                  "error_code": "hello",
+                  "message": "hello",
+                  "violations": [
+                    {
+                      "field": "hello",
+                      "rule": "hello",
+                      "rejected_value": "hello"
+                    }
+                  ],
+                  "occurred_at": "2025-01-29T10:15:30Z"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Synthetic Unauthorized",
+          "deprecated": false,
+          "description": "Returns a typed 401 payload without using the security filter.",
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/scenarios/public/unauthorized",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": [
+            {
+              "status": "Unauthorized",
+              "status_code": 401,
+              "description": "Synthetic unauthorized error",
+              "error_code": null,
+              "response": {
+                "model": {
+                  "error_code": "string",
+                  "message": "string",
+                  "actor": "string",
+                  "required_authority": "string",
+                  "occurred_at": "2025-01-29T10:15:30Z"
+                },
+                "example_model": {
+                  "error_code": "hello",
+                  "message": "hello",
+                  "actor": "hello",
+                  "required_authority": "hello",
+                  "occurred_at": "2025-01-29T10:15:30Z"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Synthetic Forbidden",
+          "deprecated": false,
+          "description": "Returns a typed 403 payload for explicit authorization coverage.",
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/scenarios/public/forbidden",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": [
+            {
+              "status": "Forbidden",
+              "status_code": 403,
+              "description": "Synthetic forbidden error",
+              "error_code": null,
+              "response": {
+                "model": {
+                  "error_code": "string",
+                  "message": "string",
+                  "actor": "string",
+                  "required_authority": "string",
+                  "occurred_at": "2025-01-29T10:15:30Z"
+                },
+                "example_model": {
+                  "error_code": "hello",
+                  "message": "hello",
+                  "actor": "hello",
+                  "required_authority": "hello",
+                  "occurred_at": "2025-01-29T10:15:30Z"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Synthetic Not Found",
+          "deprecated": false,
+          "description": "Returns a typed 404 payload for missing resource coverage.",
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/scenarios/public/not-found",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": [
+            {
+              "status": "Not Found",
+              "status_code": 404,
+              "description": "Synthetic not found error",
+              "error_code": null,
+              "response": {
+                "model": {
+                  "error_code": "string",
+                  "resource_type": "string",
+                  "lookup_key": "string",
+                  "trace_id": "550e8400-e29b-41d4-a716-446655440000",
+                  "occurred_at": "2025-01-29T10:15:30Z"
+                },
+                "example_model": {
+                  "error_code": "hello",
+                  "resource_type": "hello",
+                  "lookup_key": "hello",
+                  "trace_id": "550e8400-e29b-41d4-a716-446655440000",
+                  "occurred_at": "2025-01-29T10:15:30Z"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Synthetic Internal Error",
+          "deprecated": false,
+          "description": "Returns a typed 500 payload for failure-path coverage.",
+          "secured": false,
+          "method": "GET",
+          "path": "/api/v1/scenarios/public/server-error",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": null,
+          "errors": [
+            {
+              "status": "Internal Server Error",
+              "status_code": 500,
+              "description": "Synthetic server failure",
+              "error_code": null,
+              "response": {
+                "model": {
+                  "error_code": "string",
+                  "message": "string",
+                  "support_id": "550e8400-e29b-41d4-a716-446655440000",
+                  "retryable": false,
+                  "diagnostics": {
+                    "string": "string"
+                  }
+                },
+                "example_model": {
+                  "error_code": "hello",
+                  "message": "hello",
+                  "support_id": "550e8400-e29b-41d4-a716-446655440000",
+                  "retryable": false,
+                  "diagnostics": {
+                    "string": "hello"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin Only Echo",
+          "deprecated": false,
+          "description": "Requires the admin authority and can be used to exercise real 401/403 security failures.",
+          "secured": true,
+          "method": "GET",
+          "path": "/api/v1/scenarios/secure/admin-only",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": null,
+          "response": {
+            "model": {
+              "actor": "string",
+              "device_id": "string",
+              "authorities": [
+                "string"
+              ],
+              "checks": [
+                "string"
+              ],
+              "correlation_id": "550e8400-e29b-41d4-a716-446655440000"
+            },
+            "example_model": {
+              "actor": "hello",
+              "device_id": "hello",
+              "authorities": [
+                "hello"
+              ],
+              "checks": [
+                "hello"
+              ],
+              "correlation_id": "550e8400-e29b-41d4-a716-446655440000"
+            }
+          },
+          "errors": []
+        },
+        {
+          "name": "Test Decapitalization",
+          "deprecated": false,
+          "description": null,
+          "secured": false,
+          "method": "POST",
+          "path": "/api/v1/scenarios/decaptalization",
+          "status": "OK",
+          "status_code": 200,
+          "consumes": [
+            "multipart/form-data"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "path_variables": [],
+          "query_params": [],
+          "headers": [],
+          "request": {
+            "model": {
+              "otp": "string",
+              "pin": "string"
+            },
+            "example_model": {
+              "otp": "hello",
+              "pin": "hello"
+            },
+            "metadata": {
+              "otp": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              },
+              "pin": {
+                "description": "",
+                "required": false,
+                "constraints": []
+              }
+            }
+          },
+          "response": {
+            "model": {
+              "otp": "string",
+              "pin": "string"
+            },
+            "example_model": {
+              "otp": "hello",
+              "pin": "hello"
+            }
+          },
+          "errors": []
+        }
+      ]
+    }
+  ]
+}

@@ -40,6 +40,28 @@ class EndpointPathAndMethodResolverTest {
     }
 
     @Test
+    void doesNotAppendTrailingSlashWhenMethodMappingPathIsEmpty() throws Exception {
+        ApiEndpoint endpoint = resolve(
+                EmptyMethodPathController.class,
+                "users",
+                value -> value
+        );
+
+        assertThat(endpoint.getPath()).isEqualTo("/api/v1/users");
+    }
+
+    @Test
+    void preservesExplicitSlashMethodMappingPath() throws Exception {
+        ApiEndpoint endpoint = resolve(
+                ExplicitSlashMethodPathController.class,
+                "users",
+                value -> value
+        );
+
+        assertThat(endpoint.getPath()).isEqualTo("/api/v1/users/");
+    }
+
+    @Test
     void preservesOriginalPathWhenPlaceholderCannotBeResolved() throws Exception {
         ApiEndpoint endpoint = resolve(
                 UnresolvedPlaceholderController.class,
@@ -77,6 +99,22 @@ class EndpointPathAndMethodResolverTest {
 
         @GetMapping(path = "${reports.path}")
         void reports() {
+        }
+    }
+
+    @RequestMapping("/api/v1/users")
+    static class EmptyMethodPathController {
+
+        @GetMapping
+        void users() {
+        }
+    }
+
+    @RequestMapping("/api/v1/users")
+    static class ExplicitSlashMethodPathController {
+
+        @GetMapping("/")
+        void users() {
         }
     }
 
